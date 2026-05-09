@@ -1,0 +1,17 @@
+{
+  "name": "zettlink",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.0.0" },
+  "scripts": {
+    "daemon": "pnpm --filter @zettlink/daemon start",
+    "dashboard": "pnpm --filter @zettlink/dashboard dev",
+    "blog": "pnpm --filter @zettlink/blog dev",
+    "blog:build": "pnpm --filter @zettlink/blog build",
+    "deploy": "node scripts/deploy.mjs",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "packageManager": "pnpm@11.0.9"
+}
