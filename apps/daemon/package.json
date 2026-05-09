@@ -1,0 +1,26 @@
+{
+  "name": "@zettlink/daemon",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@zettlink/core": "workspace:*",
+    "@anthropic-ai/sdk": "^0.95.0",
+    "@octokit/rest": "^21.0.0",
+    "dotenv": "^16.4.5",
+    "execa": "^9.4.0",
+    "openai": "^4.60.0",
+    "telegraf": "^4.16.0",
+    "simple-git": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.0.0"
+  }
+}
