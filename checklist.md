@@ -4,10 +4,10 @@
 
 - [ ] `pnpm` workspace 모노레포 초기화
 - [ ] TypeScript strict + ESM 단일 + Node 22 LTS 고정 (`.nvmrc`)
-- [ ] `.env.example` 작성 (Anthropic, OpenAI, Telegram bot token, Telegram user ID, GitHub PAT, `VAULT_LOCAL_PATH`, `BLOG_LOCAL_PATH`)
+- [ ] `.env.example` 작성 (Anthropic, OpenAI, Telegram bot token, Telegram user ID, GitHub PAT, `REPO_LOCAL_PATH`, `CLOUDFLARE_DEPLOY_HOOK_URL`)
 - [ ] `.gitignore` (`.env`, `node_modules`, build artifacts)
-- [ ] vault repo 별도 생성 (private GitHub) — 데몬이 clone 받는 위치 결정
-- [ ] blog repo 별도 생성 (public GitHub) — Cloudflare Pages 연결 대상
+- [ ] 단일 public repo (`owner/zettlink`) 생성 — vault 폴더 + Astro 소스 합침
+- [ ] Cloudflare Pages 연결, 자동 빌드 비활성화 ("Pause deployments"), deploy hook URL 발급
 - [ ] env 검증 모듈 (`config.ts`): 필수 키 누락 시 시작 즉시 종료
 
 ## 1. 공유 패키지 (`packages/core/`)
@@ -22,7 +22,7 @@
 - [ ] Truncation 헬퍼 (head 3,000 + tail 3,000 token, `llm.truncated: true` 기록)
 - [ ] 시드 vocabulary 상수 (`ai`, `agents`, `claude`, `codex`, `productivity`)
 - [ ] 기존 vault 태그 빈도 집계 (system prompt 주입용)
-- [ ] git 헬퍼 (`simple-git` 사용, vault + blog 두 repo 지원)
+- [ ] git 헬퍼 (`simple-git` 사용, `REPO_LOCAL_PATH` 단일 repo)
 
 ## 2. 1단계 데몬 (`apps/daemon/`)
 
@@ -75,10 +75,9 @@
 - [ ] 중복이고 `+force` 없으면 `⚠️ 이미 처리된 URL입니다: {slug}` 답장
 - [ ] LLM 실패 시 추출 파일은 commit, summary는 `status: failed` (D2)
 
-### 2.8 git push (dual-commit)
+### 2.8 git push (단일 repo)
 - [ ] 카드 1개당 1 commit (커밋 메시지 자동 생성)
-- [ ] vault repo (`VAULT_LOCAL_PATH`) push: `simpleGit().add().commit().push()`
-- [ ] blog repo (`BLOG_LOCAL_PATH`) push: `index.md`을 `content/sources/{platform}/{slug}/`로 복사 후 동일 흐름
+- [ ] `REPO_LOCAL_PATH` push: `simpleGit().add().commit().push()`
 - [ ] push 실패 시 in-memory 5초 간격 2회 재시도, 최종 실패 시 `❌ git push 실패` Telegram 답장
 
 ### 2.9 Telegram 답장
@@ -91,11 +90,10 @@
 - [ ] OpenAI/Anthropic API 키 누락 시 시작 실패
 - [ ] yt-dlp 바이너리 PATH 검사 (없으면 시작 시 경고, 호출 시 사용자 안내)
 
-### 2.11 sync:blog 스크립트
-- [ ] `pnpm sync:blog` 명령 (vault → blog content 단방향 sync)
-- [ ] vault `sources/**/index.md` 글롭 → blog `content/sources/{platform}/{slug}/`로 복사
-- [ ] blog repo 전체 commit + push
-- [ ] vault 수동 편집 후 drift 발생 시 사용
+### 2.11 배포 스크립트
+- [ ] `pnpm deploy` 명령: `CLOUDFLARE_DEPLOY_HOOK_URL`로 POST 요청
+- [ ] `published: true` 카드 확인 후 배포 여부 결정은 사용자 판단
+- [ ] Astro 빌드: `vault/sources/**/index.md` 글롭 → `published: true`만 렌더링
 
 ## 3. 2단계 대시보드 (`apps/dashboard/`)
 
@@ -127,7 +125,7 @@
 
 - [ ] README — 셋업 단계, `.env`, 명령어, `brew install yt-dlp` 사전 조건
 - [ ] `pnpm daemon` — 1단계 데몬 시작
-- [ ] `pnpm sync:blog` — vault → blog content 재동기화
+- [ ] `pnpm deploy` — Cloudflare deploy hook 수동 트리거 (배포 시점 직접 제어)
 - [ ] `pnpm dashboard` — 로컬 대시보드
 - [ ] `pnpm blog` — 블로그 dev (로컬 미리보기)
 - [ ] `pnpm blog:build` — 정적 빌드
