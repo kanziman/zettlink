@@ -1,6 +1,6 @@
 // Anthropic Sonnet 4.6 호출 래퍼. system block 에 prompt caching 을 적용하고, JSON 출력을 Zod 로 검증한다.
 import { z } from 'zod';
-import type { default as Anthropic, Message } from '@anthropic-ai/sdk';
+import type Anthropic from '@anthropic-ai/sdk';
 import { AUTO_SUMMARY_SYSTEM, buildAutoSummaryUser } from './prompts/auto-summary.js';
 
 export const AutoSummaryResultSchema = z.object({
@@ -20,7 +20,7 @@ interface RunInput {
   modelId: string;
 }
 
-function extractText(resp: Message): string {
+function extractText(resp: Anthropic.Message): string {
   for (const block of resp.content) if (block.type === 'text') return block.text;
   throw new Error('Anthropic 응답에 text 블록이 없다');
 }
