@@ -1,0 +1,15 @@
+# 환경 변수 및 민감 정보
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+dist/
+build/
+.next/
+.turbo/
+
+# 빌드 산출물
+*.log
+.DS_Store
