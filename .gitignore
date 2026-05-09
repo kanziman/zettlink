@@ -13,3 +13,6 @@ build/
 # 빌드 산출물
 *.log
 .DS_Store
+
+# Agent visual brainstorming artifacts
+.superpowers/
