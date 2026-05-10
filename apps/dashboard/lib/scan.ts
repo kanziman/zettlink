@@ -14,6 +14,7 @@ export type ArtifactKind = "deep" | "til" | "guide";
 
 export type DashboardCardRow = {
   frontmatter: IndexFrontmatter;
+  body: string;
   dir: string;
   snapshot: CardSnapshot;
   artifacts: CardSnapshot["artifacts"];
@@ -43,7 +44,7 @@ export async function readArtifactStatus(
 export async function scanDashboardCards(root: string): Promise<DashboardCardRow[]> {
   const cards = await listCards(resolve(root));
   const rows = await Promise.all(
-    cards.map(async ({ frontmatter, dir }) => {
+    cards.map(async ({ frontmatter, body, dir }) => {
       const [deep, til, guide] = await Promise.all([
         readArtifactStatus(dir, "deep"),
         readArtifactStatus(dir, "til"),
@@ -56,7 +57,7 @@ export async function scanDashboardCards(root: string): Promise<DashboardCardRow
         artifacts,
       };
 
-      return { frontmatter, dir, snapshot, artifacts };
+      return { frontmatter, body, dir, snapshot, artifacts };
     }),
   );
 

@@ -20,12 +20,6 @@ export const EMPTY_FILTER: FilterState = {
   artifact: "all",
 };
 
-type SearchableDashboardCardRow = DashboardCardRow & {
-  body?: string;
-  index_body?: string;
-  indexBody?: string;
-};
-
 export function filterRows(
   rows: DashboardCardRow[],
   filter: FilterState,
@@ -70,14 +64,11 @@ export function filterRows(
 }
 
 function matchesText(row: DashboardCardRow, query: string): boolean {
-  const searchable = row as SearchableDashboardCardRow;
   const fields = [
     row.frontmatter.title,
     row.frontmatter.summary_one_line,
     ...row.frontmatter.tags,
-    searchable.body,
-    searchable.index_body,
-    searchable.indexBody,
+    row.body,
   ];
 
   return fields.some((field) =>
@@ -93,7 +84,7 @@ function matchesArtifact(
     return true;
   }
 
-  const artifacts = row.artifacts;
+  const artifacts = row.snapshot.artifacts;
 
   if (artifact === "none") {
     return (

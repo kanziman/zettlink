@@ -80,7 +80,7 @@ test("returns an empty list when there are no sources", async () => {
   await expect(scanDashboardCards(await tempVault())).resolves.toEqual([]);
 });
 
-test("scans index cards and artifact published flags", async () => {
+test("scans index card body and artifact published flags", async () => {
   const root = await tempVault();
   const dir = await writeCard(root, indexFrontmatter({ slug: "with-artifacts" }));
   await writeArtifact(dir, "deep", artifactFrontmatter({ published: true }));
@@ -90,6 +90,7 @@ test("scans index cards and artifact published flags", async () => {
 
   expect(rows).toHaveLength(1);
   expect(rows[0]?.frontmatter.slug).toBe("with-artifacts");
+  expect(rows[0]?.body).toBe("Body\n");
   expect(rows[0]?.dir).toBe(dir);
   expect(rows[0]?.artifacts).toEqual({
     deep: { exists: true, published: true },

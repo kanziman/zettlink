@@ -17,8 +17,6 @@ type RowOverrides = {
   artifacts?: Partial<CardSnapshot["artifacts"]>;
 };
 
-type SearchableRow = DashboardCardRow & { body?: string };
-
 function snapshot(overrides: RowOverrides): CardSnapshot {
   const artifacts = {
     deep: { exists: false, published: false },
@@ -34,7 +32,7 @@ function snapshot(overrides: RowOverrides): CardSnapshot {
   };
 }
 
-function row(overrides: RowOverrides): SearchableRow {
+function row(overrides: RowOverrides): DashboardCardRow {
   const rowSnapshot = snapshot(overrides);
   const platform = overrides.platform ?? "youtube";
 
@@ -60,7 +58,7 @@ function row(overrides: RowOverrides): SearchableRow {
     dir: `/vault/${overrides.slug}`,
     snapshot: rowSnapshot,
     artifacts: rowSnapshot.artifacts,
-    body: overrides.body,
+    body: overrides.body ?? "",
   };
 }
 
