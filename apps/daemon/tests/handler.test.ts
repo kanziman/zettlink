@@ -57,4 +57,23 @@ describe('handleMessage', () => {
     expect(ctx.reply).toHaveBeenCalledWith(expect.stringContaining('URL'));
     expect(processUrl).not.toHaveBeenCalled();
   });
+
+  it('실패 사유가 매우 길어도 reply 텍스트는 4096 자 이내로 잘린다', async () => {
+    const ctx = baseCtx('https://youtu.be/x', 1);
+    const huge = 'x'.repeat(50_000);
+    const processUrl = vi.fn().mockResolvedValue({ kind: 'failed', reason: huge, cardDir: '/tmp/x' });
+    await handleMessage(ctx as any, { allowedUserId: 1, processUrl, pipelineDeps: {} as any });
+    const sent = (ctx.reply as any).mock.calls[0][0] as string;
+    expect(sent.length).toBeLessThan(4096);
+    expect(sent).toContain('처리 실패');
+  });
+
+  it('reply 가 throw 해도 데몬은 죽지 않는다 (safeReply 가 삼킨다)', async () => {
+    const ctx = baseCtx('https://youtu.be/x', 1);
+    ctx.reply = vi.fn().mockRejectedValue(new Error('400: text is too long')) as any;
+    const processUrl = vi.fn().mockResolvedValue({ kind: 'failed', reason: 'boom', cardDir: '/tmp/x' });
+    await expect(
+      handleMessage(ctx as any, { allowedUserId: 1, processUrl, pipelineDeps: {} as any }),
+    ).resolves.toBeUndefined();
+  });
 });
