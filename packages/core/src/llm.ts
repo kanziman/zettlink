@@ -20,6 +20,12 @@ interface RunInput {
   modelId: string;
 }
 
+// 모델이 가끔 ```json … ``` 코드펜스로 감싸 보내는 경우를 흡수한다.
+export function stripJsonFence(text: string): string {
+  const m = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  return (m?.[1] ?? text).trim();
+}
+
 export async function runAutoSummary(client: OpenAI, input: RunInput): Promise<AutoSummaryResult> {
   // OpenRouter 의 Anthropic 모델은 system message 를 content 배열 + cache_control 로 캐싱 가능. OpenAI SDK 타입 정의에 cache_control 이 없어 as any 로 통과.
   const messages = [
@@ -40,7 +46,7 @@ export async function runAutoSummary(client: OpenAI, input: RunInput): Promise<A
     const text = resp.choices[0]?.message?.content ?? '';
     if (!text) throw new Error('OpenRouter 응답에 본문이 없다');
     try {
-      return AutoSummaryResultSchema.parse(JSON.parse(text));
+      return AutoSummaryResultSchema.parse(JSON.parse(stripJsonFence(text)));
     } catch (e) {
       if (attempt === 1) throw new Error(`자동 요약 LLM 출력 검증 실패. ${(e as Error).message}`);
     }
