@@ -1,0 +1,227 @@
+---
+// 공개 카드 상세와 공개 산출물 탭을 렌더링한다.
+import { access, readdir, readFile } from 'node:fs/promises';
+import { dirname, join, relative, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import matter from 'gray-matter';
+import { marked } from 'marked';
+import sanitizeHtml from 'sanitize-html';
+
+type Artifact = {
+  kind: 'deep' | 'til' | 'guide';
+  label: string;
+  html: string;
+};
+
+const artifactTypes: { kind: Artifact['kind']; fileName: string; label: string }[] = [
+  { kind: 'deep', fileName: 'deep.md', label: '심화' },
+  { kind: 'til', fileName: 'til.md', label: 'TIL' },
+  { kind: 'guide', fileName: 'guide.md', label: '가이드' },
+];
+
+const fallbackVaultRoot = fileURLToPath(new URL('../../../fixtures/empty-vault', import.meta.url));
+
+function allowFallbackVault() {
+  return process.env.ZETTLINK_BLOG_ALLOW_EMPTY_VAULT === '1' || process.env.NODE_ENV !== 'production';
+}
+
+function vaultRoot() {
+  if (process.env.REPO_LOCAL_PATH) {
+    return process.env.REPO_LOCAL_PATH;
+  }
+  if (allowFallbackVault()) {
+    return fallbackVaultRoot;
+  }
+  throw new Error('REPO_LOCAL_PATH is required for production blog builds.');
+}
+
+function sourcesDir() {
+  return join(vaultRoot(), 'sources');
+}
+
+function redactLocalPaths(text: string) {
+  const redacted = '[redacted-local-path]';
+  const localPathStart = String.raw`(?:file:\/\/|\/(?:Users|home|tmp|var|opt)(?:\/|$))`;
+  return text
+    .replace(new RegExp(String.raw`\]\(\s*${localPathStart}[^)\n]*\)`, 'gi'), `](${redacted})`)
+    .replace(new RegExp(String.raw`${localPathStart}[^\n<>"')\]]*`, 'gi'), redacted);
+}
+
+function isPrivatePath(path: string) {
+  return path.split(sep).includes('private');
+}
+
+async function pathExists(path: string) {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function findIndexMarkdownFiles(root: string, current = root): Promise<string[]> {
+  if (!(await pathExists(current)) || isPrivatePath(relative(root, current))) {
+    return [];
+  }
+
+  const entries = await readdir(current, { withFileTypes: true });
+  const files = await Promise.all(
+    entries.map(async (entry) => {
+      const path = join(current, entry.name);
+      if (entry.isDirectory()) {
+        return findIndexMarkdownFiles(root, path);
+      }
+      return entry.isFile() && entry.name === 'index.md' ? [path] : [];
+    }),
+  );
+  return files.flat();
+}
+
+async function findCardDirBySlug(slug: string) {
+  const root = sourcesDir();
+  const files = await findIndexMarkdownFiles(root);
+  for (const file of files) {
+    const markdown = await readFile(file, 'utf8');
+    const { data } = matter(markdown);
+    if (data.published === true && data.slug === slug) {
+      return dirname(file);
+    }
+  }
+  throw new Error(`Could not find source card directory for slug ${slug}.`);
+}
+
+async function renderMarkdown(markdown: string) {
+  const html = await marked.parse(redactLocalPaths(markdown));
+  return sanitizeHtml(html, {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
+    allowedAttributes: {
+      ...sanitizeHtml.defaults.allowedAttributes,
+      img: ['src', 'alt', 'title'],
+    },
+    allowedSchemes: ['http', 'https', 'mailto'],
+  });
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isDatetime(value: unknown) {
+  return typeof value === 'string' && !Number.isNaN(Date.parse(value));
+}
+
+function artifactFrontmatterError(data: unknown) {
+  if (!isRecord(data) || typeof data.published !== 'boolean') {
+    return 'published must be boolean';
+  }
+  if (data.published === false) {
+    return undefined;
+  }
+  if (!isDatetime(data.generated_at)) {
+    return 'generated_at must be datetime string';
+  }
+  if (!isRecord(data.llm) || typeof data.llm.model !== 'string') {
+    return 'llm.model must be string';
+  }
+  return undefined;
+}
+
+export async function getStaticPaths() {
+  const cards: CollectionEntry<'cards'>[] = await getCollection('cards');
+  return cards
+    .filter((card) => card.data.published)
+    .map((card) => ({
+      params: { slug: card.data.slug },
+      props: { card },
+    }));
+}
+
+async function loadPublishedArtifacts(card: CollectionEntry<'cards'>): Promise<Artifact[]> {
+  const cardDir = await findCardDirBySlug(card.data.slug as string);
+  const artifacts = await Promise.all(
+    artifactTypes.map(async ({ kind, fileName, label }) => {
+      let markdown: string;
+      try {
+        markdown = await readFile(join(cardDir, fileName), 'utf8');
+      } catch (error) {
+        if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+          return undefined;
+        }
+        throw new Error(`Failed to load artifact ${fileName} for card ${card.data.slug}.`, { cause: error });
+      }
+
+      try {
+        const { content, data } = matter(markdown);
+        const frontmatterError = artifactFrontmatterError(data);
+        if (frontmatterError) {
+          throw new Error(
+            `Invalid artifact frontmatter in ${fileName} for card ${card.data.slug}: ${frontmatterError}.`,
+          );
+        }
+        if (data.published === false) {
+          return undefined;
+        }
+
+        return {
+          kind,
+          label,
+          html: await renderMarkdown(content),
+        };
+      } catch (error) {
+        if (error instanceof Error && error.message.startsWith('Invalid artifact frontmatter')) {
+          throw error;
+        }
+        throw new Error(`Failed to load artifact ${fileName} for card ${card.data.slug}.`, { cause: error });
+      }
+    }),
+  );
+
+  return artifacts.filter((artifact): artifact is Artifact => artifact !== undefined);
+}
+
+const { card } = Astro.props as { card: CollectionEntry<'cards'> };
+const tags = card.data.tags as string[];
+const cardHtml = await renderMarkdown(card.body ?? '');
+const artifacts = await loadPublishedArtifacts(card);
+---
+
+<html lang="ko">
+  <body>
+    <main data-pagefind-body>
+      <article>
+        <a href="/">목록으로 돌아가기.</a>
+        <h1>{card.data.title}</h1>
+        <p>{card.data.summary_one_line}</p>
+        <ul aria-label="태그">
+          {tags.map((tag) => <li>{tag}</li>)}
+        </ul>
+        <div set:html={cardHtml} />
+      </article>
+
+      {
+        artifacts.length > 0 && (
+          <section aria-label="산출물">
+            <nav aria-label="산출물 탭">
+              <ul>
+                {artifacts.map((artifact) => (
+                  <li>
+                    <a href={`#artifact-${artifact.kind}`}>{artifact.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            {artifacts.map((artifact) => (
+              <section id={`artifact-${artifact.kind}`}>
+                <h2>{artifact.label}</h2>
+                <div set:html={artifact.html} />
+              </section>
+            ))}
+          </section>
+        )
+      }
+    </main>
+  </body>
+</html>

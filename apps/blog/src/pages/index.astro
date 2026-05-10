@@ -8,10 +8,38 @@ const cards = all.filter((card) => card.data.published).sort((a, b) => b.id.loca
 ---
 
 <html lang="ko">
+  <head>
+    <link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
+  </head>
   <body>
     <h1>zettlink</h1>
+    <section aria-label="검색">
+      <div id="search"></div>
+    </section>
     <ul>
       {cards.map((card) => <li><a href={`/cards/${card.data.slug}`}>{card.data.title}</a></li>)}
     </ul>
+    <script src="/pagefind/pagefind-ui.js" is:inline></script>
+    <script is:inline>
+      window.addEventListener('DOMContentLoaded', () => {
+        if (window.PagefindUI) {
+          new window.PagefindUI({
+            element: '#search',
+            showSubResults: true,
+            translations: {
+              placeholder: '검색.',
+              clear_search: '검색 지우기.',
+              load_more: '더 보기.',
+              search_label: '검색.',
+              filters_label: '필터.',
+              zero_results: '[SEARCH_TERM] 검색 결과가 없습니다.',
+              many_results: '[COUNT]개 결과.',
+              one_result: '[COUNT]개 결과.',
+              searching: '[SEARCH_TERM] 검색 중입니다.',
+            },
+          });
+        }
+      });
+    </script>
   </body>
 </html>

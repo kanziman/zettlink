@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { defineCollection, z } from 'astro:content';
 import type { Loader } from 'astro/loaders';
 import matter from 'gray-matter';
+import sanitizeHtml from 'sanitize-html';
 
 const fallbackVaultRoot = fileURLToPath(new URL('../fixtures/empty-vault', import.meta.url));
 
@@ -68,10 +69,81 @@ function entryId(file: string, root: string, data: Record<string, unknown>) {
   return relative(root, file).replace(/(^|[/\\])index\.md$/, '').replace(/[/\\]+$/, '');
 }
 
+function redactLocalPaths(text: string) {
+  const redacted = '[redacted-local-path]';
+  const localPathStart = String.raw`(?:file:\/\/|\/(?:Users|home|tmp|var|opt)(?:\/|$))`;
+  return text
+    .replace(new RegExp(String.raw`\]\(\s*${localPathStart}[^)\n]*\)`, 'gi'), `](${redacted})`)
+    .replace(new RegExp(String.raw`${localPathStart}[^\n<>"')\]]*`, 'gi'), redacted);
+}
+
+function publicString(value: unknown) {
+  return typeof value === 'string' ? redactLocalPaths(value) : value;
+}
+
+function publicStringArray(value: unknown) {
+  return Array.isArray(value) ? value.map(publicString).filter((item): item is string => typeof item === 'string') : value;
+}
+
+function publicYoutubeData(data: unknown) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return undefined;
+  }
+  const source = data as Record<string, unknown>;
+  return {
+    video_id: publicString(source.video_id),
+    channel: publicString(source.channel),
+    upload_date: publicString(source.upload_date),
+    duration_sec: source.duration_sec,
+    thumbnail: publicString(source.thumbnail),
+    subtitle_source: publicString(source.subtitle_source),
+  };
+}
+
+function publicGithubData(data: unknown) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return undefined;
+  }
+  const source = data as Record<string, unknown>;
+  return {
+    owner: publicString(source.owner),
+    repo: publicString(source.repo),
+    stars: source.stars,
+    primary_language: publicString(source.primary_language),
+    topics: publicStringArray(source.topics),
+  };
+}
+
+function publicCardData(data: Record<string, unknown>) {
+  return {
+    url: publicString(data.url),
+    platform: data.platform,
+    slug: publicString(data.slug),
+    title: publicString(data.title),
+    summary_one_line: publicString(data.summary_one_line),
+    tags: publicStringArray(data.tags),
+    published: data.published,
+    youtube: publicYoutubeData(data.youtube),
+    github: publicGithubData(data.github),
+  };
+}
+
+function sanitizeCachedMarkdown(markdown: string) {
+  const markdownWithoutUnsafeLinks = redactLocalPaths(markdown).replace(/\]\(\s*javascript:[^)]+\)/gi, '](#)');
+  return sanitizeHtml(markdownWithoutUnsafeLinks, {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
+    allowedAttributes: {
+      ...sanitizeHtml.defaults.allowedAttributes,
+      img: ['src', 'alt', 'title'],
+    },
+    allowedSchemes: ['http', 'https', 'mailto'],
+  });
+}
+
 function publicCardLoader(): Loader {
   return {
     name: 'zettlink-public-card-loader',
-    async load({ config, store, parseData, generateDigest, logger }) {
+    async load({ store, parseData, generateDigest, logger }) {
       const root = sourcesDir();
       store.clear();
 
@@ -92,16 +164,16 @@ function publicCardLoader(): Loader {
           continue;
         }
 
-        const { note: _note, ...publicData } = data;
+        const publicData = publicCardData(data);
         const id = entryId(file, root, publicData);
-        const parsedData = await parseData({ id, data: publicData, filePath: file });
+        const parsedData = await parseData({ id, data: publicData });
+        const sanitizedBody = sanitizeCachedMarkdown(content);
 
         store.set({
           id,
           data: parsedData,
-          body: content,
-          filePath: relative(fileURLToPath(config.root), file),
-          digest: generateDigest({ data: parsedData, body: content }),
+          body: sanitizedBody,
+          digest: generateDigest({ data: parsedData, body: sanitizedBody }),
         });
       }
     },
@@ -119,10 +191,26 @@ const cards = defineCollection({
       summary_one_line: z.string(),
       tags: z.array(z.string()),
       published: z.boolean().optional().default(false),
-      youtube: z.any().optional(),
-      github: z.any().optional(),
-    })
-    .passthrough(),
+      youtube: z
+        .object({
+          video_id: z.string(),
+          channel: z.string(),
+          upload_date: z.string(),
+          duration_sec: z.number().int(),
+          thumbnail: z.string(),
+          subtitle_source: z.enum(['auto', 'manual', 'whisper', 'description', 'none']),
+        })
+        .optional(),
+      github: z
+        .object({
+          owner: z.string(),
+          repo: z.string(),
+          stars: z.number().int(),
+          primary_language: z.string(),
+          topics: z.array(z.string()),
+        })
+        .optional(),
+    }),
 });
 
 export const collections = { cards };
