@@ -16,11 +16,20 @@ type PublishRequest = {
   value?: unknown;
 };
 
+class ClientError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const root = process.env.REPO_LOCAL_PATH;
     if (!root) {
-      return jsonError("REPO_LOCAL_PATH is not configured.", 500);
+      return jsonError("Unable to update publish state.", 500);
     }
 
     const payload = (await request.json()) as PublishRequest;
@@ -29,39 +38,63 @@ export async function POST(request: Request) {
       typeof payload.target !== "string" ||
       typeof payload.value !== "boolean"
     ) {
-      return jsonError("Expected JSON body { dir: string, target: string, value: boolean }.", 400);
+      throw new ClientError("Expected JSON body { dir: string, target: string, value: boolean }.", 400);
     }
     if (payload.target !== "index") {
-      return jsonError("Unsupported publish target. Supported target: index.", 400);
+      throw new ClientError("Unsupported publish target. Supported target: index.", 400);
     }
 
     const rootDir = await realpath(resolve(root));
-    const dir = await realpath(resolve(payload.dir));
+    const dir = await safeRealpath(payload.dir, "dir must be inside REPO_LOCAL_PATH.");
     if (!isInside(rootDir, dir)) {
-      return jsonError("dir must be inside REPO_LOCAL_PATH.", 400);
+      throw new ClientError("dir must be inside REPO_LOCAL_PATH.", 400);
     }
 
     const indexPath = join(dir, "index.md");
-    const realIndexPath = await realpath(indexPath);
+    const realIndexPath = await safeRealpath(indexPath, "dir must be inside REPO_LOCAL_PATH.");
     if (!isInside(rootDir, realIndexPath)) {
-      return jsonError("dir must be inside REPO_LOCAL_PATH.", 400);
+      throw new ClientError("dir must be inside REPO_LOCAL_PATH.", 400);
     }
 
-    const markdown = await readFile(realIndexPath, "utf8");
-    const { frontmatter, body } = parseIndex(markdown);
+    const originalMarkdown = await readFile(realIndexPath, "utf8");
+    const { frontmatter, body } = parseIndex(originalMarkdown);
     const nextFrontmatter = { ...frontmatter, published: payload.value };
 
     await writeFile(realIndexPath, serializeIndex(nextFrontmatter, body), "utf8");
-    await commitAndPushWithRetry(
-      openRepo(rootDir),
-      [realIndexPath],
-      `publish index=${payload.value} ${frontmatter.slug}`,
-      { delayMs: process.env.NODE_ENV === "test" ? 0 : undefined },
-    );
+    try {
+      await commitAndPushWithRetry(
+        openRepo(rootDir),
+        [realIndexPath],
+        `publish index=${payload.value} ${frontmatter.slug}`,
+        { delayMs: process.env.NODE_ENV === "test" ? 0 : undefined },
+      );
+    } catch {
+      await rollbackFile(realIndexPath, originalMarkdown);
+      return jsonError("Unable to update publish state.", 500);
+    }
 
     return NextResponse.json({ ok: true, target: "index", published: payload.value });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : "Unable to update publish state.", 500);
+    if (error instanceof ClientError) {
+      return jsonError(error.message, error.status);
+    }
+    return jsonError("Unable to update publish state.", 500);
+  }
+}
+
+async function safeRealpath(path: string, message: string): Promise<string> {
+  try {
+    return await realpath(resolve(path));
+  } catch {
+    throw new ClientError(message, 400);
+  }
+}
+
+async function rollbackFile(path: string, original: string): Promise<void> {
+  try {
+    await writeFile(path, original, "utf8");
+  } catch {
+    // The response remains generic so rollback paths/errors are not exposed.
   }
 }
 

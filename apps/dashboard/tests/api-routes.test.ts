@@ -91,6 +91,24 @@ test("reviewed route rejects card directories outside REPO_LOCAL_PATH", async ()
 
   expect(response.status).toBe(400);
   expect(payload.error).toMatch(/inside REPO_LOCAL_PATH/i);
+  expect(payload.error).not.toContain(outside);
+  expect(coreMocks.commitAndPushWithRetry).not.toHaveBeenCalled();
+});
+
+test("reviewed route rejects raw path traversal with a client-safe error", async () => {
+  const root = await tempVault();
+  const outside = await tempVault();
+  process.env.REPO_LOCAL_PATH = root;
+  const { POST } = await import("../app/api/reviewed/route");
+
+  const response = await POST(
+    postRequest("/api/reviewed", { dir: join(root, "..", outside.split("/").pop()!), value: true }),
+  );
+  const payload = await response.json();
+
+  expect(response.status).toBe(400);
+  expect(payload.error).toBe("dir must be inside REPO_LOCAL_PATH.");
+  expect(JSON.stringify(payload)).not.toContain(outside);
   expect(coreMocks.commitAndPushWithRetry).not.toHaveBeenCalled();
 });
 
@@ -137,6 +155,28 @@ test("reviewed route toggles index frontmatter and preserves body", async () => 
   );
 });
 
+test("reviewed route rolls back index.md when git commit or push fails", async () => {
+  const root = await tempVault();
+  const dir = await writeCard(root, indexFrontmatter({ reviewed: false }), "Body text\n");
+  const indexPath = join(dir, "index.md");
+  const original = await readFile(indexPath, "utf8");
+  coreMocks.commitAndPushWithRetry.mockRejectedValueOnce(
+    new Error(`fatal: cannot push ${indexPath}`),
+  );
+  process.env.REPO_LOCAL_PATH = root;
+  const { POST } = await import("../app/api/reviewed/route");
+
+  const response = await POST(postRequest("/api/reviewed", { dir, value: true }));
+  const payload = await response.json();
+  const after = await readFile(indexPath, "utf8");
+
+  expect(response.status).toBe(500);
+  expect(payload.error).toBe("Unable to update reviewed state.");
+  expect(JSON.stringify(payload)).not.toContain(indexPath);
+  expect(after).toBe(original);
+  expect(parseIndex(after).frontmatter.reviewed).toBe(false);
+});
+
 test("publish route toggles summary published frontmatter and preserves body", async () => {
   const root = await tempVault();
   const dir = await writeCard(root, indexFrontmatter({ published: false }), "Summary\n\nDetails\n");
@@ -159,6 +199,28 @@ test("publish route toggles summary published frontmatter and preserves body", a
     expect.stringContaining("publish index=true"),
     expect.objectContaining({ delayMs: 0 }),
   );
+});
+
+test("publish route rolls back index.md when git commit or push fails", async () => {
+  const root = await tempVault();
+  const dir = await writeCard(root, indexFrontmatter({ published: false }), "Summary\n\nDetails\n");
+  const indexPath = join(dir, "index.md");
+  const original = await readFile(indexPath, "utf8");
+  coreMocks.commitAndPushWithRetry.mockRejectedValueOnce(
+    new Error(`fatal: cannot push ${indexPath}`),
+  );
+  process.env.REPO_LOCAL_PATH = root;
+  const { POST } = await import("../app/api/publish/route");
+
+  const response = await POST(postRequest("/api/publish", { dir, target: "index", value: true }));
+  const payload = await response.json();
+  const after = await readFile(indexPath, "utf8");
+
+  expect(response.status).toBe(500);
+  expect(payload.error).toBe("Unable to update publish state.");
+  expect(JSON.stringify(payload)).not.toContain(indexPath);
+  expect(after).toBe(original);
+  expect(parseIndex(after).frontmatter.published).toBe(false);
 });
 
 test("publish route rejects unsupported targets with a clear error", async () => {

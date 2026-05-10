@@ -1,6 +1,6 @@
 // 카드 상세 화면에서 요약본과 검토/발행 상태를 보여줍니다.
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { readFile, realpath } from "node:fs/promises";
+import { isAbsolute, join, relative, resolve } from "node:path";
 
 import Link from "next/link";
 import React from "react";
@@ -50,7 +50,7 @@ export default async function CardDetailPage({ params }: CardDetailPageProps) {
     );
   }
 
-  const sourceText = await readSourceText(row);
+  const sourceText = await readSourceText(row, root);
   const insights = extractInsights(row.body);
   const fm = row.frontmatter;
 
@@ -240,6 +240,7 @@ function StatusBadge({ children }: { children: React.ReactNode }) {
 
 async function readSourceText(
   row: DashboardCardRow,
+  root: string,
 ): Promise<{ label: string; body: string } | null> {
   const file =
     row.frontmatter.platform === "youtube"
@@ -247,11 +248,25 @@ async function readSourceText(
       : { label: "extract.md", name: "extract.md" };
 
   try {
-    const body = await readFile(join(row.dir, file.name), "utf8");
+    const [rootDir, cardDir, targetPath] = await Promise.all([
+      realpath(resolve(root)),
+      realpath(resolve(row.dir)),
+      realpath(resolve(row.dir, file.name)),
+    ]);
+    if (!isInside(rootDir, targetPath) || !isInside(cardDir, targetPath)) {
+      return null;
+    }
+
+    const body = await readFile(targetPath, "utf8");
     return { label: file.label, body };
   } catch {
     return null;
   }
+}
+
+function isInside(root: string, candidate: string): boolean {
+  const rel = relative(root, candidate);
+  return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel));
 }
 
 function extractInsights(body: string): string[] {

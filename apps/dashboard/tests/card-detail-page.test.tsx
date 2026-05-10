@@ -1,5 +1,5 @@
 // 카드 상세 페이지가 vault 카드 내용을 서버 렌더링하는지 검증합니다.
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -79,6 +79,22 @@ test("renders card summary, metadata, transcript, and Make Room link by slug", a
   expect(html).toContain('href="https://www.youtube.com/watch?v=abc123"');
   expect(html).toContain("Transcript body text.");
   expect(html).toContain('href="/cards/example-card/make"');
+});
+
+test("does not render transcript content when transcript.md symlinks outside the vault", async () => {
+  const root = await tempVault();
+  const outside = await tempVault();
+  const dir = await writeCard(root, indexFrontmatter(), "Summary body paragraph.\n");
+  await writeFile(join(outside, "secret-transcript.md"), "Escaped transcript body.", "utf8");
+  await symlink(join(outside, "secret-transcript.md"), join(dir, "transcript.md"));
+  process.env.REPO_LOCAL_PATH = root;
+
+  const page = await CardDetailPage({ params: Promise.resolve({ slug: "example-card" }) });
+  const html = renderToStaticMarkup(page);
+
+  expect(html).not.toContain("Escaped transcript body.");
+  expect(html).not.toContain("transcript.md");
+  expect(html).toContain("Summary body paragraph.");
 });
 
 test("renders a clear configuration state when REPO_LOCAL_PATH is missing", async () => {
