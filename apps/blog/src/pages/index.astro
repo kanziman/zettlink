@@ -1,0 +1,17 @@
+---
+// 공개 카드 목록을 렌더링한다.
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+
+const all: CollectionEntry<'cards'>[] = await getCollection('cards');
+const cards = all.filter((card) => card.data.published).sort((a, b) => b.id.localeCompare(a.id));
+---
+
+<html lang="ko">
+  <body>
+    <h1>zettlink</h1>
+    <ul>
+      {cards.map((card) => <li><a href={`/cards/${card.data.slug}`}>{card.data.title}</a></li>)}
+    </ul>
+  </body>
+</html>
