@@ -1,10 +1,15 @@
 // OpenRouter 경유로 Claude Sonnet 호출. system block 에 prompt caching 을 적용하고, JSON 출력을 Zod 로 검증한다.
 import { z } from 'zod';
-import type OpenAI from 'openai';
+import OpenAI from 'openai';
 import { AUTO_SUMMARY_SYSTEM, buildAutoSummaryUser } from './prompts/auto-summary.js';
 import { DEEP_SYSTEM, buildDeepUser } from './prompts/deep.js';
 import { TIL_SYSTEM, buildTilUser } from './prompts/til.js';
 import { GUIDE_SYSTEM, buildGuideUser } from './prompts/guide.js';
+
+// OpenRouter 경유의 OpenAI SDK 클라이언트를 만든다. dashboard / daemon 양쪽에서 같은 설정을 쓰게 한다.
+export function createOpenRouterClient(apiKey: string): OpenAI {
+  return new OpenAI({ apiKey, baseURL: 'https://openrouter.ai/api/v1' });
+}
 
 export const AutoSummaryResultSchema = z.object({
   title: z.string().min(1),

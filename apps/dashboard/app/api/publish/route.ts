@@ -1,13 +1,19 @@
-// 카드 요약본의 published frontmatter 를 갱신하고 vault 저장소에 반영합니다.
+// 카드 요약본(index.md) 또는 산출물(deep/til/guide.md) 의 published frontmatter 를 갱신한다.
 import { readFile, realpath, writeFile } from "node:fs/promises";
 import { isAbsolute, join, relative, resolve } from "node:path";
 
 import {
   openRepo,
+  parseArtifact,
   parseIndex,
+  serializeArtifact,
   serializeIndex,
 } from "@zettlink/core";
 import { NextResponse } from "next/server";
+
+type PublishTarget = "index" | "deep" | "til" | "guide";
+const ARTIFACT_TARGETS: ReadonlyArray<Exclude<PublishTarget, "index">> = ["deep", "til", "guide"];
+const ALL_TARGETS: ReadonlyArray<PublishTarget> = ["index", ...ARTIFACT_TARGETS];
 
 type PublishRequest = {
   dir?: unknown;
@@ -37,11 +43,18 @@ export async function POST(request: Request) {
       typeof payload.target !== "string" ||
       typeof payload.value !== "boolean"
     ) {
-      throw new ClientError("Expected JSON body { dir: string, target: string, value: boolean }.", 400);
+      throw new ClientError(
+        "Expected JSON body { dir: string, target: string, value: boolean }.",
+        400,
+      );
     }
-    if (payload.target !== "index") {
-      throw new ClientError("Unsupported publish target. Supported target: index.", 400);
+    if (!ALL_TARGETS.includes(payload.target as PublishTarget)) {
+      throw new ClientError(
+        `Unsupported publish target. Supported targets: ${ALL_TARGETS.join(", ")}.`,
+        400,
+      );
     }
+    const target = payload.target as PublishTarget;
 
     const rootDir = await realpath(resolve(root));
     const dir = await safeRealpath(payload.dir, "dir must be inside REPO_LOCAL_PATH.");
@@ -49,23 +62,38 @@ export async function POST(request: Request) {
       throw new ClientError("dir must be inside REPO_LOCAL_PATH.", 400);
     }
 
-    const indexPath = join(dir, "index.md");
-    const realIndexPath = await safeRealpath(indexPath, "dir must be inside REPO_LOCAL_PATH.");
-    if (!isInside(rootDir, realIndexPath)) {
+    const filename = target === "index" ? "index.md" : `${target}.md`;
+    const filePath = join(dir, filename);
+    const realFilePath = await safeRealpath(
+      filePath,
+      target === "index"
+        ? "dir must be inside REPO_LOCAL_PATH."
+        : `${target} artifact does not exist.`,
+      target === "index" ? 400 : 404,
+    );
+    if (!isInside(rootDir, realFilePath)) {
       throw new ClientError("dir must be inside REPO_LOCAL_PATH.", 400);
     }
 
-    const originalMarkdown = await readFile(realIndexPath, "utf8");
-    const { frontmatter, body } = parseIndex(originalMarkdown);
-    const nextFrontmatter = { ...frontmatter, published: payload.value };
+    const originalMarkdown = await readFile(realFilePath, "utf8");
+    const slug = readSlug(dir);
 
-    await writeFile(realIndexPath, serializeIndex(nextFrontmatter, body), "utf8");
+    let nextMarkdown: string;
+    if (target === "index") {
+      const { frontmatter, body } = parseIndex(originalMarkdown);
+      nextMarkdown = serializeIndex({ ...frontmatter, published: payload.value }, body);
+    } else {
+      const { frontmatter, body } = parseArtifact(originalMarkdown);
+      nextMarkdown = serializeArtifact({ ...frontmatter, published: payload.value }, body);
+    }
+
+    await writeFile(realFilePath, nextMarkdown, "utf8");
     const git = openRepo(rootDir);
     try {
-      await git.add([realIndexPath]);
-      await git.commit(`publish index=${payload.value} ${frontmatter.slug}`);
+      await git.add([realFilePath]);
+      await git.commit(`publish ${target}=${payload.value} ${slug}`);
     } catch {
-      await rollbackFile(realIndexPath, originalMarkdown);
+      await rollbackFile(realFilePath, originalMarkdown);
       return jsonError("Unable to update publish state.", 500);
     }
 
@@ -73,14 +101,14 @@ export async function POST(request: Request) {
     if (!pushed) {
       return NextResponse.json({
         ok: true,
-        target: "index",
+        target,
         published: payload.value,
         pushed: false,
         warning: "Saved locally, but push failed.",
       });
     }
 
-    return NextResponse.json({ ok: true, target: "index", published: payload.value, pushed: true });
+    return NextResponse.json({ ok: true, target, published: payload.value, pushed: true });
   } catch (error) {
     if (error instanceof ClientError) {
       return jsonError(error.message, error.status);
@@ -89,12 +117,22 @@ export async function POST(request: Request) {
   }
 }
 
-async function safeRealpath(path: string, message: string): Promise<string> {
+async function safeRealpath(
+  path: string,
+  message: string,
+  status: number = 400,
+): Promise<string> {
   try {
     return await realpath(resolve(path));
   } catch {
-    throw new ClientError(message, 400);
+    throw new ClientError(message, status);
   }
+}
+
+function readSlug(dir: string): string {
+  const folder = dir.split("/").pop() ?? "";
+  const m = folder.match(/^\d{4}-\d{2}-\d{2}-(.+)$/);
+  return m?.[1] ?? folder;
 }
 
 async function rollbackFile(path: string, original: string): Promise<void> {
