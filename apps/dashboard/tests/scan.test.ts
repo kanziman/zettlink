@@ -12,7 +12,11 @@ import {
 import { expect, test } from "vitest";
 
 import { computeColumn } from "../lib/board";
-import { readArtifactStatus, scanDashboardCards } from "../lib/scan";
+import {
+  readArtifactStatus,
+  scanDashboardCards,
+  scanDashboardWithErrors,
+} from "../lib/scan";
 
 async function tempVault(): Promise<string> {
   return mkdtemp(join(tmpdir(), "zettlink-dashboard-scan-"));
@@ -173,6 +177,56 @@ test("returns absolute dirs when scanning from a relative root", async () => {
   } finally {
     process.chdir(previousCwd);
   }
+});
+
+test("scanDashboardWithErrors surfaces malformed cards as errors and drops them from rows", async () => {
+  const root = await tempVault();
+  const okDir = await writeCard(root, indexFrontmatter({ slug: "ok-card" }));
+  const malformedDir = join(root, "sources", "youtube", "2026-05-08-broken");
+  await mkdir(malformedDir, { recursive: true });
+  await writeFile(
+    join(malformedDir, "index.md"),
+    "---\nfoo: bar\n---\nIncomplete frontmatter",
+    "utf8",
+  );
+
+  const result = await scanDashboardWithErrors(root);
+
+  expect(result.rows).toHaveLength(1);
+  expect(result.rows[0]?.frontmatter.slug).toBe("ok-card");
+  expect(result.rows[0]?.dir).toBe(okDir);
+
+  expect(result.errors).toHaveLength(1);
+  expect(result.errors[0]?.dir).toBe(malformedDir);
+  expect(result.errors[0]?.message).toBeTruthy();
+  expect(result.errors[0]?.platform).toBe("youtube");
+  expect(result.errors[0]?.folder).toBe("2026-05-08-broken");
+});
+
+test("scanDashboardWithErrors returns an empty errors array when all cards parse", async () => {
+  const root = await tempVault();
+  await writeCard(root, indexFrontmatter({ slug: "good" }));
+
+  const result = await scanDashboardWithErrors(root);
+
+  expect(result.rows).toHaveLength(1);
+  expect(result.errors).toEqual([]);
+});
+
+test("scanDashboardCards still drops malformed cards silently", async () => {
+  const root = await tempVault();
+  await writeCard(root, indexFrontmatter({ slug: "ok-card" }));
+  const malformedDir = join(root, "sources", "youtube", "2026-05-08-broken");
+  await mkdir(malformedDir, { recursive: true });
+  await writeFile(
+    join(malformedDir, "index.md"),
+    "---\nfoo: bar\n---\nIncomplete",
+    "utf8",
+  );
+
+  const rows = await scanDashboardCards(root);
+
+  expect(rows.map((row) => row.frontmatter.slug)).toEqual(["ok-card"]);
 });
 
 test("sorts rows newest first by captured_at", async () => {

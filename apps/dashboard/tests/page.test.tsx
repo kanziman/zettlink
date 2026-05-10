@@ -55,6 +55,26 @@ async function writeCard(root: string, fm: IndexFrontmatter): Promise<void> {
   await writeFile(join(dir, "index.md"), serializeIndex(fm, "Body"), "utf8");
 }
 
+test("renders a malformed cards section when scan finds error rows", async () => {
+  const root = await tempVault();
+  await writeCard(
+    root,
+    indexFrontmatter({ slug: "ok", title: "Healthy card", reviewed: false }),
+  );
+  const malformedDir = join(root, "sources", "youtube", "2026-05-08-broken");
+  await mkdir(malformedDir, { recursive: true });
+  await writeFile(join(malformedDir, "index.md"), "---\nfoo: bar\n---\nIncomplete", "utf8");
+  process.env.REPO_LOCAL_PATH = root;
+
+  const page = await ReviewBoardPage({ searchParams: Promise.resolve({}) });
+  const html = renderToStaticMarkup(page);
+
+  expect(html).toContain("Malformed cards");
+  expect(html).toContain("2026-05-08-broken");
+  expect(html).toContain("1 malformed");
+  expect(html).toContain("Healthy card");
+});
+
 test("scope=all renders filtered cards that have no active board column", async () => {
   const root = await tempVault();
   await writeCard(

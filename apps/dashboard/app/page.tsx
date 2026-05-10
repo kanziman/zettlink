@@ -7,7 +7,11 @@ import { FilterBar } from "../components/FilterBar";
 import { ScopeToggle } from "../components/ScopeToggle";
 import { type BoardColumn as BoardColumnName, computeColumn } from "../lib/board";
 import { EMPTY_FILTER, filterRows, type FilterState } from "../lib/filter";
-import { scanDashboardCards, type DashboardCardRow } from "../lib/scan";
+import {
+  scanDashboardWithErrors,
+  type DashboardCardError,
+  type DashboardCardRow,
+} from "../lib/scan";
 
 const BOARD_COLUMNS: BoardColumnName[] = [
   "Published",
@@ -40,7 +44,7 @@ export default async function ReviewBoardPage({
   }
 
   try {
-    const rows = await scanDashboardCards(root);
+    const { rows, errors } = await scanDashboardWithErrors(root);
     const filteredRows = filterRows(rows, filter);
     const groupedRows = groupRows(filteredRows);
     const inactiveRows =
@@ -52,15 +56,20 @@ export default async function ReviewBoardPage({
       0,
     );
     const visibleCount = activeCount + inactiveRows.length;
+    const subtitle =
+      errors.length > 0
+        ? `${rows.length} total cards · ${errors.length} malformed`
+        : `${rows.length} total cards`;
 
     return (
-      <DashboardShell count={visibleCount} filter={filter} subtitle={`${rows.length} total cards`}>
+      <DashboardShell count={visibleCount} filter={filter} subtitle={subtitle}>
         <div className="grid gap-10 overflow-x-auto pb-4 md:grid-cols-4">
           {BOARD_COLUMNS.map((column) => (
             <BoardColumn column={column} key={column} rows={groupedRows[column]} />
           ))}
         </div>
         {filter.scope === "all" ? <InactiveRowsSection rows={inactiveRows} /> : null}
+        <MalformedCardsSection errors={errors} />
       </DashboardShell>
     );
   } catch (error) {
@@ -119,6 +128,42 @@ function ConfigState() {
     <section className="rounded-md border border-line-solid bg-background-elevated p-16 text-body-sm text-label-neutral shadow-elevated">
       <h2 className="text-label-md text-label-strong">Dashboard not configured</h2>
       <p className="mt-6">Set REPO_LOCAL_PATH to the local vault root.</p>
+    </section>
+  );
+}
+
+function MalformedCardsSection({ errors }: { errors: DashboardCardError[] }) {
+  if (errors.length === 0) return null;
+  return (
+    <section
+      aria-labelledby="malformed-cards"
+      className="rounded-md border border-status-negative/40 bg-background p-12"
+    >
+      <header className="mb-10 flex items-center justify-between gap-8">
+        <h2 className="text-label-md text-status-negative" id="malformed-cards">
+          Malformed cards
+        </h2>
+        <span
+          aria-label={`${errors.length} malformed cards`}
+          className="shrink-0 rounded-sm bg-background-alternative px-6 py-2 text-label-sm text-status-negative"
+        >
+          {errors.length}
+        </span>
+      </header>
+      <ul className="grid gap-8">
+        {errors.map((error) => (
+          <li
+            className="rounded-md border border-status-negative/30 bg-background-elevated p-10 text-label-sm text-label-neutral"
+            key={error.dir}
+          >
+            <p className="text-label-md text-label-strong">
+              <span aria-hidden="true">⚠️ </span>
+              {error.platform}/{error.folder}
+            </p>
+            <p className="mt-4 break-words text-label-sm text-status-negative">{error.message}</p>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
