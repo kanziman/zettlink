@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1",
     "build": "node lib/guards/check-env.mjs && next build",
-    "test": "node --test lib/guards/*.test.mjs",
+    "test": "node --test lib/guards/*.test.mjs tests/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
