@@ -1,7 +1,7 @@
 // 리뷰 보드의 URL 기반 필터 폼을 렌더링합니다.
 import React from "react";
 
-import type { FilterState } from "../lib/filter.js";
+import type { FilterState } from "../lib/filter";
 
 export function FilterBar({ filter }: { filter: FilterState }) {
   return (

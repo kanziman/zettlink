@@ -3,13 +3,13 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { expect, test } from "vitest";
 
-import { BoardColumn } from "../components/BoardColumn.js";
-import { CardChip } from "../components/CardChip.js";
-import { FilterBar } from "../components/FilterBar.js";
-import { ScopeToggle } from "../components/ScopeToggle.js";
-import type { CardSnapshot } from "../lib/board.js";
-import { EMPTY_FILTER, type FilterState } from "../lib/filter.js";
-import type { DashboardCardRow } from "../lib/scan.js";
+import { BoardColumn } from "../components/BoardColumn";
+import { CardChip } from "../components/CardChip";
+import { FilterBar } from "../components/FilterBar";
+import { ScopeToggle } from "../components/ScopeToggle";
+import type { CardSnapshot } from "../lib/board";
+import { EMPTY_FILTER, type FilterState } from "../lib/filter";
+import type { DashboardCardRow } from "../lib/scan";
 
 type RowOverrides = {
   slug: string;

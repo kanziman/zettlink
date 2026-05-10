@@ -2,7 +2,7 @@
 import Link from "next/link";
 import React from "react";
 
-import type { DashboardCardRow } from "../lib/scan.js";
+import type { DashboardCardRow } from "../lib/scan";
 
 type ArtifactKey = keyof DashboardCardRow["artifacts"];
 

@@ -1,6 +1,6 @@
 // 대시보드 카드 검색과 필터 조건을 적용합니다.
-import { computeColumn } from "./board.js";
-import type { DashboardCardRow } from "./scan.js";
+import { computeColumn } from "./board";
+import type { DashboardCardRow } from "./scan";
 
 export type FilterState = {
   scope: "active" | "all";

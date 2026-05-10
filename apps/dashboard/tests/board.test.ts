@@ -5,7 +5,7 @@ import {
   computeColumn,
   type ArtifactSnapshot,
   type CardSnapshot,
-} from "../lib/board.js";
+} from "../lib/board";
 
 type CardOverrides = Partial<Omit<CardSnapshot, "artifacts">> & {
   artifacts?: Partial<Record<keyof CardSnapshot["artifacts"], ArtifactSnapshot>>;

@@ -1,9 +1,9 @@
 // 리뷰 보드의 한 컬럼과 카드 목록을 렌더링합니다.
 import React from "react";
 
-import type { BoardColumn as BoardColumnName } from "../lib/board.js";
-import type { DashboardCardRow } from "../lib/scan.js";
-import { CardChip } from "./CardChip.js";
+import type { BoardColumn as BoardColumnName } from "../lib/board";
+import type { DashboardCardRow } from "../lib/scan";
+import { CardChip } from "./CardChip";
 
 export function BoardColumn({
   column,

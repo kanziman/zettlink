@@ -2,7 +2,7 @@
 import Link from "next/link";
 import React from "react";
 
-import type { FilterState } from "../lib/filter.js";
+import type { FilterState } from "../lib/filter";
 
 export function ScopeToggle({ filter }: { filter: FilterState }) {
   return (

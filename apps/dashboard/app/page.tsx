@@ -1,13 +1,13 @@
 // 로컬 vault 를 스캔해 리뷰 보드 페이지를 렌더링합니다.
 import React from "react";
 
-import { BoardColumn } from "../components/BoardColumn.js";
-import { CardChip } from "../components/CardChip.js";
-import { FilterBar } from "../components/FilterBar.js";
-import { ScopeToggle } from "../components/ScopeToggle.js";
-import { type BoardColumn as BoardColumnName, computeColumn } from "../lib/board.js";
-import { EMPTY_FILTER, filterRows, type FilterState } from "../lib/filter.js";
-import { scanDashboardCards, type DashboardCardRow } from "../lib/scan.js";
+import { BoardColumn } from "../components/BoardColumn";
+import { CardChip } from "../components/CardChip";
+import { FilterBar } from "../components/FilterBar";
+import { ScopeToggle } from "../components/ScopeToggle";
+import { type BoardColumn as BoardColumnName, computeColumn } from "../lib/board";
+import { EMPTY_FILTER, filterRows, type FilterState } from "../lib/filter";
+import { scanDashboardCards, type DashboardCardRow } from "../lib/scan";
 
 const BOARD_COLUMNS: BoardColumnName[] = [
   "Published",

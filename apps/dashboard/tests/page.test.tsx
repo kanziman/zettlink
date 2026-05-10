@@ -8,7 +8,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, expect, test } from "vitest";
 
-import ReviewBoardPage from "../app/page.js";
+import ReviewBoardPage from "../app/page";
 
 const previousRepoLocalPath = process.env.REPO_LOCAL_PATH;
 

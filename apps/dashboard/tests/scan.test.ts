@@ -11,8 +11,8 @@ import {
 } from "@zettlink/core";
 import { expect, test } from "vitest";
 
-import { computeColumn } from "../lib/board.js";
-import { readArtifactStatus, scanDashboardCards } from "../lib/scan.js";
+import { computeColumn } from "../lib/board";
+import { readArtifactStatus, scanDashboardCards } from "../lib/scan";
 
 async function tempVault(): Promise<string> {
   return mkdtemp(join(tmpdir(), "zettlink-dashboard-scan-"));

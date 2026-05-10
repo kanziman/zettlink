@@ -8,7 +8,7 @@ import {
   type IndexFrontmatter,
 } from "@zettlink/core";
 
-import type { ArtifactSnapshot, CardSnapshot } from "./board.js";
+import type { ArtifactSnapshot, CardSnapshot } from "./board";
 
 export type ArtifactKind = "deep" | "til" | "guide";
 

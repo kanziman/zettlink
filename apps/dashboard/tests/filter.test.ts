@@ -1,9 +1,9 @@
 // 대시보드 카드 필터 조건을 검증합니다.
 import { expect, test } from "vitest";
 
-import type { CardSnapshot } from "../lib/board.js";
-import { EMPTY_FILTER, filterRows, type FilterState } from "../lib/filter.js";
-import type { DashboardCardRow } from "../lib/scan.js";
+import type { CardSnapshot } from "../lib/board";
+import { EMPTY_FILTER, filterRows, type FilterState } from "../lib/filter";
+import type { DashboardCardRow } from "../lib/scan";
 
 type RowOverrides = {
   slug: string;
