@@ -11,23 +11,42 @@ vi.mock('execa', () => ({
 import { execa } from 'execa';
 import { extractYoutube } from '../src/extractors/youtube.js';
 
+const VTT = 'WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nhello\n';
+
 describe('extractYoutube', () => {
   beforeEach(() => { (execa as any).mockReset(); });
 
   it('manual 자막이 있으면 subtitle_source=manual', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'yt-'));
-    const vttPath = join(dir, 'video.en.vtt');
-    await writeFile(vttPath, 'WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nhello\n', 'utf8');
+    await writeFile(join(dir, 'abc.en.vtt'), VTT, 'utf8');
     (execa as any).mockResolvedValue({
       stdout: JSON.stringify({
         id: 'abc', title: 'T', channel: 'C', duration: 60,
         thumbnail: 'https://i.ytimg.com/vi/abc/m.jpg',
-        requested_subtitles: { en: { filepath: vttPath } },
+        subtitles: { en: [{ ext: 'vtt' }] },                      // manual subs
+        requested_subtitles: { en: { ext: 'vtt' } },
       }),
     });
     const r = await extractYoutube('https://youtu.be/abc', dir);
     expect(r.meta.video_id).toBe('abc');
     expect(r.meta.subtitle_source).toBe('manual');
+    expect(r.transcript).toContain('hello');
+  });
+
+  it('자막이 자동 생성만 있으면 subtitle_source=auto', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'yt-'));
+    await writeFile(join(dir, 'abc.en.vtt'), VTT, 'utf8');
+    (execa as any).mockResolvedValue({
+      stdout: JSON.stringify({
+        id: 'abc', title: 'T', channel: 'C', duration: 60,
+        thumbnail: 'https://i.ytimg.com/vi/abc/m.jpg',
+        subtitles: {},                                            // 매뉴얼 없음
+        automatic_captions: { en: [{ ext: 'vtt' }] },
+        requested_subtitles: { en: { ext: 'vtt' } },
+      }),
+    });
+    const r = await extractYoutube('https://youtu.be/abc', dir);
+    expect(r.meta.subtitle_source).toBe('auto');
     expect(r.transcript).toContain('hello');
   });
 
