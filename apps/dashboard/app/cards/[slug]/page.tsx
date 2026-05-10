@@ -3,7 +3,6 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import React from "react";
 
 import { CardDetailPanel } from "../../../components/CardDetailPanel";
@@ -42,7 +41,13 @@ export default async function CardDetailPage({ params }: CardDetailPageProps) {
 
   const row = rows.find((candidate) => candidate.frontmatter.slug === slug);
   if (!row) {
-    notFound();
+    return (
+      <DetailShell>
+        <StatePanel title="Card not found">
+          No card with slug "{slug}" was found in the configured vault.
+        </StatePanel>
+      </DetailShell>
+    );
   }
 
   const sourceText = await readSourceText(row);

@@ -89,3 +89,31 @@ test("renders a clear configuration state when REPO_LOCAL_PATH is missing", asyn
 
   expect(html).toContain("REPO_LOCAL_PATH is not configured.");
 });
+
+test("renders a clear not-found state with a Review Board link when slug is missing", async () => {
+  const root = await tempVault();
+  await writeCard(root, indexFrontmatter({ slug: "existing-card" }), "Body");
+  process.env.REPO_LOCAL_PATH = root;
+
+  const page = await CardDetailPage({ params: Promise.resolve({ slug: "missing-card" }) });
+  const html = renderToStaticMarkup(page);
+
+  expect(html).toContain("Card not found");
+  expect(html).toContain("missing-card");
+  expect(html).toContain('href="/"');
+  expect(html).toContain("Back to Review Board");
+});
+
+test("renders a clear scan error state with a Review Board link", async () => {
+  const root = await tempVault();
+  await mkdir(join(root, "sources"), { recursive: true });
+  await writeFile(join(root, "sources", "youtube"), "not a directory", "utf8");
+  process.env.REPO_LOCAL_PATH = root;
+
+  const page = await CardDetailPage({ params: Promise.resolve({ slug: "example-card" }) });
+  const html = renderToStaticMarkup(page);
+
+  expect(html).toContain("Vault scan failed");
+  expect(html).toContain("Back to Review Board");
+  expect(html).toContain('href="/"');
+});
