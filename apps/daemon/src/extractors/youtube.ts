@@ -1,7 +1,8 @@
-// yt-dlp 를 subprocess 로 호출해 VTT 자막 + 메타데이터를 받아 transcript.md 형식으로 정리한다.
+// yt-dlp 를 subprocess 로 호출해 메타데이터 + 자막 (또는 description fallback) 을 받아 transcript.md 형식으로 정리한다.
+// 디자인은 zettlink_bak 의 yt-fetcher Python 스크립트에서 가져왔다 — 단계별 fallback + 격리 tmpdir + description fallback.
 import { execa } from 'execa';
-import { readFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { vttToMarkdown } from './youtube-vtt.js';
 
@@ -11,7 +12,7 @@ export interface YoutubeMeta {
   title: string;
   duration_sec: number;
   thumbnail: string;
-  subtitle_source: 'auto' | 'manual' | 'whisper' | 'none';
+  subtitle_source: 'auto' | 'manual' | 'whisper' | 'description' | 'none';
 }
 
 export interface YoutubeExtraction {
@@ -19,55 +20,133 @@ export interface YoutubeExtraction {
   transcript: string;
 }
 
-export async function extractYoutube(url: string, workDir: string, cookiesBrowser?: string): Promise<YoutubeExtraction> {
-  let stdout: string;
+// 자막 의미 보유 임계 — 너무 짧으면 "[음악]" 한 줄 같은 무의미 자막으로 간주.
+const MIN_SUBTITLE_CHARS = 100;
+// LLM 토큰 보호 — Python 디자인의 20K 와 동일.
+const TRANSCRIPT_MAX_CHARS = 20_000;
+
+interface AttemptResult {
+  text: string;
+  source: YoutubeMeta['subtitle_source'];
+}
+
+async function ytdlpDumpJson(url: string, cookiesBrowser?: string): Promise<any> {
+  const args = [
+    '--dump-json',
+    '--no-playlist',
+    '--quiet',
+    '--no-check-formats',
+    '--ignore-no-formats-error',
+  ];
+  if (cookiesBrowser) args.push('--cookies-from-browser', cookiesBrowser);
+  args.push(url);
   try {
-    // --no-check-formats / --ignore-no-formats-error 는 JS challenge 실패로 비디오 포맷 추출이 막혀도 자막만 받기 위함.
+    const { stdout } = await execa('yt-dlp', args);
+    return JSON.parse(stdout);
+  } catch (e: any) {
+    if (e?.code === 'ENOENT') throw new Error('yt-dlp 가 PATH 에 없다. brew install yt-dlp');
+    throw new Error(`yt-dlp 메타데이터 수집 실패. ${e?.shortMessage ?? e?.message ?? e}`);
+  }
+}
+
+// 단일 (lang, kind) 조합으로 자막 다운로드 시도. 결과 텍스트가 임계 미만이면 null.
+async function tryFetchSubtitle(
+  url: string,
+  lang: string,
+  kind: 'manual' | 'auto',
+  cookiesBrowser?: string,
+): Promise<string | null> {
+  const dir = await mkdtemp(join(tmpdir(), `zettlink-yt-${lang}-${kind}-`));
+  try {
     const args = [
       '--skip-download',
-      '--write-subs', '--write-auto-subs',
-      '--sub-langs', 'en,ko',
-      '--sub-format', 'vtt',
-      '--print-json',
+      '--no-playlist',
+      '--quiet',
       '--no-check-formats',
       '--ignore-no-formats-error',
-      '--output', `${workDir}/%(id)s.%(ext)s`,
+      '--sub-format', 'vtt',
+      '--sub-langs', lang,
+      '--output', `${dir}/sub.%(ext)s`,
+    ];
+    args.push(kind === 'auto' ? '--write-auto-sub' : '--write-sub');
+    if (cookiesBrowser) args.push('--cookies-from-browser', cookiesBrowser);
+    args.push(url);
+    try {
+      await execa('yt-dlp', args);
+    } catch {
+      // 일시 실패는 무시하고 파일 존재 여부로만 판단 (Python 디자인과 동일).
+    }
+    const files = await readdir(dir);
+    const vtt = files.find((f) => f.endsWith('.vtt'));
+    if (!vtt) return null;
+    const raw = await readFile(join(dir, vtt), 'utf8');
+    const text = vttToMarkdown(raw);
+    return text.length >= MIN_SUBTITLE_CHARS ? text : null;
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+}
+
+// 언어 무관 첫 번째 수동 자막 다운로드.
+async function tryFetchAnySubtitle(url: string, cookiesBrowser?: string): Promise<string | null> {
+  const dir = await mkdtemp(join(tmpdir(), 'zettlink-yt-any-'));
+  try {
+    const args = [
+      '--skip-download',
+      '--no-playlist',
+      '--quiet',
+      '--no-check-formats',
+      '--ignore-no-formats-error',
+      '--write-sub',
+      '--sub-langs', 'all',
+      '--sub-format', 'vtt',
+      '--output', `${dir}/sub.%(ext)s`,
     ];
     if (cookiesBrowser) args.push('--cookies-from-browser', cookiesBrowser);
     args.push(url);
-    const result = await execa('yt-dlp', args);
-    stdout = result.stdout;
-  } catch (e: any) {
-    if (e?.code === 'ENOENT') throw new Error('yt-dlp 가 PATH 에 없다. brew install yt-dlp');
-    throw new Error(`yt-dlp 실행 실패. ${e?.message ?? e}`);
+    try {
+      await execa('yt-dlp', args);
+    } catch { /* 무시 */ }
+    const files = await readdir(dir);
+    for (const f of files) {
+      if (!f.endsWith('.vtt')) continue;
+      const raw = await readFile(join(dir, f), 'utf8');
+      const text = vttToMarkdown(raw);
+      if (text.length >= MIN_SUBTITLE_CHARS) return text;
+    }
+    return null;
+  } finally {
+    await rm(dir, { recursive: true, force: true });
   }
-  const meta = JSON.parse(stdout);
-  const requested: Record<string, { ext?: string; url?: string }> = meta.requested_subtitles ?? {};
-  const manualLangs = new Set(Object.keys(meta.subtitles ?? {}));
-  // 원본 ASR 은 url 에 tlang= 가 없고 번역본은 있다. 원본 우선으로 정렬.
-  const isTranslated = (entry: { url?: string } | undefined): boolean => /[?&]tlang=/.test(entry?.url ?? '');
-  const langs = Object.keys(requested);
-  // 우선순위. (1) manual subs (2) 원본 ASR auto (3) 번역 ASR auto.
-  const ordered = [
-    ...langs.filter((l) => manualLangs.has(l)),
-    ...langs.filter((l) => !manualLangs.has(l) && !isTranslated(requested[l])),
-    ...langs.filter((l) => !manualLangs.has(l) && isTranslated(requested[l])),
-  ];
+}
 
-  let source: YoutubeMeta['subtitle_source'] = 'none';
-  let transcript = '';
-  // yt-dlp 의 --output 템플릿이 자막 파일을 `{id}.{lang}.{ext}` 로 떨어뜨린다. JSON 의 entry 에는 filepath 가 없어 직접 조립.
-  for (const lang of ordered) {
-    const entry = requested[lang];
-    if (!entry) continue;
-    const ext = entry.ext ?? 'vtt';
-    const path = join(workDir, `${meta.id}.${lang}.${ext}`);
-    if (!existsSync(path)) continue;
-    source = manualLangs.has(lang) ? 'manual' : 'auto';
-    const vtt = await readFile(path, 'utf8');
-    transcript = vttToMarkdown(vtt);
-    break;
+async function determineContent(
+  url: string,
+  description: string,
+  cookiesBrowser?: string,
+): Promise<AttemptResult> {
+  // 우선순위. (1) ko 수동 → (2) ko 자동 → (3) en 수동 → (4) 임의 언어 수동 → (5) description fallback.
+  const sequence: Array<[() => Promise<string | null>, YoutubeMeta['subtitle_source']]> = [
+    [() => tryFetchSubtitle(url, 'ko', 'manual', cookiesBrowser), 'manual'],
+    [() => tryFetchSubtitle(url, 'ko', 'auto', cookiesBrowser), 'auto'],
+    [() => tryFetchSubtitle(url, 'en', 'manual', cookiesBrowser), 'manual'],
+    [() => tryFetchAnySubtitle(url, cookiesBrowser), 'manual'],
+  ];
+  for (const [fn, source] of sequence) {
+    const text = await fn();
+    if (text) return { text: text.slice(0, TRANSCRIPT_MAX_CHARS), source };
   }
+  if (description.length >= MIN_SUBTITLE_CHARS) {
+    return { text: description.slice(0, TRANSCRIPT_MAX_CHARS), source: 'description' };
+  }
+  return { text: '', source: 'none' };
+}
+
+// workDir 는 호출 측 호환을 위해 받지만 자막 임시 파일은 system tmp 에 격리한다 (vault working tree 오염 방지).
+export async function extractYoutube(url: string, _workDir: string, cookiesBrowser?: string): Promise<YoutubeExtraction> {
+  const meta = await ytdlpDumpJson(url, cookiesBrowser);
+  const description: string = meta.description ?? '';
+  const { text, source } = await determineContent(url, description, cookiesBrowser);
   return {
     meta: {
       video_id: meta.id,
@@ -77,6 +156,6 @@ export async function extractYoutube(url: string, workDir: string, cookiesBrowse
       thumbnail: meta.thumbnail ?? '',
       subtitle_source: source,
     },
-    transcript,
+    transcript: text,
   };
 }

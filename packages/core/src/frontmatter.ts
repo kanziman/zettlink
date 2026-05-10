@@ -7,7 +7,7 @@ const YoutubeMeta = z.object({
   channel: z.string(),
   duration_sec: z.number().int(),
   thumbnail: z.string().url(),
-  subtitle_source: z.enum(['auto', 'manual', 'whisper', 'none']),
+  subtitle_source: z.enum(['auto', 'manual', 'whisper', 'description', 'none']),
 });
 const GithubMeta = z.object({
   owner: z.string(),

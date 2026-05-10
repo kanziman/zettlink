@@ -1,13 +1,24 @@
 // yt-dlp 가 받아온 VTT 자막을 transcript.md 에 들어갈 평문으로 변환한다.
 const TIMESTAMP_RE = /\d{2}:\d{2}:\d{2}\.\d{3}\s+-->\s+\d{2}:\d{2}:\d{2}\.\d{3}.*$/;
 const HEADER_RE = /^(WEBVTT|Kind:|Language:|NOTE\b)/;
+const HTML_TAG_RE = /<[^>]+>/g;
 
 export function vttToMarkdown(vtt: string): string {
-  const raw = vtt
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter((l) => l && !HEADER_RE.test(l) && !TIMESTAMP_RE.test(l));
-  // 인접 dedup. 짧은 단어 반복 패턴(like "Yes", "OK") 은 멀리 떨어지면 살리되, 큐가 그대로 다음 줄에 반복되면 제거.
-  const deduped = raw.filter((l, i) => l !== raw[i - 1]);
-  return deduped.join('\n');
+  const lines = vtt.split(/\r?\n/);
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of lines) {
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    if (HEADER_RE.test(trimmed)) continue;
+    if (TIMESTAMP_RE.test(trimmed)) continue;
+    // <c> 같은 인라인 마크업 제거.
+    const clean = trimmed.replace(HTML_TAG_RE, '').trim();
+    if (!clean) continue;
+    // 글로벌 dedup. 자동 자막은 같은 큐가 여러 번 등장해 LLM 토큰을 낭비하므로 한 번만 남긴다.
+    if (seen.has(clean)) continue;
+    seen.add(clean);
+    out.push(clean);
+  }
+  return out.join('\n');
 }
