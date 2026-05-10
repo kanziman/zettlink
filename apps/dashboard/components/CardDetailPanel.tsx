@@ -21,18 +21,21 @@ export function CardDetailPanel({
   const [published, setPublished] = useState(initialPublished);
   const [pending, setPending] = useState<PendingAction>(null);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
 
   async function toggleReviewed() {
     const nextValue = !reviewed;
     setPending("reviewed");
     setError(null);
+    setWarning(null);
 
     try {
-      const result = await postJson<{ reviewed: boolean }>("/api/reviewed", {
+      const result = await postJson<{ reviewed: boolean; warning?: string }>("/api/reviewed", {
         dir,
         value: nextValue,
       });
       setReviewed(result.reviewed);
+      setWarning(result.warning ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to update reviewed state.");
     } finally {
@@ -44,14 +47,16 @@ export function CardDetailPanel({
     const nextValue = !published;
     setPending("publish");
     setError(null);
+    setWarning(null);
 
     try {
-      const result = await postJson<{ published: boolean }>("/api/publish", {
+      const result = await postJson<{ published: boolean; warning?: string }>("/api/publish", {
         dir,
         target: "index",
         value: nextValue,
       });
       setPublished(result.published);
+      setWarning(result.warning ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to update publish state.");
     } finally {
@@ -86,6 +91,11 @@ export function CardDetailPanel({
       {error ? (
         <p className="mt-8 text-label-sm text-status-negative" role="alert">
           {error}
+        </p>
+      ) : null}
+      {warning ? (
+        <p className="mt-8 text-label-sm text-status-cautionary" role="status">
+          {warning}
         </p>
       ) : null}
     </section>

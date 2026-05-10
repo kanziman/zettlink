@@ -7,15 +7,22 @@ import { parseIndex, serializeIndex, type IndexFrontmatter } from "@zettlink/cor
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
 const coreMocks = vi.hoisted(() => ({
-  commitAndPushWithRetry: vi.fn(async () => undefined),
-  openRepo: vi.fn((path: string) => ({ path })),
+  git: {
+    add: vi.fn(async () => undefined),
+    commit: vi.fn(async () => undefined),
+    push: vi.fn(async () => undefined),
+  },
+  openRepo: vi.fn((_path: string) => ({
+    add: coreMocks.git.add,
+    commit: coreMocks.git.commit,
+    push: coreMocks.git.push,
+  })),
 }));
 
 vi.mock("@zettlink/core", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@zettlink/core")>();
   return {
     ...actual,
-    commitAndPushWithRetry: coreMocks.commitAndPushWithRetry,
     openRepo: coreMocks.openRepo,
   };
 });
@@ -24,8 +31,13 @@ const previousRepoLocalPath = process.env.REPO_LOCAL_PATH;
 
 beforeEach(() => {
   vi.resetModules();
-  coreMocks.commitAndPushWithRetry.mockClear();
   coreMocks.openRepo.mockClear();
+  coreMocks.git.add.mockClear();
+  coreMocks.git.add.mockResolvedValue(undefined);
+  coreMocks.git.commit.mockClear();
+  coreMocks.git.commit.mockResolvedValue(undefined);
+  coreMocks.git.push.mockClear();
+  coreMocks.git.push.mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -92,7 +104,7 @@ test("reviewed route rejects card directories outside REPO_LOCAL_PATH", async ()
   expect(response.status).toBe(400);
   expect(payload.error).toMatch(/inside REPO_LOCAL_PATH/i);
   expect(payload.error).not.toContain(outside);
-  expect(coreMocks.commitAndPushWithRetry).not.toHaveBeenCalled();
+  expect(coreMocks.git.add).not.toHaveBeenCalled();
 });
 
 test("reviewed route rejects raw path traversal with a client-safe error", async () => {
@@ -109,7 +121,7 @@ test("reviewed route rejects raw path traversal with a client-safe error", async
   expect(response.status).toBe(400);
   expect(payload.error).toBe("dir must be inside REPO_LOCAL_PATH.");
   expect(JSON.stringify(payload)).not.toContain(outside);
-  expect(coreMocks.commitAndPushWithRetry).not.toHaveBeenCalled();
+  expect(coreMocks.git.add).not.toHaveBeenCalled();
 });
 
 test("reviewed route rejects symlinked card directories that escape REPO_LOCAL_PATH", async () => {
@@ -127,7 +139,7 @@ test("reviewed route rejects symlinked card directories that escape REPO_LOCAL_P
 
   expect(response.status).toBe(400);
   expect(payload.error).toMatch(/inside REPO_LOCAL_PATH/i);
-  expect(coreMocks.commitAndPushWithRetry).not.toHaveBeenCalled();
+  expect(coreMocks.git.add).not.toHaveBeenCalled();
 });
 
 test("reviewed route toggles index frontmatter and preserves body", async () => {
@@ -143,26 +155,45 @@ test("reviewed route toggles index frontmatter and preserves body", async () => 
   const expectedIndex = await realpath(join(dir, "index.md"));
 
   expect(response.status).toBe(200);
-  expect(payload).toEqual({ ok: true, reviewed: true });
+  expect(payload).toEqual({ ok: true, reviewed: true, pushed: true });
   expect(updated.frontmatter.reviewed).toBe(true);
   expect(updated.body).toBe("Body text\n");
   expect(coreMocks.openRepo).toHaveBeenCalledWith(expectedRoot);
-  expect(coreMocks.commitAndPushWithRetry).toHaveBeenCalledWith(
-    { path: expectedRoot },
-    [expectedIndex],
-    expect.stringContaining("reviewed=true"),
-    expect.objectContaining({ delayMs: 0 }),
-  );
+  expect(coreMocks.git.add).toHaveBeenCalledWith([expectedIndex]);
+  expect(coreMocks.git.commit).toHaveBeenCalledWith(expect.stringContaining("reviewed=true"));
+  expect(coreMocks.git.push).toHaveBeenCalledTimes(1);
 });
 
-test("reviewed route rolls back index.md when git commit or push fails", async () => {
+test("reviewed route keeps committed file state when push fails after commit", async () => {
+  const root = await tempVault();
+  const dir = await writeCard(root, indexFrontmatter({ reviewed: false }), "Body text\n");
+  const indexPath = join(dir, "index.md");
+  coreMocks.git.push.mockRejectedValue(new Error(`fatal: cannot push ${indexPath}`));
+  process.env.REPO_LOCAL_PATH = root;
+  const { POST } = await import("../app/api/reviewed/route");
+
+  const response = await POST(postRequest("/api/reviewed", { dir, value: true }));
+  const payload = await response.json();
+  const after = await readFile(indexPath, "utf8");
+
+  expect(response.status).toBe(200);
+  expect(payload).toEqual({
+    ok: true,
+    reviewed: true,
+    pushed: false,
+    warning: "Saved locally, but push failed.",
+  });
+  expect(coreMocks.git.commit).toHaveBeenCalledTimes(1);
+  expect(coreMocks.git.push).toHaveBeenCalledTimes(3);
+  expect(parseIndex(after).frontmatter.reviewed).toBe(true);
+});
+
+test("reviewed route rolls back index.md when git commit fails before a commit is created", async () => {
   const root = await tempVault();
   const dir = await writeCard(root, indexFrontmatter({ reviewed: false }), "Body text\n");
   const indexPath = join(dir, "index.md");
   const original = await readFile(indexPath, "utf8");
-  coreMocks.commitAndPushWithRetry.mockRejectedValueOnce(
-    new Error(`fatal: cannot push ${indexPath}`),
-  );
+  coreMocks.git.commit.mockRejectedValueOnce(new Error(`fatal: cannot commit ${indexPath}`));
   process.env.REPO_LOCAL_PATH = root;
   const { POST } = await import("../app/api/reviewed/route");
 
@@ -175,6 +206,7 @@ test("reviewed route rolls back index.md when git commit or push fails", async (
   expect(JSON.stringify(payload)).not.toContain(indexPath);
   expect(after).toBe(original);
   expect(parseIndex(after).frontmatter.reviewed).toBe(false);
+  expect(coreMocks.git.push).not.toHaveBeenCalled();
 });
 
 test("publish route toggles summary published frontmatter and preserves body", async () => {
@@ -190,25 +222,46 @@ test("publish route toggles summary published frontmatter and preserves body", a
   const expectedIndex = await realpath(join(dir, "index.md"));
 
   expect(response.status).toBe(200);
-  expect(payload).toEqual({ ok: true, target: "index", published: true });
+  expect(payload).toEqual({ ok: true, target: "index", published: true, pushed: true });
   expect(updated.frontmatter.published).toBe(true);
   expect(updated.body).toBe("Summary\n\nDetails\n");
-  expect(coreMocks.commitAndPushWithRetry).toHaveBeenCalledWith(
-    { path: expectedRoot },
-    [expectedIndex],
-    expect.stringContaining("publish index=true"),
-    expect.objectContaining({ delayMs: 0 }),
-  );
+  expect(coreMocks.openRepo).toHaveBeenCalledWith(expectedRoot);
+  expect(coreMocks.git.add).toHaveBeenCalledWith([expectedIndex]);
+  expect(coreMocks.git.commit).toHaveBeenCalledWith(expect.stringContaining("publish index=true"));
+  expect(coreMocks.git.push).toHaveBeenCalledTimes(1);
 });
 
-test("publish route rolls back index.md when git commit or push fails", async () => {
+test("publish route keeps committed file state when push fails after commit", async () => {
+  const root = await tempVault();
+  const dir = await writeCard(root, indexFrontmatter({ published: false }), "Summary\n\nDetails\n");
+  const indexPath = join(dir, "index.md");
+  coreMocks.git.push.mockRejectedValue(new Error(`fatal: cannot push ${indexPath}`));
+  process.env.REPO_LOCAL_PATH = root;
+  const { POST } = await import("../app/api/publish/route");
+
+  const response = await POST(postRequest("/api/publish", { dir, target: "index", value: true }));
+  const payload = await response.json();
+  const after = await readFile(indexPath, "utf8");
+
+  expect(response.status).toBe(200);
+  expect(payload).toEqual({
+    ok: true,
+    target: "index",
+    published: true,
+    pushed: false,
+    warning: "Saved locally, but push failed.",
+  });
+  expect(coreMocks.git.commit).toHaveBeenCalledTimes(1);
+  expect(coreMocks.git.push).toHaveBeenCalledTimes(3);
+  expect(parseIndex(after).frontmatter.published).toBe(true);
+});
+
+test("publish route rolls back index.md when git commit fails before a commit is created", async () => {
   const root = await tempVault();
   const dir = await writeCard(root, indexFrontmatter({ published: false }), "Summary\n\nDetails\n");
   const indexPath = join(dir, "index.md");
   const original = await readFile(indexPath, "utf8");
-  coreMocks.commitAndPushWithRetry.mockRejectedValueOnce(
-    new Error(`fatal: cannot push ${indexPath}`),
-  );
+  coreMocks.git.commit.mockRejectedValueOnce(new Error(`fatal: cannot commit ${indexPath}`));
   process.env.REPO_LOCAL_PATH = root;
   const { POST } = await import("../app/api/publish/route");
 
@@ -221,6 +274,7 @@ test("publish route rolls back index.md when git commit or push fails", async ()
   expect(JSON.stringify(payload)).not.toContain(indexPath);
   expect(after).toBe(original);
   expect(parseIndex(after).frontmatter.published).toBe(false);
+  expect(coreMocks.git.push).not.toHaveBeenCalled();
 });
 
 test("publish route rejects unsupported targets with a clear error", async () => {
@@ -234,5 +288,5 @@ test("publish route rejects unsupported targets with a clear error", async () =>
 
   expect(response.status).toBe(400);
   expect(payload.error).toMatch(/target/i);
-  expect(coreMocks.commitAndPushWithRetry).not.toHaveBeenCalled();
+  expect(coreMocks.git.add).not.toHaveBeenCalled();
 });

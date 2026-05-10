@@ -3,7 +3,6 @@ import { readFile, realpath, writeFile } from "node:fs/promises";
 import { isAbsolute, join, relative, resolve } from "node:path";
 
 import {
-  commitAndPushWithRetry,
   openRepo,
   parseIndex,
   serializeIndex,
@@ -61,19 +60,27 @@ export async function POST(request: Request) {
     const nextFrontmatter = { ...frontmatter, published: payload.value };
 
     await writeFile(realIndexPath, serializeIndex(nextFrontmatter, body), "utf8");
+    const git = openRepo(rootDir);
     try {
-      await commitAndPushWithRetry(
-        openRepo(rootDir),
-        [realIndexPath],
-        `publish index=${payload.value} ${frontmatter.slug}`,
-        { delayMs: process.env.NODE_ENV === "test" ? 0 : undefined },
-      );
+      await git.add([realIndexPath]);
+      await git.commit(`publish index=${payload.value} ${frontmatter.slug}`);
     } catch {
       await rollbackFile(realIndexPath, originalMarkdown);
       return jsonError("Unable to update publish state.", 500);
     }
 
-    return NextResponse.json({ ok: true, target: "index", published: payload.value });
+    const pushed = await pushWithRetry(git);
+    if (!pushed) {
+      return NextResponse.json({
+        ok: true,
+        target: "index",
+        published: payload.value,
+        pushed: false,
+        warning: "Saved locally, but push failed.",
+      });
+    }
+
+    return NextResponse.json({ ok: true, target: "index", published: payload.value, pushed: true });
   } catch (error) {
     if (error instanceof ClientError) {
       return jsonError(error.message, error.status);
@@ -96,6 +103,23 @@ async function rollbackFile(path: string, original: string): Promise<void> {
   } catch {
     // The response remains generic so rollback paths/errors are not exposed.
   }
+}
+
+async function pushWithRetry(git: { push: () => Promise<unknown> }): Promise<boolean> {
+  const delayMs = process.env.NODE_ENV === "test" ? 0 : 5000;
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      await git.push();
+      return true;
+    } catch {
+      if (attempt < 2 && delayMs > 0) {
+        await new Promise((resolveDelay) => setTimeout(resolveDelay, delayMs));
+      }
+    }
+  }
+
+  return false;
 }
 
 function isInside(root: string, candidate: string): boolean {
