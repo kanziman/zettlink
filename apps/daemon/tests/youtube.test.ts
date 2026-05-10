@@ -33,6 +33,27 @@ describe('extractYoutube', () => {
     expect(r.transcript).toContain('hello');
   });
 
+  it('영상 원어가 한국어인 경우 영어(tlang=en) 가 아닌 한국어(원본 ASR) 자막을 우선한다', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'yt-'));
+    await writeFile(join(dir, 'abc.en.vtt'), 'WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nenglish translated\n', 'utf8');
+    await writeFile(join(dir, 'abc.ko.vtt'), 'WEBVTT\n\n00:00:00.000 --> 00:00:01.000\n안녕하세요\n', 'utf8');
+    (execa as any).mockResolvedValue({
+      stdout: JSON.stringify({
+        id: 'abc', title: 'T', channel: 'C', duration: 60, thumbnail: 'x',
+        subtitles: {},
+        automatic_captions: { ko: [{ ext: 'vtt' }], en: [{ ext: 'vtt' }] },
+        requested_subtitles: {
+          en: { ext: 'vtt', url: 'https://...&lang=ko&tlang=en' },   // 번역
+          ko: { ext: 'vtt', url: 'https://...&lang=ko' },            // 원본 ASR
+        },
+      }),
+    });
+    const r = await extractYoutube('https://youtu.be/abc', dir);
+    expect(r.meta.subtitle_source).toBe('auto');
+    expect(r.transcript).toContain('안녕하세요');
+    expect(r.transcript).not.toContain('english translated');
+  });
+
   it('자막이 자동 생성만 있으면 subtitle_source=auto', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'yt-'));
     await writeFile(join(dir, 'abc.en.vtt'), VTT, 'utf8');

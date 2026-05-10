@@ -42,13 +42,21 @@ export async function extractYoutube(url: string, workDir: string, cookiesBrowse
     throw new Error(`yt-dlp 실행 실패. ${e?.message ?? e}`);
   }
   const meta = JSON.parse(stdout);
-  const requested = meta.requested_subtitles ?? {};
+  const requested: Record<string, { ext?: string; url?: string }> = meta.requested_subtitles ?? {};
   const manualLangs = new Set(Object.keys(meta.subtitles ?? {}));
+  // 원본 ASR 은 url 에 tlang= 가 없고 번역본은 있다. 원본 우선으로 정렬.
+  const isTranslated = (entry: { url?: string } | undefined): boolean => /[?&]tlang=/.test(entry?.url ?? '');
+  const langs = Object.keys(requested);
+  // 우선순위. (1) manual subs (2) 원본 ASR auto (3) 번역 ASR auto.
+  const ordered = [
+    ...langs.filter((l) => manualLangs.has(l)),
+    ...langs.filter((l) => !manualLangs.has(l) && !isTranslated(requested[l])),
+    ...langs.filter((l) => !manualLangs.has(l) && isTranslated(requested[l])),
+  ];
+
   let source: YoutubeMeta['subtitle_source'] = 'none';
   let transcript = '';
   // yt-dlp 의 --output 템플릿이 자막 파일을 `{id}.{lang}.{ext}` 로 떨어뜨린다. JSON 의 entry 에는 filepath 가 없어 직접 조립.
-  // 우선순위. manual > auto.
-  const ordered = [...manualLangs].concat(Object.keys(requested).filter((l) => !manualLangs.has(l)));
   for (const lang of ordered) {
     const entry = requested[lang];
     if (!entry) continue;
