@@ -1,6 +1,6 @@
 // 대시보드 파일 스캔 동작을 임시 vault 로 검증합니다.
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { basename, dirname, isAbsolute, join, relative } from "node:path";
 import { tmpdir } from "node:os";
 
 import {
@@ -137,6 +137,41 @@ test("maps snapshot fields for board column computation", async () => {
     },
   });
   expect(computeColumn(row!.snapshot)).toBe("Needs review");
+});
+
+test("scans index cards missing reviewed as unreviewed", async () => {
+  const root = await tempVault();
+  const dir = await writeCard(root, indexFrontmatter({ reviewed: false }));
+  const indexPath = join(dir, "index.md");
+  const markdown = serializeIndex(indexFrontmatter({ reviewed: false }), "Body").replace(
+    /^reviewed: false\n/m,
+    "",
+  );
+  await writeFile(indexPath, markdown, "utf8");
+
+  const rows = await scanDashboardCards(root);
+
+  expect(rows).toHaveLength(1);
+  expect(rows[0]?.snapshot.reviewed).toBe(false);
+  expect(computeColumn(rows[0]!.snapshot)).toBe("Needs review");
+});
+
+test("returns absolute dirs when scanning from a relative root", async () => {
+  const root = await tempVault();
+  const expectedDir = await writeCard(root, indexFrontmatter({ slug: "relative-root" }));
+  const relativeRoot = relative(dirname(root), root);
+
+  const previousCwd = process.cwd();
+  process.chdir(dirname(root));
+  try {
+    const rows = await scanDashboardCards(relativeRoot || basename(root));
+
+    expect(rows[0]?.dir).toBeDefined();
+    expect(isAbsolute(rows[0]!.dir)).toBe(true);
+    expect(rows[0]!.dir.endsWith(relative(dirname(root), expectedDir))).toBe(true);
+  } finally {
+    process.chdir(previousCwd);
+  }
 });
 
 test("sorts rows newest first by captured_at", async () => {

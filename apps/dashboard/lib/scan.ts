@@ -1,6 +1,6 @@
 // vault 파일을 읽어 대시보드 카드 행으로 변환합니다.
 import { access, readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 import {
   listCards,
@@ -41,7 +41,7 @@ export async function readArtifactStatus(
 }
 
 export async function scanDashboardCards(root: string): Promise<DashboardCardRow[]> {
-  const cards = await listCards(root);
+  const cards = await listCards(resolve(root));
   const rows = await Promise.all(
     cards.map(async ({ frontmatter, dir }) => {
       const [deep, til, guide] = await Promise.all([
