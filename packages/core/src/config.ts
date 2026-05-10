@@ -10,6 +10,8 @@ const Schema = z.object({
   GITHUB_TOKEN: z.string().min(1),
   REPO_LOCAL_PATH: z.string().min(1),
   CLOUDFLARE_DEPLOY_HOOK_URL: z.string().url(),
+  // YouTube 가 IP 단위 429 를 걸 때 yt-dlp 가 로그인된 브라우저 쿠키로 우회하도록 한다. 미설정 시 yt-dlp 는 익명 호출.
+  YTDLP_COOKIES_BROWSER: z.enum(['chrome', 'safari', 'firefox', 'edge', 'brave']).optional(),
 });
 
 export interface Config {
@@ -20,6 +22,7 @@ export interface Config {
   githubToken: string;
   repoLocalPath: string;
   cloudflareDeployHookUrl: string;
+  ytdlpCookiesBrowser?: 'chrome' | 'safari' | 'firefox' | 'edge' | 'brave';
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv | Record<string, string | undefined>): Config {
@@ -37,5 +40,6 @@ export function loadConfig(env: NodeJS.ProcessEnv | Record<string, string | unde
     githubToken: e.GITHUB_TOKEN,
     repoLocalPath: e.REPO_LOCAL_PATH,
     cloudflareDeployHookUrl: e.CLOUDFLARE_DEPLOY_HOOK_URL,
+    ytdlpCookiesBrowser: e.YTDLP_COOKIES_BROWSER,
   };
 }

@@ -25,10 +25,10 @@ const git = openRepo(cfg.repoLocalPath);
 
 const pipelineDeps = {
   repoLocalPath: cfg.repoLocalPath,
-  extractYoutube,
+  extractYoutube: (url: string, workDir: string) => extractYoutube(url, workDir, cfg.ytdlpCookiesBrowser),
   extractGithub: (owner: string, repo: string) => extractGithub(octokit, owner, repo),
   whisperTranscribe: whisperClient
-    ? (url: string, workDir: string) => whisperTranscribe(url, workDir, whisperClient)
+    ? (url: string, workDir: string) => whisperTranscribe(url, workDir, whisperClient, cfg.ytdlpCookiesBrowser)
     : undefined,
   runAutoSummary: (input: { transcript: string; tagHints: string; truncated: boolean; modelId: string }) =>
     runAutoSummaryCore(llmClient, input),

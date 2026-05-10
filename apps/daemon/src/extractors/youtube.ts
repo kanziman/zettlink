@@ -17,18 +17,20 @@ export interface YoutubeExtraction {
   transcript: string;
 }
 
-export async function extractYoutube(url: string, workDir: string): Promise<YoutubeExtraction> {
+export async function extractYoutube(url: string, workDir: string, cookiesBrowser?: string): Promise<YoutubeExtraction> {
   let stdout: string;
   try {
-    const result = await execa('yt-dlp', [
+    const args = [
       '--skip-download',
       '--write-subs', '--write-auto-subs',
       '--sub-langs', 'en,ko',
       '--sub-format', 'vtt',
       '--print-json',
       '--output', `${workDir}/%(id)s.%(ext)s`,
-      url,
-    ]);
+    ];
+    if (cookiesBrowser) args.push('--cookies-from-browser', cookiesBrowser);
+    args.push(url);
+    const result = await execa('yt-dlp', args);
     stdout = result.stdout;
   } catch (e: any) {
     if (e?.code === 'ENOENT') throw new Error('yt-dlp 가 PATH 에 없다. brew install yt-dlp');
