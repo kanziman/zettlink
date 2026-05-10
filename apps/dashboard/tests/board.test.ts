@@ -1,12 +1,11 @@
 // 칸반 보드 컬럼 우선순위를 검증합니다.
-import { strict as assert } from "node:assert";
-import test from "node:test";
+import { expect, test } from "vitest";
 
 import {
   computeColumn,
   type ArtifactSnapshot,
   type CardSnapshot,
-} from "../lib/board.ts";
+} from "../lib/board.js";
 
 type CardOverrides = Partial<Omit<CardSnapshot, "artifacts">> & {
   artifacts?: Partial<Record<keyof CardSnapshot["artifacts"], ArtifactSnapshot>>;
@@ -38,88 +37,79 @@ function card(overrides: CardOverrides = {}): CardSnapshot {
 }
 
 test("puts index-published cards in Published", () => {
-  assert.equal(computeColumn(card({ index_published: true })), "Published");
+  expect(computeColumn(card({ index_published: true }))).toBe("Published");
 });
 
 test("puts cards with any published artifact in Published", () => {
-  assert.equal(
+  expect(
     computeColumn(card({ artifacts: { deep: { exists: false, published: true } } })),
-    "Published",
-  );
-  assert.equal(
+  ).toBe("Published");
+  expect(
     computeColumn(card({ artifacts: { til: { exists: false, published: true } } })),
-    "Published",
-  );
-  assert.equal(
+  ).toBe("Published");
+  expect(
     computeColumn(card({ artifacts: { guide: { exists: false, published: true } } })),
-    "Published",
-  );
+  ).toBe("Published");
 });
 
 test("puts unreviewed cards in Needs review", () => {
-  assert.equal(computeColumn(card({ reviewed: false })), "Needs review");
+  expect(computeColumn(card({ reviewed: false }))).toBe("Needs review");
 });
 
 test("puts unreviewed cards with an unpublished TIL in Needs review", () => {
-  assert.equal(
+  expect(
     computeColumn(
       card({
         reviewed: false,
         artifacts: { til: { exists: true, published: false } },
       }),
     ),
-    "Needs review",
-  );
+  ).toBe("Needs review");
 });
 
 test("puts unreviewed cards with an unpublished deep artifact in Needs review", () => {
-  assert.equal(
+  expect(
     computeColumn(
       card({
         reviewed: false,
         artifacts: { deep: { exists: true, published: false } },
       }),
     ),
-    "Needs review",
-  );
+  ).toBe("Needs review");
 });
 
 test("puts reviewed cards with an existing TIL in TIL ready", () => {
-  assert.equal(
+  expect(
     computeColumn(card({ artifacts: { til: { exists: true, published: false } } })),
-    "TIL ready",
-  );
+  ).toBe("TIL ready");
 });
 
 test("puts reviewed cards with only an existing deep artifact in Deep done", () => {
-  assert.equal(
+  expect(
     computeColumn(card({ artifacts: { deep: { exists: true, published: false } } })),
-    "Deep done",
-  );
+  ).toBe("Deep done");
 });
 
 test("leaves reviewed cards with no artifacts or published state out of active columns", () => {
-  assert.equal(computeColumn(card()), null);
+  expect(computeColumn(card())).toBeNull();
 });
 
 test("leaves reviewed cards with only an existing guide out of active columns", () => {
-  assert.equal(
+  expect(
     computeColumn(card({ artifacts: { guide: { exists: true, published: false } } })),
-    null,
-  );
+  ).toBeNull();
 });
 
 test("applies priority ordering for published before review and TIL before deep", () => {
-  assert.equal(
+  expect(
     computeColumn(
       card({
         reviewed: false,
         artifacts: { til: { exists: true, published: true } },
       }),
     ),
-    "Published",
-  );
-  assert.equal(
+  ).toBe("Published");
+  expect(
     computeColumn(
       card({
         artifacts: {
@@ -128,6 +118,5 @@ test("applies priority ordering for published before review and TIL before deep"
         },
       }),
     ),
-    "TIL ready",
-  );
+  ).toBe("TIL ready");
 });
