@@ -2,6 +2,7 @@
 import React from "react";
 
 import { BoardColumn } from "../components/BoardColumn.js";
+import { CardChip } from "../components/CardChip.js";
 import { FilterBar } from "../components/FilterBar.js";
 import { ScopeToggle } from "../components/ScopeToggle.js";
 import { type BoardColumn as BoardColumnName, computeColumn } from "../lib/board.js";
@@ -42,18 +43,24 @@ export default async function ReviewBoardPage({
     const rows = await scanDashboardCards(root);
     const filteredRows = filterRows(rows, filter);
     const groupedRows = groupRows(filteredRows);
+    const inactiveRows =
+      filter.scope === "all"
+        ? filteredRows.filter((row) => computeColumn(row.snapshot) === null)
+        : [];
     const activeCount = BOARD_COLUMNS.reduce(
       (count, column) => count + groupedRows[column].length,
       0,
     );
+    const visibleCount = activeCount + inactiveRows.length;
 
     return (
-      <DashboardShell count={activeCount} filter={filter} subtitle={`${rows.length} total cards`}>
+      <DashboardShell count={visibleCount} filter={filter} subtitle={`${rows.length} total cards`}>
         <div className="grid gap-10 overflow-x-auto pb-4 md:grid-cols-4">
           {BOARD_COLUMNS.map((column) => (
             <BoardColumn column={column} key={column} rows={groupedRows[column]} />
           ))}
         </div>
+        {filter.scope === "all" ? <InactiveRowsSection rows={inactiveRows} /> : null}
       </DashboardShell>
     );
   } catch (error) {
@@ -112,6 +119,36 @@ function ConfigState() {
     <section className="rounded-md border border-line-solid bg-background-elevated p-16 text-body-sm text-label-neutral shadow-elevated">
       <h2 className="text-label-md text-label-strong">Dashboard not configured</h2>
       <p className="mt-6">Set REPO_LOCAL_PATH to the local vault root.</p>
+    </section>
+  );
+}
+
+function InactiveRowsSection({ rows }: { rows: DashboardCardRow[] }) {
+  if (rows.length === 0) {
+    return null;
+  }
+
+  return (
+    <section
+      aria-labelledby="no-active-column"
+      className="rounded-md border border-line-solid bg-background p-12"
+    >
+      <header className="mb-10 flex items-center justify-between gap-8">
+        <h2 className="text-label-md text-label-strong" id="no-active-column">
+          No active column
+        </h2>
+        <span
+          aria-label={`${rows.length} cards`}
+          className="shrink-0 rounded-sm bg-background-alternative px-6 py-2 text-label-sm text-label-alternative"
+        >
+          {rows.length}
+        </span>
+      </header>
+      <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-4">
+        {rows.map((row) => (
+          <CardChip key={row.frontmatter.slug} row={row} />
+        ))}
+      </div>
     </section>
   );
 }
