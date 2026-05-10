@@ -60,6 +60,30 @@ test("puts unreviewed cards in Needs review", () => {
   assert.equal(computeColumn(card({ reviewed: false })), "Needs review");
 });
 
+test("puts unreviewed cards with an unpublished TIL in Needs review", () => {
+  assert.equal(
+    computeColumn(
+      card({
+        reviewed: false,
+        artifacts: { til: { exists: true, published: false } },
+      }),
+    ),
+    "Needs review",
+  );
+});
+
+test("puts unreviewed cards with an unpublished deep artifact in Needs review", () => {
+  assert.equal(
+    computeColumn(
+      card({
+        reviewed: false,
+        artifacts: { deep: { exists: true, published: false } },
+      }),
+    ),
+    "Needs review",
+  );
+});
+
 test("puts reviewed cards with an existing TIL in TIL ready", () => {
   assert.equal(
     computeColumn(card({ artifacts: { til: { exists: true, published: false } } })),
