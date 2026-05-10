@@ -11,7 +11,7 @@ describe('processUrl', () => {
     const repoLocalPath = await mkdtemp(join(tmpdir(), 'vault-'));
     const deps = {
       extractYoutube: vi.fn().mockResolvedValue({
-        meta: { video_id: 'abc', channel: 'C', title: 'How Claude Uses Tools', duration_sec: 60, thumbnail: 'https://x/y.jpg', subtitle_source: 'auto' },
+        meta: { video_id: 'abc', channel: 'C', title: 'How Claude Uses Tools', upload_date: '2026-05-08', duration_sec: 60, thumbnail: 'https://x/y.jpg', subtitle_source: 'auto' },
         transcript: 'hello world',
       }),
       runAutoSummary: vi.fn().mockResolvedValue({
@@ -37,7 +37,7 @@ describe('processUrl', () => {
     const repoLocalPath = await mkdtemp(join(tmpdir(), 'vault-'));
     const deps = {
       extractYoutube: vi.fn().mockResolvedValue({
-        meta: { video_id: 'abc', channel: 'C', title: 'T', duration_sec: 60, thumbnail: 'https://x/y.jpg', subtitle_source: 'auto' },
+        meta: { video_id: 'abc', channel: 'C', title: 'T', upload_date: '2026-05-08', duration_sec: 60, thumbnail: 'https://x/y.jpg', subtitle_source: 'auto' },
         transcript: 'hello world',
       }),
       runAutoSummary: vi.fn().mockRejectedValue(new Error('LLM 실패')),
@@ -59,7 +59,7 @@ describe('processUrl', () => {
     // 1차 호출로 카드 만들어둔다.
     const seedDeps = {
       extractYoutube: vi.fn().mockResolvedValue({
-        meta: { video_id: 'abc', channel: 'C', title: 'T', duration_sec: 60, thumbnail: 'https://x/y.jpg', subtitle_source: 'auto' },
+        meta: { video_id: 'abc', channel: 'C', title: 'T', upload_date: '2026-05-08', duration_sec: 60, thumbnail: 'https://x/y.jpg', subtitle_source: 'auto' },
         transcript: 'hello',
       }),
       runAutoSummary: vi.fn().mockResolvedValue({

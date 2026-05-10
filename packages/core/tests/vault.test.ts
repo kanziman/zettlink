@@ -26,6 +26,7 @@ const baseFm = {
   youtube: {
     video_id: 'abc',
     channel: 'C',
+    upload_date: '2026-05-08',
     duration_sec: 60,
     thumbnail: 'https://i.ytimg.com/vi/abc/m.jpg',
     subtitle_source: 'auto' as const,

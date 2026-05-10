@@ -10,6 +10,7 @@ export interface YoutubeMeta {
   video_id: string;
   channel: string;
   title: string;
+  upload_date: string;            // YYYY-MM-DD. yt-dlp 의 YYYYMMDD 를 변환. 정보 없으면 ''.
   duration_sec: number;
   thumbnail: string;
   subtitle_source: 'auto' | 'manual' | 'whisper' | 'description' | 'none';
@@ -142,6 +143,12 @@ async function determineContent(
   return { text: '', source: 'none' };
 }
 
+// yt-dlp 의 upload_date 는 YYYYMMDD. ISO 형식 YYYY-MM-DD 로 변환. 형식이 안 맞으면 빈 문자열.
+function normalizeUploadDate(raw: unknown): string {
+  if (typeof raw !== 'string' || !/^\d{8}$/.test(raw)) return '';
+  return `${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}`;
+}
+
 // workDir 는 호출 측 호환을 위해 받지만 자막 임시 파일은 system tmp 에 격리한다 (vault working tree 오염 방지).
 export async function extractYoutube(url: string, _workDir: string, cookiesBrowser?: string): Promise<YoutubeExtraction> {
   const meta = await ytdlpDumpJson(url, cookiesBrowser);
@@ -152,6 +159,7 @@ export async function extractYoutube(url: string, _workDir: string, cookiesBrows
       video_id: meta.id,
       channel: meta.channel ?? meta.uploader ?? '',
       title: meta.title ?? '',
+      upload_date: normalizeUploadDate(meta.upload_date),
       duration_sec: meta.duration ?? 0,
       thumbnail: meta.thumbnail ?? '',
       subtitle_source: source,

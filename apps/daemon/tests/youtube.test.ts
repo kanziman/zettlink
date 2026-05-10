@@ -12,7 +12,7 @@ const longText = (label: string) => Array.from({ length: 30 }, (_, i) => `${labe
 const buildVtt = (label: string) => `WEBVTT\n\n00:00:00.000 --> 00:00:30.000\n${longText(label)}\n`;
 
 const baseMeta = {
-  id: 'abc', title: 'T', channel: 'C', duration: 60, thumbnail: 'x',
+  id: 'abc', title: 'T', channel: 'C', upload_date: '20260508', duration: 60, thumbnail: 'x',
   description: '',
 };
 
@@ -45,11 +45,18 @@ function setupMock(s: Scenario): void {
 describe('extractYoutube', () => {
   beforeEach(() => { (execa as any).mockReset(); });
 
-  it('ko 수동 자막이 있으면 그것을 골라 source=manual', async () => {
+  it('ko 수동 자막이 있으면 그것을 골라 source=manual + upload_date 변환 (YYYYMMDD → YYYY-MM-DD)', async () => {
     setupMock({ subs: { 'ko-manual': buildVtt('hello korean manual') } });
     const r = await extractYoutube('https://youtu.be/abc', '/tmp');
     expect(r.meta.subtitle_source).toBe('manual');
+    expect(r.meta.upload_date).toBe('2026-05-08');
     expect(r.transcript).toContain('hello korean manual');
+  });
+
+  it('upload_date 가 없거나 비정상 형식이면 빈 문자열', async () => {
+    setupMock({ meta: { upload_date: undefined as any, description: 'x'.repeat(500) }, subs: {} });
+    const r = await extractYoutube('https://youtu.be/abc', '/tmp');
+    expect(r.meta.upload_date).toBe('');
   });
 
   it('ko 수동이 없으면 ko 자동 으로 폴백 source=auto', async () => {

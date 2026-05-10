@@ -5,6 +5,7 @@ import { z } from 'zod';
 const YoutubeMeta = z.object({
   video_id: z.string(),
   channel: z.string(),
+  upload_date: z.string(),     // YYYY-MM-DD (yt-dlp 의 YYYYMMDD 를 변환). 정보 없으면 ''.
   duration_sec: z.number().int(),
   thumbnail: z.string().url(),
   subtitle_source: z.enum(['auto', 'manual', 'whisper', 'description', 'none']),
