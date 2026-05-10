@@ -19,6 +19,7 @@ const sample: IndexFrontmatter = {
   youtube: {
     video_id: 'abc',
     channel: 'Anthropic',
+    upload_date: '2026-05-08',
     duration_sec: 120,
     thumbnail: 'https://i.ytimg.com/vi/abc/maxres.jpg',
     subtitle_source: 'auto',

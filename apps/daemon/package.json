@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@zettlink/core": "workspace:*",
-    "@anthropic-ai/sdk": "^0.95.0",
     "@octokit/rest": "^21.0.0",
     "dotenv": "^16.4.5",
     "execa": "^9.4.0",

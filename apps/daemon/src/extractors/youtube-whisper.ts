@@ -3,8 +3,11 @@ import { execa } from 'execa';
 import { createReadStream } from 'node:fs';
 import type OpenAI from 'openai';
 
-export async function whisperTranscribe(url: string, workDir: string, openai: OpenAI): Promise<string> {
-  await execa('yt-dlp', ['-x', '--audio-format', 'mp3', '-o', `${workDir}/audio.%(ext)s`, url]);
+export async function whisperTranscribe(url: string, workDir: string, openai: OpenAI, cookiesBrowser?: string): Promise<string> {
+  const args = ['-x', '--audio-format', 'mp3', '-o', `${workDir}/audio.%(ext)s`];
+  if (cookiesBrowser) args.push('--cookies-from-browser', cookiesBrowser);
+  args.push(url);
+  await execa('yt-dlp', args);
   const r = await openai.audio.transcriptions.create({
     file: createReadStream(`${workDir}/audio.mp3`) as any,
     model: 'whisper-1',

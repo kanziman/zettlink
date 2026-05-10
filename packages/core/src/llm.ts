@@ -1,6 +1,6 @@
-// Anthropic Sonnet 4.6 호출 래퍼. system block 에 prompt caching 을 적용하고, JSON 출력을 Zod 로 검증한다.
+// OpenRouter 경유로 Claude Sonnet 호출. system block 에 prompt caching 을 적용하고, JSON 출력을 Zod 로 검증한다.
 import { z } from 'zod';
-import type Anthropic from '@anthropic-ai/sdk';
+import type OpenAI from 'openai';
 import { AUTO_SUMMARY_SYSTEM, buildAutoSummaryUser } from './prompts/auto-summary.js';
 
 export const AutoSummaryResultSchema = z.object({
@@ -20,22 +20,33 @@ interface RunInput {
   modelId: string;
 }
 
-function extractText(resp: Anthropic.Message): string {
-  for (const block of resp.content) if (block.type === 'text') return block.text;
-  throw new Error('Anthropic 응답에 text 블록이 없다');
+// 모델이 가끔 ```json … ``` 코드펜스로 감싸 보내는 경우를 흡수한다.
+export function stripJsonFence(text: string): string {
+  const m = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  return (m?.[1] ?? text).trim();
 }
 
-export async function runAutoSummary(client: Anthropic, input: RunInput): Promise<AutoSummaryResult> {
+export async function runAutoSummary(client: OpenAI, input: RunInput): Promise<AutoSummaryResult> {
+  // OpenRouter 의 Anthropic 모델은 system message 를 content 배열 + cache_control 로 캐싱 가능. OpenAI SDK 타입 정의에 cache_control 이 없어 as any 로 통과.
+  const messages = [
+    {
+      role: 'system' as const,
+      content: [
+        { type: 'text', text: AUTO_SUMMARY_SYSTEM, cache_control: { type: 'ephemeral' } },
+      ],
+    },
+    { role: 'user' as const, content: buildAutoSummaryUser(input) },
+  ];
   for (let attempt = 0; attempt < 2; attempt++) {
-    const resp = await client.messages.create({
+    const resp = await client.chat.completions.create({
       model: input.modelId,
       max_tokens: 4096,
-      system: [{ type: 'text', text: AUTO_SUMMARY_SYSTEM, cache_control: { type: 'ephemeral' } }],
-      messages: [{ role: 'user', content: buildAutoSummaryUser(input) }],
+      messages: messages as any,
     });
-    const text = extractText(resp);
+    const text = resp.choices[0]?.message?.content ?? '';
+    if (!text) throw new Error('OpenRouter 응답에 본문이 없다');
     try {
-      return AutoSummaryResultSchema.parse(JSON.parse(text));
+      return AutoSummaryResultSchema.parse(JSON.parse(stripJsonFence(text)));
     } catch (e) {
       if (attempt === 1) throw new Error(`자동 요약 LLM 출력 검증 실패. ${(e as Error).message}`);
     }

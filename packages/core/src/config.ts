@@ -2,22 +2,27 @@
 import { z } from 'zod';
 
 const Schema = z.object({
-  ANTHROPIC_API_KEY: z.string().min(1),
+  OPENROUTER_API_KEY: z.string().min(1),
+  OPENROUTER_MODEL: z.string().min(1),
   OPENAI_API_KEY: z.string().min(1).optional(),
-  TELEGRAM_BOT_TOKEN: z.string().min(1),
+  TELEGRAM_TOKEN: z.string().min(1),
   TELEGRAM_USER_ID: z.string().regex(/^\d+$/, 'TELEGRAM_USER_ID 는 정수 문자열이어야 한다'),
   GITHUB_TOKEN: z.string().min(1),
   REPO_LOCAL_PATH: z.string().min(1),
   CLOUDFLARE_DEPLOY_HOOK_URL: z.string().url(),
+  // YouTube 가 IP 단위 429 를 걸 때 yt-dlp 가 로그인된 브라우저 쿠키로 우회하도록 한다. 미설정 시 yt-dlp 는 익명 호출.
+  YTDLP_COOKIES_BROWSER: z.enum(['chrome', 'safari', 'firefox', 'edge', 'brave']).optional(),
 });
 
 export interface Config {
-  anthropicApiKey: string;
+  openrouterApiKey: string;
+  openrouterModel: string;
   openaiApiKey?: string;
-  telegram: { botToken: string; userId: number };
+  telegram: { token: string; userId: number };
   githubToken: string;
   repoLocalPath: string;
   cloudflareDeployHookUrl: string;
+  ytdlpCookiesBrowser?: 'chrome' | 'safari' | 'firefox' | 'edge' | 'brave';
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv | Record<string, string | undefined>): Config {
@@ -28,11 +33,13 @@ export function loadConfig(env: NodeJS.ProcessEnv | Record<string, string | unde
   }
   const e = parsed.data;
   return {
-    anthropicApiKey: e.ANTHROPIC_API_KEY,
+    openrouterApiKey: e.OPENROUTER_API_KEY,
+    openrouterModel: e.OPENROUTER_MODEL,
     openaiApiKey: e.OPENAI_API_KEY,
-    telegram: { botToken: e.TELEGRAM_BOT_TOKEN, userId: Number(e.TELEGRAM_USER_ID) },
+    telegram: { token: e.TELEGRAM_TOKEN, userId: Number(e.TELEGRAM_USER_ID) },
     githubToken: e.GITHUB_TOKEN,
     repoLocalPath: e.REPO_LOCAL_PATH,
     cloudflareDeployHookUrl: e.CLOUDFLARE_DEPLOY_HOOK_URL,
+    ytdlpCookiesBrowser: e.YTDLP_COOKIES_BROWSER,
   };
 }

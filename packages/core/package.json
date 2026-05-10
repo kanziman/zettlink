@@ -10,8 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.95.1",
     "gray-matter": "^4.0.3",
+    "openai": "^4.60.0",
     "simple-git": "^3.25.0",
     "zod": "^3.23.0"
   },
