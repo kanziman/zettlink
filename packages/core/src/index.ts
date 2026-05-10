@@ -8,3 +8,6 @@ export * from './tags.js';
 export * from './vault.js';
 export * from './git.js';
 export * from './llm.js';
+export * from './prompts/deep.js';
+export * from './prompts/til.js';
+export * from './prompts/guide.js';
