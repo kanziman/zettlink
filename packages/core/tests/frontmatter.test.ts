@@ -50,4 +50,10 @@ describe('serialize/parse round trip', () => {
     const md = '---\nplatform: weird\n---\n';
     expect(() => parseIndex(md)).toThrow();
   });
+
+  it('reviewed 가 없으면 false 로 기본값을 채운다', () => {
+    const md = serializeIndex(sample, '본문').replace(/^reviewed: false\n/m, '');
+    const { frontmatter } = parseIndex(md);
+    expect(frontmatter.reviewed).toBe(false);
+  });
 });

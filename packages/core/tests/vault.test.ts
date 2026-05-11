@@ -41,10 +41,11 @@ describe('vault', () => {
     expect(got.frontmatter.slug).toBe('sample');
   });
 
-  it('listCards 는 모든 플랫폼 폴더의 index.md 를 카드로 반환한다', async () => {
-    await writeCard(root, baseFm, '');
-    await writeCard(root, { ...baseFm, slug: 'second' }, '');
+  it('listCards 는 모든 플랫폼 폴더의 index.md 를 본문과 함께 카드로 반환한다', async () => {
+    await writeCard(root, baseFm, 'first body');
+    await writeCard(root, { ...baseFm, slug: 'second' }, 'second body');
     const cards = await listCards(root);
     expect(cards).toHaveLength(2);
+    expect(cards.map((card) => card.body).sort()).toEqual(['first body\n', 'second body\n']);
   });
 });

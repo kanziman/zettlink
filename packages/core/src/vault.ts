@@ -40,8 +40,8 @@ export async function readCard(
   return { frontmatter, body, dir };
 }
 
-export async function listCards(root: string): Promise<Array<{ frontmatter: IndexFrontmatter; dir: string }>> {
-  const out: Array<{ frontmatter: IndexFrontmatter; dir: string }> = [];
+export async function listCards(root: string): Promise<Array<{ frontmatter: IndexFrontmatter; body: string; dir: string }>> {
+  const out: Array<{ frontmatter: IndexFrontmatter; body: string; dir: string }> = [];
   const sourcesDir = join(root, SOURCES);
   if (!existsSync(sourcesDir)) return out;
   for (const platform of await readdir(sourcesDir)) {
@@ -51,8 +51,8 @@ export async function listCards(root: string): Promise<Array<{ frontmatter: Inde
       if (!existsSync(indexPath)) continue;
       const md = await readFile(indexPath, 'utf8');
       try {
-        const { frontmatter } = parseIndex(md);
-        out.push({ frontmatter, dir: join(platformDir, folder) });
+        const { frontmatter, body } = parseIndex(md);
+        out.push({ frontmatter, body, dir: join(platformDir, folder) });
       } catch {
         // malformed card 는 스킵 — 대시보드에서 별도 표시.
       }

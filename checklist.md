@@ -96,17 +96,18 @@
 
 ## 3. 2단계 대시보드 (`apps/dashboard/`)
 
-- [ ] Next.js 15 App Router 셋업
-- [ ] vault 디렉토리 환경변수로 받기
-- [ ] RSC로 vault 글롭 (`sources/**/index.md`) → 카드 메타 수집
-- [ ] 카드 리스트 페이지 (필터: channel/tags/published 상태)
-- [ ] 검색 (Array.filter, 카드 < 1000 가정)
-- [ ] 상세 페이지 (영상 임베드, 요약, 트랜스크립트 펼치기, 산출물 탭)
-- [ ] "심화 요약" 버튼 → API route → core LLM 호출 → `deep.md` 작성 + git commit
-- [ ] "TIL 작성" 버튼 → core LLM (TIL 프롬프트, 1인칭 학습자) → `til.md` + git commit
-- [ ] "실용 가이드 작성" 버튼 → core LLM (가이드 프롬프트, 적용자 관점) → `guide.md` + git commit
-- [ ] "Publish" 버튼 → frontmatter `published: true` 토글 + git commit
-- [ ] dev only 빌드 가드 (production 빌드 차단)
+- [x] Next.js 15 App Router 셋업
+- [x] vault 디렉토리 환경변수로 받기
+- [x] RSC로 vault 글롭 (`sources/**/index.md`) → 카드 메타 수집
+- [x] 카드 리스트 페이지 (필터: channel/tags/published 상태)
+- [x] 검색 (Array.filter, 카드 < 1000 가정)
+- [x] 상세 페이지 (영상 임베드, 요약, 트랜스크립트 펼치기, 산출물 탭)
+- [x] "심화 요약" 버튼 → API route → core LLM 호출 → `deep.md` 작성 + git commit
+- [x] "TIL 작성" 버튼 → core LLM (TIL 프롬프트, 1인칭 학습자) → `til.md` + git commit
+- [x] "실용 가이드 작성" 버튼 → core LLM (가이드 프롬프트, 적용자 관점) → `guide.md` + git commit
+- [x] "Publish" 버튼 → frontmatter `published: true` 토글 + git commit (요약본·산출물 모두 지원)
+- [x] dev only 빌드 가드 (production 빌드 차단)
+- [x] malformed 카드도 보드 하단 "Malformed cards" 섹션에 노출
 
 ## 4. 2단계 공개 사이트 (`apps/blog/`)
 
