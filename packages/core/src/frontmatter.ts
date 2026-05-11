@@ -27,7 +27,7 @@ const IndexSchema = z.object({
   summary_one_line: z.string(),
   tags: z.array(z.string()),
   status: z.enum(['extracted', 'summarized', 'failed']),
-  reviewed: z.boolean(),
+  reviewed: z.boolean().default(false),
   published: z.boolean(),
   note: z.string().default(''),
   generated: z.object({ deep: z.boolean(), til: z.boolean(), guide: z.boolean() }),
