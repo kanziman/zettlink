@@ -42,7 +42,10 @@
     {
       "step": 4,
       "name": "url-normalize",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-05-16T18:00:05+0900",
+      "completed_at": "2026-05-16T18:05:00+0900",
+      "summary": "packages/shared/src/url-normalize.ts(canonicalize, CanonicalUrl), __tests__/url-normalize.test.ts(23 테스트), index.ts re-export 완성. vitest 추가, 100% coverage(statements/branches/functions/lines)."
     },
     {
       "step": 5,
