@@ -66,6 +66,9 @@ docker info
 
 ### Step 2: db-client
 
+**시작 전 읽어야 할 파일:**
+- `packages/db/src/types.gen.ts` — Step 1 산출물. 존재하면 타입 참조 방식 확인. 없으면 임시 `any` 타입으로 진행하고 주석 표시.
+
 ```bash
 pnpm --filter @zettlink/db build   # 컴파일 에러 없음
 
@@ -76,6 +79,9 @@ grep -r "from '@supabase/ssr'" apps/ && echo "FAIL" || echo "OK"
 
 ### Step 3: shared-config
 
+**시작 전 읽어야 할 파일:**
+- `packages/shared/src/config.ts` — Step 2에서 생성한 minimal 버전. zod 스키마로 교체할 대상 파악.
+
 ```bash
 pnpm --filter @zettlink/shared build   # 컴파일 에러 없음
 
@@ -85,6 +91,29 @@ node -e "import('@zettlink/shared').then(m => m.config)" 2>&1 \
 ```
 
 ### Step 4: url-normalize
+
+**시작 전 읽어야 할 파일:**
+- `packages/shared/src/index.ts` — Step 3 산출물. `canonicalize` re-export 추가 위치 확인.
+
+**커버해야 할 URL 변형 케이스 (테스트 작성 전 반드시 열거):**
+
+| 플랫폼 | 입력 변형 | canonical 형태 |
+|---|---|---|
+| YouTube | `https://www.youtube.com/watch?v=ABC123` | `https://www.youtube.com/watch?v=ABC123` |
+| YouTube | `https://youtu.be/ABC123` | `https://www.youtube.com/watch?v=ABC123` |
+| YouTube | `https://www.youtube.com/embed/ABC123` | `https://www.youtube.com/watch?v=ABC123` |
+| YouTube | `https://www.youtube.com/shorts/ABC123` | `https://www.youtube.com/watch?v=ABC123` |
+| YouTube | `https://m.youtube.com/watch?v=ABC123` | `https://www.youtube.com/watch?v=ABC123` |
+| YouTube | `https://www.youtube.com/live/ABC123` | `https://www.youtube.com/watch?v=ABC123` |
+| YouTube | query param 추가 (`?t=30`, `?list=PL...`) | video ID만 보존, 나머지 제거 |
+| GitHub | `https://github.com/owner/repo` | `https://github.com/owner/repo` |
+| GitHub | `https://github.com/owner/repo/` (trailing slash) | `https://github.com/owner/repo` |
+| GitHub | `https://github.com/owner/repo/blob/branch/path` | `https://github.com/owner/repo` |
+| GitHub | `https://github.com/owner/repo/tree/branch` | `https://github.com/owner/repo` |
+| GitHub | `https://github.com/owner/repo/issues/123` | `https://github.com/owner/repo` |
+| 미지원 | `https://twitter.com/...` 등 | `throw Error('unsupported platform')` |
+
+`canonicalize()` 반환 타입: `{ platform: 'youtube' | 'github'; externalId: string; canonical: string }` (또는 `packages/shared/src/types.ts`에서 import한 `CanonicalUrl` 타입으로 통일).
 
 ```bash
 pnpm --filter @zettlink/shared test
