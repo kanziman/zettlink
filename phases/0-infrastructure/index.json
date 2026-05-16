@@ -18,7 +18,10 @@
     {
       "step": 1,
       "name": "db-schema",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-05-16T17:51:00+0900",
+      "completed_at": "2026-05-16T19:00:00+0900",
+      "summary": "supabase/config.toml, migrations/0001_init.sql(5테이블+RLS+pick_next_job RPC), seed.sql, scripts/gen-types.sh, packages/db/src/types.gen.ts 생성 완료"
     },
     {
       "step": 2,
