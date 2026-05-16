@@ -125,6 +125,10 @@ RED → GREEN 순서 검증: 테스트 먼저 실행해 실패를 확인한 뒤 
 
 ### Step 5: slug
 
+**시작 전 읽어야 할 파일:**
+- `packages/shared/src/types.ts` — Step 4 산출물. `CanonicalUrl` 타입 위치 확인. slug.ts에서 import할 타입 서명 파악.
+- `packages/shared/src/index.ts` — Step 4 산출물. `canonicalize` re-export 패턴 확인 후 `titleToSlug`, `repoToSlug` re-export를 같은 위치에 추가.
+
 ```bash
 pnpm --filter @zettlink/shared test
 # → url-normalize + slug 테스트 전체 PASS
