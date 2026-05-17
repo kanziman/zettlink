@@ -43,6 +43,27 @@ zettlink 각 Phase를 구현할 때 사용하는 2-에이전트 사이클. PO가
 
 ---
 
+## 실행 전략
+
+`scripts/execute.py`는 PO와 Reviewer를 서로 다른 CLI agent로 분리해서 실행할 수 있다.
+
+| 전략 | PO | Reviewer | 용도 |
+|---|---|---|---|
+| `claude-codex` | Claude (`.claude/agents/zettlink-po.md`) | Codex | 기본값. Claude가 구현하고 Codex가 독립 검토한다. |
+| `codex-claude` | Codex | Claude (`.claude/agents/zettlink-reviewer.md`) | Codex가 구현하고 Claude가 독립 검토한다. |
+
+```bash
+python3 scripts/execute.py 1-capture --strategy claude-codex
+python3 scripts/execute.py 1-capture --strategy codex-claude
+
+# 실제 실행 없이 선택된 agent 명령만 확인
+python3 scripts/execute.py 1-capture --strategy codex-claude --dry-run
+```
+
+전략 기본값은 `claude-codex`다. `phases/<phase>/index.json`의 `workflow.strategy`로 phase별 기본 전략을 지정할 수 있고, CLI의 `--strategy`가 있으면 그 값을 우선한다.
+
+---
+
 ## 게이트 1 — 플랜 승인
 
 PO가 구현 플랜을 `docs/phase-N-plan.md`에 작성하고 커밋한 뒤 Reviewer를 호출한다.

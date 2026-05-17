@@ -90,6 +90,106 @@ def executor(tmp_project, phase_dir):
 
 
 # ---------------------------------------------------------------------------
+# agent strategy
+# ---------------------------------------------------------------------------
+
+class TestAgentStrategy:
+    def test_default_strategy_is_claude_po_codex_reviewer(self, tmp_project, phase_dir):
+        with patch.object(ex, "ROOT", tmp_project):
+            inst = ex.StepExecutor("0-mvp")
+
+        assert inst._strategy == "claude-codex"
+        assert inst._po_engine == "claude"
+        assert inst._reviewer_engine == "codex"
+
+    def test_codex_claude_strategy_maps_roles(self, tmp_project, phase_dir):
+        with patch.object(ex, "ROOT", tmp_project):
+            inst = ex.StepExecutor("0-mvp", strategy="codex-claude")
+
+        assert inst._po_engine == "codex"
+        assert inst._reviewer_engine == "claude"
+
+    def test_cli_strategy_overrides_workflow_strategy(self, tmp_project, phase_dir):
+        index_path = phase_dir / "index.json"
+        index = json.loads(index_path.read_text())
+        index["workflow"] = {"strategy": "codex-claude"}
+        index_path.write_text(json.dumps(index))
+
+        with patch.object(ex, "ROOT", tmp_project):
+            inst = ex.StepExecutor("0-mvp", strategy="claude-codex")
+
+        assert inst._strategy == "claude-codex"
+        assert inst._po_engine == "claude"
+        assert inst._reviewer_engine == "codex"
+
+    def test_workflow_strategy_used_when_cli_omitted(self, tmp_project, phase_dir):
+        index_path = phase_dir / "index.json"
+        index = json.loads(index_path.read_text())
+        index["workflow"] = {"strategy": "codex-claude"}
+        index_path.write_text(json.dumps(index))
+
+        with patch.object(ex, "ROOT", tmp_project):
+            inst = ex.StepExecutor("0-mvp")
+
+        assert inst._strategy == "codex-claude"
+
+    def test_invalid_strategy_exits(self, tmp_project, phase_dir):
+        with patch.object(ex, "ROOT", tmp_project):
+            with pytest.raises(SystemExit) as exc_info:
+                ex.StepExecutor("0-mvp", strategy="bad")
+        assert exc_info.value.code == 1
+
+
+class TestAgentCommands:
+    def test_claude_command_uses_role_agent(self, executor):
+        cmd = executor._agent_command("claude", "po")
+        assert cmd[:4] == ["claude", "-p", "--dangerously-skip-permissions", "--output-format"]
+        assert "--agent" in cmd
+        assert "zettlink-po" in cmd
+
+    def test_codex_po_command_uses_full_access(self, executor):
+        cmd = executor._agent_command("codex", "po")
+        assert cmd[:2] == ["codex", "exec"]
+        assert "--cd" in cmd
+        assert "--sandbox" in cmd
+        assert "danger-full-access" in cmd
+        assert cmd[-1] == "-"
+
+    def test_codex_reviewer_command_uses_workspace_write(self, executor):
+        cmd = executor._agent_command("codex", "reviewer")
+        assert "workspace-write" in cmd
+        assert "danger-full-access" not in cmd
+
+    def test_call_codex_sends_prompt_on_stdin(self, executor):
+        mock_result = MagicMock(returncode=0, stdout="ok", stderr="")
+        with patch("subprocess.run", return_value=mock_result) as mock_run:
+            result = executor._call_agent("codex", "po", "PROMPT", timeout=123)
+
+        assert result == "ok"
+        assert mock_run.call_args[1]["input"] == "PROMPT"
+        assert mock_run.call_args[1]["timeout"] == 123
+
+    def test_call_claude_passes_prompt_as_arg(self, executor):
+        mock_result = MagicMock(returncode=0, stdout="ok", stderr="")
+        with patch("subprocess.run", return_value=mock_result) as mock_run:
+            result = executor._call_agent("claude", "reviewer", "PROMPT", timeout=123)
+
+        assert result == "ok"
+        assert mock_run.call_args[0][0][-1] == "PROMPT"
+        assert "input" not in mock_run.call_args[1]
+
+    def test_dry_run_does_not_checkout_or_write(self, executor):
+        executor._dry_run = True
+        executor._checkout_branch = MagicMock()
+        executor._ensure_created_at = MagicMock()
+
+        executor.run()
+
+        executor._checkout_branch.assert_not_called()
+        executor._ensure_created_at.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
 # _stamp (= 이전 now_iso)
 # ---------------------------------------------------------------------------
 
@@ -513,6 +613,20 @@ class TestMainCli:
                 with pytest.raises(SystemExit) as exc_info:
                     ex.main()
                 assert exc_info.value.code == 1
+
+    def test_strategy_and_dry_run_passed_to_executor(self):
+        with patch("sys.argv", ["execute.py", "0-mvp", "--strategy", "codex-claude", "--dry-run"]):
+            with patch.object(ex.StepExecutor, "__init__", return_value=None) as mock_init:
+                with patch.object(ex.StepExecutor, "run") as mock_run:
+                    ex.main()
+
+        mock_init.assert_called_once_with(
+            "0-mvp",
+            auto_push=False,
+            strategy="codex-claude",
+            dry_run=True,
+        )
+        mock_run.assert_called_once()
 
 
 # ---------------------------------------------------------------------------
