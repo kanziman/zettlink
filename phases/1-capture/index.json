@@ -12,7 +12,8 @@
       "name": "bot-core",
       "status": "completed",
       "started_at": "2026-05-17T13:04:00+0900",
-      "summary": "apps/bot/src/index.ts — Telegraf 데몬: whitelist 검증, bot.recv 이벤트 INSERT, jobs INSERT, ⏳ queued 응답"
+      "summary": "apps/bot/src/index.ts — Telegraf 데몬: whitelist 검증, bot.recv 이벤트 INSERT, jobs INSERT, ⏳ queued 응답",
+      "completed_at": "2026-05-17T13:09:47+0900"
     },
     {
       "step": 1,
