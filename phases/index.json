@@ -5,6 +5,10 @@
       "status": "completed",
       "failed_at": "2026-05-16T18:05:49+0900",
       "completed_at": "2026-05-17T12:33:17+0900"
+    },
+    {
+      "dir": "1-capture",
+      "status": "pending"
     }
   ]
 }

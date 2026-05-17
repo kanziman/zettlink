@@ -1,0 +1,62 @@
+{
+  "project": "zettlink",
+  "phase": "1-capture",
+  "workflow": {
+    "gates": true,
+    "gate1_criteria": "1. bot-core step이 whitelist 검증과 jobs INSERT를 명시하며, TELEGRAM_WHITELIST 누락 시 blocked 처리를 포함하는가?\n2. worker-loop step이 pick_next_job() RPC 사용과 reaper(picked_at 30분 초과 복구)를 명시하는가?\n3. llm-summarize step이 LLM 호출 전 비용 가드 체크(CRITICAL 규칙)를 포함하는가?\n4. vault-write step이 atomic(temp+rename) write를 명시하는가?\n5. observability step이 모든 단계(bot.recv, job.pick, extract.*, llm.call, job.done, job.fail)에 events INSERT를 포함하는가?",
+    "gate2_criteria": "1. bot이 service_role 키만 사용하고 NEXT_PUBLIC_ prefix 환경변수를 읽지 않는가?\n2. worker가 pick_next_job() RPC를 통해서만 job을 픽업하며 직접 UPDATE 쿼리를 사용하지 않는가?\n3. reaper가 picked_at 30분 초과 job을 queued로 복귀시키는가?\n4. 모든 LLM 호출 직전에 오늘자 cost 합산 체크가 존재하는가?\n5. vault write가 writeFile(temp) → rename 순서의 atomic 패턴을 따르는가?\n6. git push 실패 시 pull --rebase + 1회 재시도 로직이 있는가?\n7. 모든 주요 단계(최소 6종 event type)가 events 테이블에 INSERT되는가?\n8. 새로 생성된 TypeScript 파일 첫 줄에 한국어 역할 주석이 있는가?"
+  },
+  "steps": [
+    {
+      "step": 0,
+      "name": "bot-core",
+      "status": "pending"
+    },
+    {
+      "step": 1,
+      "name": "worker-loop",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "name": "extractor-yt",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "name": "extractor-gh",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "name": "llm-summarize",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "name": "tag-normalize",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "name": "vault-write",
+      "status": "pending"
+    },
+    {
+      "step": 7,
+      "name": "vault-git",
+      "status": "pending"
+    },
+    {
+      "step": 8,
+      "name": "retry",
+      "status": "pending"
+    },
+    {
+      "step": 9,
+      "name": "observability",
+      "status": "pending"
+    }
+  ],
+  "created_at": "2026-05-17T12:56:30+0900"
+}

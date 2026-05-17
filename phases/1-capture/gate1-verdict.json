@@ -1,0 +1,7 @@
+{
+  "verdict": "ISSUES",
+  "issues": [
+    "step0(bot-core): TELEGRAM_WHITELIST 환경변수 자체가 누락된 경우의 blocked 처리가 명시되지 않음. TOKEN 누락 → blocked 처리는 있으나, WHITELIST 환경변수 미설정 시 동작(기동 차단 또는 blocked 상태 기록)이 정의되어 있지 않음.",
+    "step9(observability): bot.recv event INSERT가 어떤 step에도 명시되지 않음. step0(bot-core)에 jobs INSERT는 있으나 Telegram 메시지 수신 시점의 'bot.recv' events 테이블 INSERT가 누락됨. Gate 1 기준에서 bot.recv는 필수 event type으로 지정되어 있음."
+  ]
+}
