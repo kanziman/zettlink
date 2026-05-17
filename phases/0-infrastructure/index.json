@@ -52,7 +52,7 @@
       "name": "slug",
       "status": "completed",
       "started_at": "2026-05-17T12:28:53+0900",
-      "completed_at": "2026-05-17T12:30:30+0900",
+      "completed_at": "2026-05-17T12:30:53+0900",
       "summary": "packages/shared/src/slug.ts(titleToSlug/repoToSlug), __tests__/slug.test.ts(15 테스트), index.ts re-export 완성. 100% coverage(statements/branches/functions/lines)."
     },
     {
