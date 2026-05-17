@@ -8,7 +8,8 @@
     },
     {
       "dir": "1-capture",
-      "status": "pending"
+      "status": "error",
+      "failed_at": "2026-05-17T13:14:41+0900"
     }
   ]
 }
