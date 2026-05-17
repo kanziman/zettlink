@@ -37,7 +37,7 @@
       "status": "completed",
       "started_at": "2026-05-17T19:03:55+0900",
       "summary": "apps/worker/src/extractors/github.ts — GitHub REST API: repo 메타데이터, README(32k 제한), topics 추출, 404 throw, token optional",
-      "completed_at": "2026-05-17T19:10:00+0900"
+      "completed_at": "2026-05-17T19:05:04+0900"
     },
     {
       "step": 4,
