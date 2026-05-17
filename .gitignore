@@ -11,7 +11,7 @@ tsconfig.tsbuildinfo
 !.env.example
 
 # logs
-logs/
+logs/*.log
 
 # deployment
 .vercel/
