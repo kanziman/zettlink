@@ -1,0 +1,38 @@
+{
+  "verdict": "APPROVED",
+  "issues": [],
+  "checks": {
+    "1_bot_service_role_only": {
+      "pass": true,
+      "note": "bot은 createServiceClient()만 사용. config.ts가 SUPABASE_SERVICE_ROLE_KEY(NEXT_PUBLIC_ 없음)를 읽음. grep 결과 NEXT_PUBLIC_ 사용 없음."
+    },
+    "2_pick_next_job_rpc_only": {
+      "pass": true,
+      "note": "processNextJob()에서 db.rpc('pick_next_job')으로만 픽업. markDone/markDead/markFailed의 직접 UPDATE는 처리 후 상태 전환용으로 픽업과 무관."
+    },
+    "3_reaper_30min_reset": {
+      "pass": true,
+      "note": "reaper()가 .eq('status','processing').lt('picked_at', cutoff[30분])로 stuck job을 {status:'queued', picked_at:null}으로 복귀. 10분 interval로 실행."
+    },
+    "4_budget_check_before_llm": {
+      "pass": true,
+      "note": "summarize()에서 await checkBudget() 후 openai.chat.completions.create() 호출. BudgetExceededError 발생 시 dispatch()에서 markDead + botNotify."
+    },
+    "5_vault_atomic_write": {
+      "pass": true,
+      "note": "atomicWrite(finalPath, content)가 writeFile(tempPath) → rename(tempPath, finalPath) 순서로 동작. index.md/transcript.md/extract.md 모두 동일 패턴 사용."
+    },
+    "6_git_push_rebase_retry": {
+      "pass": true,
+      "note": "commitAndPush()에서 push 실패 시 catch → pull --rebase → push 1회 재시도. 최종 실패는 soft-fail(warn 로그)."
+    },
+    "7_events_6plus_types": {
+      "pass": true,
+      "note": "8종 이벤트 타입 확인: bot.recv, job.pick, extract.youtube, extract.github, llm.call, job.done, job.fail, budget.alert."
+    },
+    "8_korean_header_comments": {
+      "pass": true,
+      "note": "신규 생성 TS 파일 전체(bot/index, worker/index, summarize, tag-normalize, prompts, vault/write, vault/git, notify, retry, extractors 3종, shared/config|slug|url-normalize|types, db/client) 첫 줄에 한국어 역할 주석 존재."
+    }
+  }
+}

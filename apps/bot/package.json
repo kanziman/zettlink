@@ -1,0 +1,27 @@
+{
+  "name": "@zettlink/bot",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx watch --env-file ../../.env src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "telegraf": "^4",
+    "pino": "^9",
+    "@zettlink/db": "workspace:*",
+    "@zettlink/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4",
+    "pino-pretty": "^11",
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  }
+}

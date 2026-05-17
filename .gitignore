@@ -1,9 +1,31 @@
 node_modules/
 .next/
 out/
+dist/
 next-env.d.ts
 tsconfig.tsbuildinfo
+
+# environment
+.env
+.env.*
+!.env.example
+
+# logs
+logs/*.log
+
+# deployment
+.vercel/
 
 # phase execution outputs
 phases/**/phase*-output.json
 phases/**/step*-output.json
+
+# test coverage reports
+coverage/
+**/coverage/
+
+# supabase temp
+supabase/.temp/
+
+# nested lockfiles (root pnpm-lock.yaml가 정본)
+apps/*/pnpm-lock.yaml

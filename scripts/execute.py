@@ -3,7 +3,7 @@
 Harness Step Executor — phase 내 step을 순차 실행하고 자가 교정한다.
 
 Usage:
-    python3 scripts/execute.py <phase-dir> [--push]
+    python3 scripts/execute.py <phase-dir> [--push] [--strategy claude-codex|codex-claude]
 """
 
 import argparse
@@ -54,17 +54,39 @@ class StepExecutor:
     """Phase 디렉토리 안의 step들을 순차 실행하는 하네스."""
 
     MAX_RETRIES = 3
+    REVIEWER_MAX_RETRIES = 3
+    DEFAULT_STRATEGY = "claude-codex"
+    STRATEGIES = {
+        "claude-codex": ("claude", "codex"),
+        "codex-claude": ("codex", "claude"),
+    }
     FEAT_MSG = "feat({phase}): step {num} — {name}"
     CHORE_MSG = "chore({phase}): step {num} output"
     TZ = timezone(timedelta(hours=9))
 
-    def __init__(self, phase_dir_name: str, *, auto_push: bool = False):
+    # 기본 게이트 기준 — index.json의 workflow.gate1_criteria / gate2_criteria로 오버라이드 가능
+    DEFAULT_GATE1_CRITERIA = (
+        "1. 플랜이 Phase 체크리스트의 모든 항목을 커버하는가?\n"
+        "2. CLAUDE.md의 CRITICAL 규칙과 충돌하는 계획이 있는가?\n"
+        "3. 각 step의 검증 방법(AC)이 명시되어 있는가?\n"
+        "4. 생성될 파일 목록이 프로젝트 아키텍처와 일치하는가?"
+    )
+    DEFAULT_GATE2_CRITERIA = (
+        "1. CLAUDE.md의 CRITICAL 규칙이 모두 준수되었는가?\n"
+        "2. 단위 테스트가 명시된 모듈에 대해 작성되었는가?\n"
+        "3. 커밋 메시지가 Conventional Commits 형식을 준수하는가?\n"
+        "4. 기존 마이그레이션/설정 파일이 무단 수정되지 않았는가?"
+    )
+
+    def __init__(self, phase_dir_name: str, *, auto_push: bool = False,
+                 strategy: Optional[str] = None, dry_run: bool = False):
         self._root = str(ROOT)
         self._phases_dir = ROOT / "phases"
         self._phase_dir = self._phases_dir / phase_dir_name
         self._phase_dir_name = phase_dir_name
         self._top_index_file = self._phases_dir / "index.json"
         self._auto_push = auto_push
+        self._dry_run = dry_run
 
         if not self._phase_dir.is_dir():
             print(f"ERROR: {self._phase_dir} not found")
@@ -79,14 +101,38 @@ class StepExecutor:
         self._project = idx.get("project", "project")
         self._phase_name = idx.get("phase", phase_dir_name)
         self._total = len(idx["steps"])
+        workflow = idx.get("workflow", {})
+        self._gates_enabled = workflow.get("gates", False)
+        self._gate1_criteria = workflow.get("gate1_criteria", self.DEFAULT_GATE1_CRITERIA)
+        self._gate2_criteria = workflow.get("gate2_criteria", self.DEFAULT_GATE2_CRITERIA)
+        self._strategy = strategy or workflow.get("strategy", self.DEFAULT_STRATEGY)
+        if self._strategy not in self.STRATEGIES:
+            valid = ", ".join(sorted(self.STRATEGIES))
+            print(f"ERROR: invalid strategy '{self._strategy}'. Expected one of: {valid}")
+            sys.exit(1)
+        self._po_engine, self._reviewer_engine = self.STRATEGIES[self._strategy]
 
     def run(self):
         self._print_header()
+        if self._dry_run:
+            self._print_dry_run()
+            return
         self._check_blockers()
         self._checkout_branch()
         guardrails = self._load_guardrails()
         self._ensure_created_at()
+
+        if self._gates_enabled:
+            # Gate 1: PO가 플랜 작성 → Reviewer 승인 (docs/AGENT_WORKFLOW.md)
+            self._run_plan_phase(guardrails)
+            self._run_gate(1, self._gate1_criteria, "플랜 승인", guardrails)
+
         self._execute_all_steps(guardrails)
+
+        if self._gates_enabled:
+            # Gate 2: Reviewer가 구현 결과 검토 (docs/AGENT_WORKFLOW.md)
+            self._run_gate(2, self._gate2_criteria, "구현 결과 검토", guardrails)
+
         self._finalize()
 
     # --- timestamps ---
@@ -216,17 +262,70 @@ class StepExecutor:
             f"2. 이 step에 명시된 작업만 수행하라. 추가 기능이나 파일을 만들지 마라.\n"
             f"3. 기존 테스트를 깨뜨리지 마라.\n"
             f"4. AC(Acceptance Criteria) 검증을 직접 실행하라.\n"
-            f"5. /phases/{self._phase_dir_name}/index.json의 해당 step status를 업데이트하라:\n"
+            f"5. React 컴포넌트·훅·페이지를 생성하거나 수정할 때 반드시 /react-best-practices 스킬을 먼저 호출하라.\n"
+            f"6. /phases/{self._phase_dir_name}/index.json의 해당 step status를 업데이트하라:\n"
             f"   - AC 통과 → \"completed\" + \"summary\" 필드에 이 step의 산출물을 한 줄로 요약\n"
             f"   - {self.MAX_RETRIES}회 수정 시도 후에도 실패 → \"error\" + \"error_message\" 기록\n"
             f"   - 사용자 개입이 필요한 경우 (API 키, 인증, 수동 설정 등) → \"blocked\" + \"blocked_reason\" 기록 후 즉시 중단\n"
-            f"6. 모든 변경사항을 커밋하라:\n"
+            f"7. 모든 변경사항을 커밋하라:\n"
             f"   {commit_example}\n\n---\n\n"
         )
 
-    # --- Claude 호출 ---
+    # --- Agent 호출 ---
+
+    def _agent_command(self, engine: str, role: str) -> list[str]:
+        if engine == "claude":
+            return [
+                "claude",
+                "-p",
+                "--dangerously-skip-permissions",
+                "--output-format",
+                "json",
+                "--agent",
+                f"zettlink-{role}",
+            ]
+        if engine == "codex":
+            sandbox = "danger-full-access" if role == "po" else "workspace-write"
+            return [
+                "codex",
+                "exec",
+                "--cd",
+                self._root,
+                "--sandbox",
+                sandbox,
+                "--ask-for-approval",
+                "never",
+                "-",
+            ]
+        raise ValueError(f"unsupported agent engine: {engine}")
+
+    def _call_agent(self, engine: str, role: str, prompt: str, timeout: int = 900) -> str:
+        """Claude/Codex를 역할 기반 비대화형 agent로 호출하고 stdout을 반환한다."""
+        cmd = self._agent_command(engine, role)
+        if engine == "claude":
+            result = subprocess.run(
+                cmd + [prompt],
+                cwd=self._root,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
+        else:
+            result = subprocess.run(
+                cmd,
+                cwd=self._root,
+                input=prompt,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
+        return result.stdout
 
     def _invoke_claude(self, step: dict, preamble: str) -> dict:
+        """호환용 Claude step 호출. 새 실행 경로는 _invoke_agent_step을 사용한다."""
+        return self._invoke_agent_step("claude", step, preamble)
+
+    def _invoke_agent_step(self, engine: str, step: dict, preamble: str) -> dict:
         step_num, step_name = step["step"], step["name"]
         step_file = self._phase_dir / f"step{step_num}.md"
 
@@ -235,18 +334,26 @@ class StepExecutor:
             sys.exit(1)
 
         prompt = preamble + step_file.read_text()
-        result = subprocess.run(
-            ["claude", "-p", "--dangerously-skip-permissions", "--output-format", "json", prompt],
-            cwd=self._root, capture_output=True, text=True, timeout=1800,
-        )
+        cmd = self._agent_command(engine, "po")
+        if engine == "claude":
+            result = subprocess.run(
+                cmd + [prompt],
+                cwd=self._root, capture_output=True, text=True, timeout=1800,
+            )
+        else:
+            result = subprocess.run(
+                cmd,
+                cwd=self._root, input=prompt, capture_output=True, text=True, timeout=1800,
+            )
 
         if result.returncode != 0:
-            print(f"\n  WARN: Claude가 비정상 종료됨 (code {result.returncode})")
+            print(f"\n  WARN: {engine} PO가 비정상 종료됨 (code {result.returncode})")
             if result.stderr:
                 print(f"  stderr: {result.stderr[:500]}")
 
         output = {
             "step": step_num, "name": step_name,
+            "engine": engine,
             "exitCode": result.returncode,
             "stdout": result.stdout, "stderr": result.stderr,
         }
@@ -262,9 +369,22 @@ class StepExecutor:
         print(f"\n{'='*60}")
         print(f"  Harness Step Executor")
         print(f"  Phase: {self._phase_name} | Steps: {self._total}")
+        if self._gates_enabled:
+            print(f"  Workflow: PO + Reviewer (Gate 1 + Gate 2)")
+        print(f"  Strategy: {self._strategy} (PO={self._po_engine}, Reviewer={self._reviewer_engine})")
+        if self._dry_run:
+            print(f"  Dry-run: enabled")
         if self._auto_push:
             print(f"  Auto-push: enabled")
         print(f"{'='*60}")
+
+    def _print_dry_run(self):
+        po_cmd = " ".join(self._agent_command(self._po_engine, "po"))
+        reviewer_cmd = " ".join(self._agent_command(self._reviewer_engine, "reviewer"))
+        print("\n  Dry-run commands:")
+        print(f"  PO:       {po_cmd}")
+        print(f"  Reviewer: {reviewer_cmd}")
+        print("  No branch checkout, file writes, agent calls, or commits were performed.")
 
     def _check_blockers(self):
         index = self._read_json(self._index_file)
@@ -306,7 +426,7 @@ class StepExecutor:
                 tag += f" [retry {attempt}/{self.MAX_RETRIES}]"
 
             with progress_indicator(tag) as pi:
-                self._invoke_claude(step, preamble)
+                self._invoke_agent_step(self._po_engine, step, preamble)
                 elapsed = int(pi.elapsed)
 
             index = self._read_json(self._index_file)
@@ -403,14 +523,146 @@ class StepExecutor:
         print(f"  Phase '{self._phase_name}' completed!")
         print(f"{'='*60}")
 
+    # ─── PO + Reviewer 워크플로우 (docs/AGENT_WORKFLOW.md) ───
+
+    def _plan_file(self) -> Path:
+        return ROOT / "docs" / f"phase-{self._phase_dir_name}-plan.md"
+
+    def _verdict_file(self, gate_num: int) -> Path:
+        return self._phase_dir / f"gate{gate_num}-verdict.json"
+
+    def _gate_already_approved(self, gate_num: int) -> bool:
+        vf = self._verdict_file(gate_num)
+        if not vf.exists():
+            return False
+        try:
+            return json.loads(vf.read_text()).get("verdict") == "APPROVED"
+        except (json.JSONDecodeError, OSError):
+            return False
+
+    def _call_claude(self, prompt: str, timeout: int = 900) -> str:
+        """Claude를 비대화형으로 호출하고 stdout을 반환한다."""
+        return self._call_agent("claude", "po", prompt, timeout=timeout)
+
+    def _run_plan_phase(self, guardrails: str):
+        """Gate 1 전: PO가 구현 플랜을 작성하고 커밋한다."""
+        plan_file = self._plan_file()
+        if plan_file.exists():
+            print(f"  Plan: {plan_file.name} (exists, skipping)")
+            return
+
+        index = self._read_json(self._index_file)
+        steps_text = "\n".join(
+            f"  - Step {s['step']}: {s['name']}" for s in index["steps"]
+        )
+        rel_plan = plan_file.relative_to(ROOT)
+        prompt = (
+            f"{guardrails}\n\n---\n\n"
+            f"당신은 {self._project} 프로젝트의 PO입니다.\n\n"
+            f"## 임무\n"
+            f"Phase '{self._phase_name}'의 구현 플랜을 `{rel_plan}`에 작성하라.\n\n"
+            f"## Phase 체크리스트 ({self._total}개 step)\n{steps_text}\n\n"
+            f"## 플랜 포함 내용\n"
+            f"1. 각 Step의 구현 순서와 이유\n"
+            f"2. 각 Step의 검증 방법 (AC)\n"
+            f"3. 생성될 파일 목록\n"
+            f"4. CLAUDE.md CRITICAL 규칙 충돌 여부 확인\n\n"
+            f"파일 작성 후 커밋하라:\n"
+            f"  git add {rel_plan}\n"
+            f"  git commit -m \"plan({self._phase_name}): Gate 1 implementation plan\"\n"
+        )
+
+        with progress_indicator(f"PO: writing plan ({self._phase_name})"):
+            self._call_agent(self._po_engine, "po", prompt, timeout=600)
+
+        if plan_file.exists():
+            print(f"  ✓ Plan: {plan_file.name}")
+        else:
+            print(f"  WARN: PO가 플랜 파일을 생성하지 않았습니다.")
+
+    def _run_reviewer(self, gate_num: int, criteria: str) -> tuple[bool, list]:
+        """Reviewer Claude를 실행하고 (approved, issues) 반환한다."""
+        verdict_file = self._verdict_file(gate_num)
+        verdict_file.unlink(missing_ok=True)
+        rel_verdict = verdict_file.relative_to(ROOT)
+
+        prompt = (
+            f"당신은 {self._project} 프로젝트의 코드 리뷰어입니다.\n\n"
+            f"코드를 수정하지 마라. 이 Gate에서는 읽기와 검토만 수행하고, 마지막에 verdict JSON 파일만 작성한다.\n\n"
+            f"## Gate {gate_num} 검토\n\n"
+            f"1. `git diff $(git merge-base HEAD main)..HEAD` 또는 `git log --oneline -20`을 실행해 변경사항을 파악하라.\n"
+            f"2. 아래 기준을 각각 확인하라:\n\n{criteria}\n\n"
+            f"3. 검토 결과를 `{rel_verdict}` 파일에 JSON으로 저장하라:\n"
+            f'   이슈 없음: {{"verdict": "APPROVED", "issues": []}}\n'
+            f'   이슈 있음: {{"verdict": "ISSUES", "issues": ["이슈1", "이슈2"]}}\n\n'
+            f"반드시 Write 도구로 해당 파일을 저장해야 한다."
+        )
+
+        with progress_indicator(f"Reviewer: Gate {gate_num}"):
+            self._call_agent(self._reviewer_engine, "reviewer", prompt, timeout=600)
+
+        if not verdict_file.exists():
+            return False, ["Reviewer가 verdict 파일을 생성하지 못했습니다."]
+
+        try:
+            v = json.loads(verdict_file.read_text())
+            return v.get("verdict") == "APPROVED", v.get("issues", [])
+        except (json.JSONDecodeError, OSError):
+            return False, ["verdict 파일 파싱 실패"]
+
+    def _run_po_fix(self, gate_num: int, issues: list, guardrails: str):
+        """PO가 Reviewer 피드백을 반영해 수정하고 커밋한다."""
+        issues_text = "\n".join(f"- {i}" for i in issues)
+        prompt = (
+            f"{guardrails}\n\n---\n\n"
+            f"## Gate {gate_num} 수정 임무\n\n"
+            f"Reviewer가 다음 이슈를 발견했다. 수정하라:\n\n{issues_text}\n\n"
+            f"수정 완료 후 Conventional Commits 형식으로 커밋하라."
+        )
+
+        with progress_indicator(f"PO: fixing Gate {gate_num} issues"):
+            self._call_agent(self._po_engine, "po", prompt, timeout=900)
+
+    def _run_gate(self, gate_num: int, criteria: str, description: str, guardrails: str):
+        """게이트 리뷰를 실행한다. 통과 실패 시 sys.exit(1)."""
+        print(f"\n  ── Gate {gate_num}: {description} ──")
+
+        if self._gate_already_approved(gate_num):
+            print(f"  ✓ Gate {gate_num}: already APPROVED")
+            return
+
+        for attempt in range(1, self.REVIEWER_MAX_RETRIES + 1):
+            approved, issues = self._run_reviewer(gate_num, criteria)
+
+            if approved:
+                print(f"  ✓ Gate {gate_num}: APPROVED")
+                return
+
+            print(f"  ✗ Gate {gate_num}: ISSUES ({len(issues)}개, attempt {attempt}/{self.REVIEWER_MAX_RETRIES})")
+            for issue in issues[:5]:
+                print(f"    - {issue}")
+
+            if attempt < self.REVIEWER_MAX_RETRIES:
+                self._run_po_fix(gate_num, issues, guardrails)
+            else:
+                print(f"\n  Gate {gate_num} failed after {self.REVIEWER_MAX_RETRIES} attempts.")
+                print(f"  Fix issues manually and delete {self._verdict_file(gate_num).name} to re-run.")
+                sys.exit(1)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Harness Step Executor")
     parser.add_argument("phase_dir", help="Phase directory name (e.g. 0-mvp)")
     parser.add_argument("--push", action="store_true", help="Push branch after completion")
+    parser.add_argument(
+        "--strategy",
+        choices=sorted(StepExecutor.STRATEGIES),
+        help="Agent pairing: claude-codex means Claude PO + Codex Reviewer; codex-claude means Codex PO + Claude Reviewer",
+    )
+    parser.add_argument("--dry-run", action="store_true", help="Print selected agent commands without running the phase")
     args = parser.parse_args()
 
-    StepExecutor(args.phase_dir, auto_push=args.push).run()
+    StepExecutor(args.phase_dir, auto_push=args.push, strategy=args.strategy, dry_run=args.dry_run).run()
 
 
 if __name__ == "__main__":
