@@ -19,3 +19,13 @@ logs/*.log
 # phase execution outputs
 phases/**/phase*-output.json
 phases/**/step*-output.json
+
+# test coverage reports
+coverage/
+**/coverage/
+
+# supabase temp
+supabase/.temp/
+
+# nested lockfiles (root pnpm-lock.yaml가 정본)
+apps/*/pnpm-lock.yaml
