@@ -60,7 +60,7 @@
       "name": "launchd",
       "status": "completed",
       "started_at": "2026-05-17T12:30:53+0900",
-      "completed_at": "2026-05-17T12:32:00+0900",
+      "completed_at": "2026-05-17T12:32:07+0900",
       "summary": "com.zettlink.bot.plist, com.zettlink.worker.plist(ZETTLINK_ROOT placeholder), scripts/install-launchd.sh, logs/.gitkeep 생성. .gitignore logs/ → logs/*.log 수정. plutil 검증 통과."
     }
   ],
