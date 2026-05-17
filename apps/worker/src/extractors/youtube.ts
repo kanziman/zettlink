@@ -1,6 +1,8 @@
 // YouTube 영상에서 메타데이터와 자막을 추출하는 yt-dlp wrapper
 import { execSync } from 'node:child_process'
-import { readFileSync, unlinkSync, existsSync } from 'node:fs'
+import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 export interface YoutubeExtract {
   videoId: string
@@ -8,6 +10,8 @@ export interface YoutubeExtract {
   description: string
   durationSec: number
   transcript: string
+  transcriptSource: 'subtitle_ko' | 'subtitle_en' | 'subtitle_other' | 'description'
+  subtitleFailures: string[]
   rawMetadata: Record<string, unknown>
 }
 
@@ -30,67 +34,109 @@ function ensureYtDlp(): void {
   }
 }
 
-export async function extractYoutube(videoId: string): Promise<YoutubeExtract> {
-  ensureYtDlp()
+async function findVttFiles(dir: string): Promise<string[]> {
+  const entries = await readdir(dir)
+  return entries
+    .filter((entry) => entry.endsWith('.vtt'))
+    .sort()
+    .map((entry) => join(dir, entry))
+}
 
+async function trySubtitle(
+  url: string,
+  mode: 'manual' | 'auto',
+  langs: string,
+  source: YoutubeExtract['transcriptSource'],
+): Promise<{ transcript: string, source: YoutubeExtract['transcriptSource'], failure?: string }> {
   const { execa } = await import('execa')
-  const url = `https://www.youtube.com/watch?v=${videoId}`
-  const tmpPrefix = `/tmp/zettlink-${videoId}`
-
-  // 임시 파일 경로 목록 (cleanup용)
-  const tmpFiles: string[] = []
+  const dir = await mkdtemp(join(tmpdir(), 'zettlink-youtube-sub-'))
 
   try {
-    // 메타데이터 추출
-    const meta = await execa('yt-dlp', ['--dump-json', '--no-playlist', url])
-    const data = JSON.parse(meta.stdout) as Record<string, unknown>
-
-    // 자동 자막 추출 (en 우선, ko 폴백)
-    await execa(
+    const result = await execa(
       'yt-dlp',
       [
-        '--write-auto-sub',
-        '--sub-lang', 'en,ko',
+        mode === 'auto' ? '--write-auto-sub' : '--write-sub',
+        '--sub-langs', langs,
         '--sub-format', 'vtt',
         '--skip-download',
-        '--output', `${tmpPrefix}.%(ext)s`,
+        '--output', join(dir, 'sub.%(ext)s'),
         '--no-playlist',
         url,
       ],
       { reject: false },
     )
 
-    // 생성된 vtt 파일 탐색 (en → ko 순)
-    const candidates = [
-      `${tmpPrefix}.en.vtt`,
-      `${tmpPrefix}.en-auto.vtt`,
-      `${tmpPrefix}.ko.vtt`,
-      `${tmpPrefix}.ko-auto.vtt`,
-    ]
-
-    for (const p of candidates) {
-      if (existsSync(p)) tmpFiles.push(p)
+    const vttFiles = await findVttFiles(dir)
+    if (!vttFiles[0]) {
+      const stderr = result.stderr.trim()
+      const detail = stderr || `yt-dlp exit ${result.exitCode ?? 0} produced no vtt files`
+      return { transcript: '', source, failure: `${mode}:${langs}: ${detail}` }
     }
 
-    const vttPath = tmpFiles[0]
-    if (!vttPath) {
-      throw new Error('no transcript available (Phase 1: subtitles only)')
+    const transcript = vttToText(await readFile(vttFiles[0], 'utf-8'))
+    if (transcript.length < 100) {
+      return { transcript: '', source, failure: `${mode}:${langs}: subtitle text too short (${transcript.length} chars)` }
     }
 
-    const vttContent = readFileSync(vttPath, 'utf-8')
-    const transcript = vttToText(vttContent)
-
-    return {
-      videoId,
-      title: String(data['title'] ?? ''),
-      description: String(data['description'] ?? ''),
-      durationSec: Number(data['duration'] ?? 0),
-      transcript,
-      rawMetadata: data,
-    }
+    return { transcript, source }
   } finally {
-    for (const p of tmpFiles) {
-      try { unlinkSync(p) } catch { /* ignore */ }
+    await rm(dir, { recursive: true, force: true })
+  }
+}
+
+export async function extractYoutube(videoId: string): Promise<YoutubeExtract> {
+  ensureYtDlp()
+
+  const { execa } = await import('execa')
+  const url = `https://www.youtube.com/watch?v=${videoId}`
+
+  // 메타데이터 추출
+  const meta = await execa('yt-dlp', ['--dump-json', '--no-playlist', url])
+  const data = JSON.parse(meta.stdout) as Record<string, unknown>
+  const subtitleFailures: string[] = []
+
+  const attempts: Array<Parameters<typeof trySubtitle>> = [
+    [url, 'manual', 'ko', 'subtitle_ko'],
+    [url, 'auto', 'ko-orig,ko', 'subtitle_ko'],
+    [url, 'manual', 'en', 'subtitle_en'],
+    [url, 'manual', 'all', 'subtitle_other'],
+  ]
+
+  for (const attempt of attempts) {
+    const result = await trySubtitle(...attempt)
+    if (result.transcript) {
+      return {
+        videoId,
+        title: String(data['title'] ?? ''),
+        description: String(data['description'] ?? ''),
+        durationSec: Number(data['duration'] ?? 0),
+        transcript: result.transcript,
+        transcriptSource: result.source,
+        subtitleFailures,
+        rawMetadata: data,
+      }
     }
+    if (result.failure) subtitleFailures.push(result.failure)
+  }
+
+  // 자막 없음 또는 다운로드 실패 → description fallback (100자 미만이면 추출 불가로 처리)
+  const desc = String(data['description'] ?? '')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0)
+    .join('\n')
+  if (desc.length < 100) {
+    throw new Error('no transcript available: subtitles missing and description too short')
+  }
+
+  return {
+    videoId,
+    title: String(data['title'] ?? ''),
+    description: String(data['description'] ?? ''),
+    durationSec: Number(data['duration'] ?? 0),
+    transcript: desc.slice(0, 20_000),
+    transcriptSource: 'description',
+    subtitleFailures,
+    rawMetadata: data,
   }
 }

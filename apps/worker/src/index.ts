@@ -131,6 +131,8 @@ async function dispatch(job: DbJob): Promise<void> {
         data: {
           duration_s: (extract as YoutubeExtract).durationSec,
           transcript_chars: (extract as YoutubeExtract).transcript.length,
+          transcript_source: (extract as YoutubeExtract).transcriptSource,
+          subtitle_failures: (extract as YoutubeExtract).subtitleFailures,
         },
       })
     } else {
@@ -211,6 +213,10 @@ async function dispatch(job: DbJob): Promise<void> {
         transcript:
           canonical.platform === 'youtube'
             ? (extract as YoutubeExtract).transcript
+            : undefined,
+        transcriptSource:
+          canonical.platform === 'youtube'
+            ? (extract as YoutubeExtract).transcriptSource
             : undefined,
         extract:
           canonical.platform === 'github'
