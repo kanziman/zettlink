@@ -19,7 +19,7 @@ const { canonicalize, titleToSlug, repoToSlug } = await import('@zettlink/shared
 const { backoffMs } = await import('./retry.js')
 const { extractYoutube } = await import('./extractors/youtube.js')
 const { extractGithub } = await import('./extractors/github.js')
-const { summarize } = await import('./llm/summarize.js')
+const { summarize, BudgetExceededError } = await import('./llm/summarize.js')
 const { normalizeTags } = await import('./llm/tag-normalize.js')
 const { writeVault } = await import('./vault/write.js')
 const { commitAndPush } = await import('./vault/git.js')
@@ -238,6 +238,21 @@ async function dispatch(job: DbJob): Promise<void> {
     )
   } catch (err) {
     logger.error({ jobId: job.id, err }, 'dispatch error')
+
+    // budget 초과: 즉시 dead + bot notify (retry 없음)
+    if (err instanceof BudgetExceededError) {
+      try {
+        await db.from('events').insert({
+          level: 'error',
+          type: 'job.fail',
+          job_id: job.id,
+          data: { error: String(err), reason: 'budget_exceeded' },
+        })
+      } catch { /* ignore */ }
+      await markDead(job, String(err))
+      botNotify(job, `💰 일일 예산 초과로 작업이 중단되었습니다. (${err.message})`).catch(() => {})
+      return
+    }
 
     // job.fail 이벤트 기록
     try {

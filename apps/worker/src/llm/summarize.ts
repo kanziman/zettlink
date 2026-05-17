@@ -6,6 +6,13 @@ import type { YoutubeExtract } from '../extractors/youtube.js'
 import type { GithubExtract } from '../extractors/github.js'
 import { buildPrompt } from './prompts.js'
 
+export class BudgetExceededError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'BudgetExceededError'
+  }
+}
+
 export interface SummaryResult {
   title: string
   summary: string
@@ -54,6 +61,11 @@ const tools: OpenAI.Chat.ChatCompletionTool[] = [{
   },
 }]
 
+// Claude Sonnet 4.6 via OpenRouter 가격 추정 (input: $3/MTok, output: $15/MTok)
+function estimateCostUsd(promptTokens: number, completionTokens: number): number {
+  return (promptTokens * 3 + completionTokens * 15) / 1_000_000
+}
+
 async function checkBudget(): Promise<void> {
   const db = createServiceClient()
   const todayStart = new Date()
@@ -70,7 +82,7 @@ async function checkBudget(): Promise<void> {
   }, 0)
 
   if (dailySpend >= config.budget.dailyUsd) {
-    throw new Error(`daily budget exceeded: $${dailySpend.toFixed(2)} >= $${config.budget.dailyUsd}`)
+    throw new BudgetExceededError(`daily budget exceeded: $${dailySpend.toFixed(2)} >= $${config.budget.dailyUsd}`)
   }
 
   if (dailySpend >= config.budget.dailyUsd * config.budget.alertAtPct / 100) {
@@ -115,8 +127,8 @@ export async function summarize(
   const usage = response.usage ?? { prompt_tokens: 0, completion_tokens: 0 }
   const tokensUsed = usage.prompt_tokens + usage.completion_tokens
 
-  // OpenRouter는 응답에 비용을 반환하지 않으므로 0으로 기록, 토큰만 추적
-  const costUsd = 0
+  // OpenRouter 비용 미반환 → Claude Sonnet 4.6 가격 기준 토큰 추정값
+  const costUsd = estimateCostUsd(usage.prompt_tokens, usage.completion_tokens)
 
   if (tokensUsed > 100_000) {
     const db = createServiceClient()
