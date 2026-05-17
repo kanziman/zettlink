@@ -5,5 +5,17 @@
   "type": "module",
   "engines": {
     "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "node --watch dist/index.js"
+  },
+  "dependencies": {
+    "pino": "^9",
+    "@zettlink/db": "workspace:*",
+    "@zettlink/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5"
   }
 }
