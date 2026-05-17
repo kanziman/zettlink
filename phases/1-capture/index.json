@@ -29,7 +29,7 @@
       "status": "completed",
       "started_at": "2026-05-17T13:13:16+0900",
       "summary": "apps/worker/src/extractors/youtube.ts — yt-dlp wrapper: 메타데이터 + VTT 자막 추출, vttToText 변환, 임시 파일 cleanup, 자막 없음 throw",
-      "completed_at": "2026-05-17T13:30:00+0900"
+      "completed_at": "2026-05-17T13:14:27+0900"
     },
     {
       "step": 3,
