@@ -8,19 +8,20 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "node --watch dist/index.js",
+    "dev": "tsx watch --env-file ../../.env src/index.ts",
     "test": "vitest run --coverage"
   },
   "dependencies": {
-    "pino": "^9",
+    "@zettlink/db": "workspace:*",
+    "@zettlink/shared": "workspace:*",
     "execa": "^9",
     "openai": "^4",
-    "@zettlink/db": "workspace:*",
-    "@zettlink/shared": "workspace:*"
+    "pino": "^9"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^2",
+    "tsx": "^4.22.0",
     "typescript": "^5",
-    "vitest": "^2",
-    "@vitest/coverage-v8": "^2"
+    "vitest": "^2"
   }
 }
