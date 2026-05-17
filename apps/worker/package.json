@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "pino": "^9",
+    "execa": "^9",
     "@zettlink/db": "workspace:*",
     "@zettlink/shared": "workspace:*"
   },
