@@ -61,7 +61,7 @@
       "status": "completed",
       "started_at": "2026-05-17T19:07:55+0900",
       "summary": "apps/worker/src/vault/write.ts — VaultWriteInput(card, summary, transcript?, extract?) → index.md atomic write(temp+rename), transcript.md/extract.md 선택 기록, buildIndexMd frontmatter+body 생성",
-      "completed_at": "2026-05-17T19:10:00+0900"
+      "completed_at": "2026-05-17T19:08:47+0900"
     },
     {
       "step": 7,
