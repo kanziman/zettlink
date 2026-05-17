@@ -118,11 +118,11 @@
 
 ### ADR-012: Whisper Phase 1 skip, Phase 4 whisper.cpp
 
-**결정:** 1단계는 자막 있는 영상만 처리. 자막 없으면 fail. 음성 → 자막 변환은 Phase 4에 whisper.cpp 로컬로.
+**결정:** 1단계는 yt-dlp로 받을 수 있는 YouTube 자막을 우선 사용하고, 자막 다운로드가 불가능하면 영상 description을 명시적 fallback source로 저장한다. 음성 → 자막 변환은 Phase 4에 whisper.cpp 로컬로.
 
-**이유:** Phase 1 범위 축소. OpenAI Whisper API는 $0.006/min × 60분 = $0.36/건으로 1인 사용에 부담. whisper.cpp는 비용 0이지만 셋업 복잡 → Phase 1 가치 ↓.
+**이유:** Phase 1 범위 축소. OpenAI Whisper API는 $0.006/min × 60분 = $0.36/건으로 1인 사용에 부담. whisper.cpp는 비용 0이지만 셋업 복잡 → Phase 1 가치 ↓. 다만 description은 추가 비용 없이 일부 영상에서 최소한의 요약 입력을 제공한다.
 
-**트레이드오프:** Phase 1 처리 가능 영상 범위 좁아짐.
+**트레이드오프:** description fallback은 실제 자막보다 정보 밀도가 낮다. 따라서 vault와 events에 `content_source`/`transcript_source`를 기록해 후속 재처리와 품질 판단이 가능해야 한다.
 
 ---
 
@@ -156,4 +156,14 @@
 
 ---
 
-*최종 갱신: 2026-05-16.*
+### ADR-016: YouTube 자막 없을 때 description fallback
+
+**결정:** `extractYoutube`에서 자막(VTT)을 `manual ko → auto ko-orig/ko → manual en → manual all` 순으로 시도한다. 모든 자막 시도가 실패하거나 유효한 VTT가 없으면 영상 description을 fallback text로 사용하고, description이 100자 미만이면 처리 불가 에러로 처리한다.
+
+**이유:** Phase 1 초기 구현은 "subtitles only"로 자막 없는 영상을 전부 실패 처리했으나, YouTube 영상 상당수가 자막 없이도 description에 충분한 정보를 담고 있음. 또한 yt-dlp가 자동 자막 목록을 보여도 다운로드 단계에서 429 등으로 실패할 수 있으므로, 실패 stderr/exit 정보를 남기고 fallback 여부를 추적해야 한다.
+
+**트레이드오프:** description은 자막보다 정보 밀도가 낮아 LLM 요약 품질이 떨어질 수 있음. 그래서 `YoutubeExtract.transcriptSource`, `events.data.transcript_source`, vault `index.md`의 `content_source`, `transcript.md` 상단 `source`로 실제 출처를 명시한다. 향후 Whisper 통합 시 description보다 높은 우선순위로 삽입.
+
+---
+
+*최종 갱신: 2026-05-17.*

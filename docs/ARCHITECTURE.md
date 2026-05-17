@@ -119,7 +119,7 @@ zettlink/
 4. Worker가 `pick_next_job()` RPC로 잡 픽업 (status='processing').
 5. URL canonical 정규화 (`packages/shared/url-normalize.ts`).
 6. `UPSERT cards (platform, external_id)` — 존재하고 `!force`면 skip.
-7. 플랫폼별 extract (yt-dlp / GH API).
+7. 플랫폼별 extract (yt-dlp / GH API). YouTube는 `manual ko → auto ko-orig/ko → manual en → manual all → description fallback` 순으로 텍스트를 선택하고 source를 기록한다.
 8. Claude Sonnet 4.6 호출 (tool_use 구조 출력: summary/insights/tags).
 9. Tag canonical 매칭 + UPSERT.
 10. (옵션) vault/.md export (atomic temp+rename) + git push.
@@ -144,6 +144,7 @@ Dashboard publish 토글 → `UPDATE cards SET published=true` → (옵션) Verc
 | LLM 비용 가드 초과 | 사전 체크 | jobs status='dead', bot 알림 |
 | Supabase 429 / 네트워크 | HTTP code | exp backoff 3회 |
 | Supabase 403 (RLS) | 즉시 감지 | hard fail, 서버 misconfig 알림 |
+| YouTube subtitle 다운로드 실패 | yt-dlp exit/stderr | 다음 subtitle 후보를 시도하고, 모두 실패하면 description fallback + source 기록 |
 | Git push conflict | exit code | `git pull --rebase` + 1회 재시도 |
 | Dashboard 미인증 | middleware | `/login` 리다이렉트 |
 | Dashboard 비-admin | middleware | 403 + events log |
@@ -153,6 +154,7 @@ Dashboard publish 토글 → `UPDATE cards SET published=true` → (옵션) Verc
 ## 5. 관측성
 
 - **`events` 테이블** — 매 단계 1 row. `data jsonb`에 cost/tokens/duration/error 기록.
+- **YouTube extract event** — `transcript_source`와 `subtitle_failures`를 기록해 description fallback과 yt-dlp 429 등을 추적.
 - **`pino`** — `logs/zettlink-YYYY-MM-DD.log` (JSONL).
 - **Dashboard `/monitor`** — 오늘/이번달 LLM 비용, 큐 깊이, 최근 실패 10건, 처리 시간 분포.
 - **Supabase Studio SQL 콘솔** — ad-hoc 분석.
@@ -195,4 +197,4 @@ Dashboard publish 토글 → `UPDATE cards SET published=true` → (옵션) Verc
 
 ---
 
-*최종 갱신: 2026-05-16. 이 문서는 [BEFORE_PLAN.md](BEFORE_PLAN.md)를 supersede합니다.*
+*최종 갱신: 2026-05-17. 이 문서는 [BEFORE_PLAN.md](BEFORE_PLAN.md)를 supersede합니다.*
