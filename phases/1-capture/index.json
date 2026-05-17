@@ -50,7 +50,10 @@
     {
       "step": 5,
       "name": "tag-normalize",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-05-17T19:07:09+0900",
+      "summary": "apps/worker/src/llm/tag-normalize.ts — rawTags → 소문자 정규화 → canonical/alias 정확 매칭 → 신규 INSERT 또는 alias append + usage_count 증가 → card_tags upsert(ignoreDuplicates)",
+      "completed_at": "2026-05-17T19:10:00+0900"
     },
     {
       "step": 6,
