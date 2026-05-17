@@ -64,5 +64,6 @@
       "summary": "com.zettlink.bot.plist, com.zettlink.worker.plist(ZETTLINK_ROOT placeholder), scripts/install-launchd.sh, logs/.gitkeep 생성. .gitignore logs/ → logs/*.log 수정. plutil 검증 통과."
     }
   ],
-  "created_at": "2026-05-16T17:32:34+0900"
+  "created_at": "2026-05-16T17:32:34+0900",
+  "completed_at": "2026-05-17T12:33:17+0900"
 }
