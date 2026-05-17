@@ -2,7 +2,8 @@
   "phases": [
     {
       "dir": "0-infrastructure",
-      "status": "pending"
+      "status": "error",
+      "failed_at": "2026-05-16T18:05:49+0900"
     }
   ]
 }
