@@ -77,7 +77,7 @@
       "status": "completed",
       "started_at": "2026-05-17T19:09:31+0900",
       "summary": "apps/worker/src/retry.ts — backoffMs(attempt): 1분/5분/30분 지수 증가 + ±10% jitter, TDD(RED→GREEN) 5개 테스트 100% 커버, index.ts inline 계산을 backoffMs() 호출로 교체",
-      "completed_at": "2026-05-17T19:10:50+0900"
+      "completed_at": "2026-05-17T19:10:44+0900"
     },
     {
       "step": 9,
