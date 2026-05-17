@@ -42,7 +42,10 @@
     {
       "step": 4,
       "name": "llm-summarize",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-05-17T19:05:04+0900",
+      "summary": "apps/worker/src/llm/summarize.ts — checkBudget(비용 가드) + OpenRouter(openai SDK) + tool_use 구조 출력 + llm.call 이벤트 기록; apps/worker/src/llm/prompts.ts — YouTube/GitHub 프롬프트 빌더",
+      "completed_at": "2026-05-17T19:20:00+0900"
     },
     {
       "step": 5,
