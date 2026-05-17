@@ -16,6 +16,7 @@ const logger = pino(
 
 const { createServiceClient } = await import('@zettlink/db')
 const { canonicalize } = await import('@zettlink/shared')
+const { backoffMs } = await import('./retry.js')
 
 import type { Database } from '@zettlink/db'
 type DbJob = Database['public']['Functions']['pick_next_job']['Returns']
@@ -49,8 +50,7 @@ async function markFailed(job: DbJob, err: unknown): Promise<void> {
   // pick_next_job이 이미 attempts를 +1한 상태로 반환
   const attempts = job.attempts
   const isDead = attempts >= job.max_attempts
-  const backoffMs = [60_000, 300_000, 1_800_000][Math.min(attempts - 1, 2)]
-  const nextAttemptAt = new Date(Date.now() + backoffMs).toISOString()
+  const nextAttemptAt = new Date(Date.now() + backoffMs(attempts)).toISOString()
 
   await db
     .from('jobs')
