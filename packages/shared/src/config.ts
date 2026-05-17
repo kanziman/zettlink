@@ -16,7 +16,13 @@ const schema = z.object({
     whitelist: z.array(z.string()),
   }),
   anthropic: z.object({
+    apiKey: z.string().optional(),
+  }),
+  openrouter: z.object({
     apiKey: z.string().min(1),
+  }),
+  llm: z.object({
+    model: z.string().default('anthropic/claude-sonnet-4-6'),
   }),
   github: z.object({
     token: z.string().optional(),
@@ -52,7 +58,13 @@ export const config: Config = schema.parse({
     whitelist: commaSeparated(process.env.TELEGRAM_WHITELIST),
   },
   anthropic: {
-    apiKey: process.env.ANTHROPIC_API_KEY,
+    apiKey: process.env.ANTHROPIC_API_KEY || undefined,
+  },
+  openrouter: {
+    apiKey: process.env.OPENROUTER_API_KEY ?? '',
+  },
+  llm: {
+    model: process.env.LLM_MODEL ?? 'anthropic/claude-sonnet-4-6',
   },
   github: {
     token: process.env.GITHUB_TOKEN || undefined,

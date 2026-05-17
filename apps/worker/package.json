@@ -13,6 +13,7 @@
   "dependencies": {
     "pino": "^9",
     "execa": "^9",
+    "openai": "^4",
     "@zettlink/db": "workspace:*",
     "@zettlink/shared": "workspace:*"
   },
