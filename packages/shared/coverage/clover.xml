@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1778988621980" clover="3.2.0">
-  <project timestamp="1778988621980" name="All files">
+<coverage generated="1778988700719" clover="3.2.0">
+  <project timestamp="1778988700719" name="All files">
     <metrics statements="142" coveredstatements="79" conditionals="40" coveredconditionals="38" methods="8" coveredmethods="6" elements="190" coveredelements="123" complexity="0" loc="142" ncloc="142" packages="1" files="5" classes="5"/>
     <file name="config.ts" path="/Users/zorba/AI/dev/zettlink/packages/shared/src/config.ts">
       <metrics statements="62" coveredstatements="0" conditionals="1" coveredconditionals="0" methods="1" coveredmethods="0"/>
