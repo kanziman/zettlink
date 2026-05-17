@@ -69,7 +69,7 @@
       "status": "completed",
       "started_at": "2026-05-17T19:08:47+0900",
       "summary": "apps/worker/src/vault/git.ts — commitAndPush(slug, platform): git add vault/path → diff 없으면 skip → commit → push, conflict 시 pull --rebase + 재push, 실패는 warn 로그만(soft-fail)",
-      "completed_at": "2026-05-17T19:20:00+0900"
+      "completed_at": "2026-05-17T19:09:31+0900"
     },
     {
       "step": 8,
