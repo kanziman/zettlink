@@ -18,7 +18,10 @@
     {
       "step": 1,
       "name": "worker-loop",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-05-17T13:09:47+0900",
+      "summary": "apps/worker/src/index.ts — poll loop(while+await 5s), pick_next_job() RPC, reaper(30분 stuck→queued), markDone/markFailed/markDead, dispatch skeleton",
+      "completed_at": "2026-05-17T13:30:00+0900"
     },
     {
       "step": 2,
