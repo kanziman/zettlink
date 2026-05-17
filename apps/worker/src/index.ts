@@ -15,10 +15,21 @@ const logger = pino(
 )
 
 const { createServiceClient } = await import('@zettlink/db')
-const { canonicalize } = await import('@zettlink/shared')
+const { canonicalize, titleToSlug, repoToSlug } = await import('@zettlink/shared')
 const { backoffMs } = await import('./retry.js')
+const { extractYoutube } = await import('./extractors/youtube.js')
+const { extractGithub } = await import('./extractors/github.js')
+const { summarize } = await import('./llm/summarize.js')
+const { normalizeTags } = await import('./llm/tag-normalize.js')
+const { writeVault } = await import('./vault/write.js')
+const { commitAndPush } = await import('./vault/git.js')
+const { botNotify } = await import('./notify.js')
 
 import type { Database } from '@zettlink/db'
+import type { YoutubeExtract } from './extractors/youtube.js'
+import type { GithubExtract } from './extractors/github.js'
+import type { Card } from '@zettlink/shared'
+
 type DbJob = Database['public']['Functions']['pick_next_job']['Returns']
 
 function sleep(ms: number): Promise<void> {
@@ -66,28 +77,183 @@ async function markFailed(job: DbJob, err: unknown): Promise<void> {
 }
 
 async function dispatch(job: DbJob): Promise<void> {
+  const db = createServiceClient()
+
   try {
+    // 1. URL 정규화
     const canonical = canonicalize(job.raw_url)
     if (!canonical) {
+      await db.from('events').insert({
+        level: 'error',
+        type: 'job.fail',
+        job_id: job.id,
+        data: { step: 'canonicalize', error: 'unsupported URL' },
+      })
       await markDead(job, 'unsupported URL')
-      logger.warn({ jobId: job.id, url: job.raw_url }, 'unsupported URL — dead')
+      await botNotify(job, '❌ 지원하지 않는 URL입니다.')
       return
     }
 
+    // 2. 기존 카드 존재 여부 확인
+    const { data: existingCard } = await db
+      .from('cards')
+      .select('id, status')
+      .eq('platform', canonical.platform)
+      .eq('external_id', canonical.externalId)
+      .maybeSingle()
+
+    if (existingCard && existingCard.status === 'done' && !job.force) {
+      await botNotify(job, `🔗 이미 존재합니다: ${canonical.canonical}`)
+      await markDone(job)
+      return
+    }
+
+    // 3. job.pick 이벤트 기록
+    await db.from('events').insert({
+      level: 'info',
+      type: 'job.pick',
+      job_id: job.id,
+      data: { platform: canonical.platform, external_id: canonical.externalId },
+    })
     logger.info({ jobId: job.id, url: canonical.canonical }, 'job.pick')
 
-    // TODO(step 2): youtube extractor
-    // TODO(step 3): github extractor
-    // TODO(step 4): llm summarize (비용 가드 포함)
-    // TODO(step 5): tag normalize
-    // TODO(step 6): vault write (atomic temp+rename)
-    // TODO(step 7): vault git push
+    // 4. 플랫폼별 추출
+    let extract: YoutubeExtract | GithubExtract
+    let cardId: string
 
+    if (canonical.platform === 'youtube') {
+      extract = await extractYoutube(canonical.externalId)
+      cardId = existingCard?.id ?? (titleToSlug((extract as YoutubeExtract).title) || canonical.externalId)
+      await db.from('events').insert({
+        level: 'info',
+        type: 'extract.youtube',
+        job_id: job.id,
+        data: {
+          duration_s: (extract as YoutubeExtract).durationSec,
+          transcript_chars: (extract as YoutubeExtract).transcript.length,
+        },
+      })
+    } else {
+      extract = await extractGithub(canonical.externalId)
+      cardId = existingCard?.id ?? repoToSlug(canonical.externalId)
+      await db.from('events').insert({
+        level: 'info',
+        type: 'extract.github',
+        job_id: job.id,
+        data: {
+          stars: (extract as GithubExtract).stars,
+          language: (extract as GithubExtract).language,
+        },
+      })
+    }
+
+    // 5. 카드 INSERT 또는 processing 상태로 UPDATE
+    if (existingCard) {
+      await db
+        .from('cards')
+        .update({ status: 'processing', url: canonical.canonical })
+        .eq('id', existingCard.id)
+    } else {
+      await db.from('cards').insert({
+        id: cardId,
+        url: canonical.canonical,
+        platform: canonical.platform,
+        external_id: canonical.externalId,
+        status: 'processing',
+      })
+    }
+
+    // 6. LLM 요약 (checkBudget + llm.call 이벤트는 summarize 내부에서 처리)
+    const summary = await summarize(extract, canonical.platform, job.id)
+
+    // 7. 카드 LLM 결과 반영
+    await db
+      .from('cards')
+      .update({
+        title: summary.title,
+        summary: summary.summary,
+        insights: summary.insights as unknown as import('@zettlink/db').Database['public']['Tables']['cards']['Update']['insights'],
+        tokens_used: summary.tokensUsed,
+        cost_usd: summary.costUsd,
+        status: 'done',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', cardId)
+
+    // 8. 태그 정규화 + card_tags 연결
+    await normalizeTags(summary.tags, cardId)
+
+    // 9. vault write + git push (실패해도 done 처리)
+    try {
+      const cardForVault: Card = {
+        id: cardId,
+        url: canonical.canonical,
+        platform: canonical.platform,
+        externalId: canonical.externalId,
+        title: summary.title,
+        summary: summary.summary,
+        insights: summary.insights,
+        rawMetadata: null,
+        status: 'done',
+        published: false,
+        hasDeep: false,
+        hasTil: false,
+        hasGuide: false,
+        vaultPath: null,
+        tokensUsed: summary.tokensUsed,
+        costUsd: summary.costUsd,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+      await writeVault({
+        card: cardForVault,
+        summary,
+        transcript:
+          canonical.platform === 'youtube'
+            ? (extract as YoutubeExtract).transcript
+            : undefined,
+        extract:
+          canonical.platform === 'github'
+            ? (extract as GithubExtract).readme
+            : undefined,
+      })
+      await commitAndPush(cardId, canonical.platform)
+    } catch (vaultErr) {
+      logger.warn({ vaultErr, cardId }, 'vault write/push failed — continuing')
+    }
+
+    // 10. job.done 이벤트 기록 + 완료 처리
+    await db.from('events').insert({
+      level: 'info',
+      type: 'job.done',
+      job_id: job.id,
+      card_id: cardId,
+      data: { slug: cardId },
+    })
     await markDone(job)
-    logger.info({ jobId: job.id }, 'job.done')
+
+    // bot notify 실패가 done 처리를 막지 않도록 soft-fail
+    botNotify(job, `✅ ${summary.title} (${cardId})`).catch((err) =>
+      logger.warn({ err }, 'botNotify failed'),
+    )
   } catch (err) {
     logger.error({ jobId: job.id, err }, 'dispatch error')
+
+    // job.fail 이벤트 기록
+    try {
+      await db.from('events').insert({
+        level: 'error',
+        type: 'job.fail',
+        job_id: job.id,
+        data: { error: String(err) },
+      })
+    } catch { /* events INSERT 실패는 무시 */ }
+
     await markFailed(job, err)
+
+    if (job.attempts >= job.max_attempts) {
+      botNotify(job, `❌ 처리 실패: ${String(err).slice(0, 200)}`).catch(() => {/* ignore */})
+    }
   }
 }
 
