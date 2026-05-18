@@ -36,7 +36,7 @@
       "name": "card-list",
       "status": "completed",
       "started_at": "2026-05-18T18:39:17+0900",
-      "completed_at": "2026-05-18T19:30:00+0900",
+      "completed_at": "2026-05-18T18:47:51+0900",
       "summary": "Admin layout (sticky nav + LogoutButton), card list page with search/tag/status filters, parallel Supabase fetch with Promise.all, and dotenv root .env loading in next.config.ts were added."
     },
     {
