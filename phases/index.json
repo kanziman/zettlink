@@ -14,7 +14,8 @@
     },
     {
       "dir": "2-dashboard",
-      "status": "pending"
+      "status": "error",
+      "failed_at": "2026-05-18T14:07:41+0900"
     }
   ]
 }
