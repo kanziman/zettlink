@@ -149,6 +149,10 @@ importers:
       '@zettlink/shared':
         specifier: workspace:*
         version: link:../shared
+    devDependencies:
+      vitest:
+        specifier: ^2
+        version: 2.1.9(@types/node@22.19.19)(lightningcss@1.32.0)
 
   packages/prompts: {}
 
