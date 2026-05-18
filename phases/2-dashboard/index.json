@@ -66,7 +66,10 @@
     {
       "step": 7,
       "name": "deploy",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-05-18T18:55:35+0900",
+      "completed_at": "2026-05-18T19:00:00+0900",
+      "summary": "apps/dashboard/vercel.json, scripts/deploy-dashboard.ts, and deploy:dashboard root script added. .env.example already had NEXT_PUBLIC_SUPABASE_* keys."
     }
   ],
   "created_at": "2026-05-17T19:30:00+0900"
