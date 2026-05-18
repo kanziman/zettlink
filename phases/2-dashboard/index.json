@@ -52,7 +52,7 @@
       "name": "monitor",
       "status": "completed",
       "started_at": "2026-05-18T18:49:40+0900",
-      "completed_at": "2026-05-18T19:10:00+0900",
+      "completed_at": "2026-05-18T18:51:46+0900",
       "summary": "Monitor page with Server Component data fetching (Promise.all parallel: cost/jobs/events), progress bar, job queue counts, recent events list, and AutoRefresh Client Component for 30s auto-refresh."
     },
     {
