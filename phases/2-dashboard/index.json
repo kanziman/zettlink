@@ -44,7 +44,7 @@
       "name": "card-detail",
       "status": "completed",
       "started_at": "2026-05-18T18:47:51+0900",
-      "completed_at": "2026-05-18T19:10:00+0900",
+      "completed_at": "2026-05-18T18:49:40+0900",
       "summary": "Card detail Server Component with React.cache(), CardActions Client Component with enrich/publish/reprocess fetch calls and router.refresh()."
     },
     {
