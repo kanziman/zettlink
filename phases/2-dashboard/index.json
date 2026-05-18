@@ -18,7 +18,10 @@
     {
       "step": 1,
       "name": "auth",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-05-18T13:58:29+0900",
+      "completed_at": "2026-05-18T14:03:18+0900",
+      "summary": "Supabase Auth middleware, login/callback routes, and server/browser DB entrypoint split were added."
     },
     {
       "step": 2,
