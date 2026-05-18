@@ -1,5 +1,5 @@
-'use client'
 // 카드 상세 액션 버튼 — enrich / publish / reprocess
+'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@zettlink/ui'

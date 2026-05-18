@@ -1,5 +1,5 @@
-'use client'
 // 로그아웃 버튼 — 브라우저 Supabase 클라이언트로 세션 종료
+'use client'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '../../../lib/supabase/browser'
 
