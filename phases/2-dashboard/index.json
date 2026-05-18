@@ -3,18 +3,53 @@
   "phase": "2-dashboard",
   "workflow": {
     "gates": true,
-    "gate1_criteria": "1. scaffold step이 Tailwind CSS 4 + next-themes 설정을 포함하고, packages/ui가 DESIGN.md semantic 토큰(CSS 변수)을 사용하는가?\n2. auth step이 middleware에서 session 없으면 /login redirect, user.id ∉ ADMIN_USER_IDS면 403을 반환하도록 명시하는가?\n3. enrich API step이 LLM 호출 전 오늘 비용 가드 체크를 포함하는가?\n4. 모든 데이터 조회가 packages/db의 createServerClient를 통하며, NEXT_PUBLIC_ prefix가 anon key와 URL에만 허용되는가?\n5. Server Component에서 외부 API 직접 호출 없이 Supabase 조회만 하는가?",
+    "gate1_criteria": "1. scaffold step이 Tailwind CSS 4 + next-themes 설정을 포함하고, packages/ui가 DESIGN.md semantic 토큰(CSS 변수)을 사용하는가?\n2. auth step이 middleware에서 session 없으면 /login redirect, user.id ∉ ADMIN_USER_IDS면 403을 반환하도록 명시하는가?\n3. enrich API step이 LLM 호출 전 events(type='llm.call')에서 오늘 비용을 합산하고 config.budget.dailyUsd cap을 체크하는가?\n4. 모든 데이터 조회가 packages/db의 createServerClient/createRouteClient를 통하며, NEXT_PUBLIC_ prefix가 anon key와 URL에만 허용되는가?\n5. Server Component에서 외부 API 직접 호출 없이 Supabase 조회만 하는가?",
     "gate2_criteria": "1. 미인증 요청 → /login 리다이렉트가 동작하는가?\n2. 비-admin user_id → 403이 반환되는가?\n3. admin 로그인 → 카드 리스트가 표시되는가?\n4. enrich 호출 → DB has_deep/has_til/has_guide=true로 업데이트되는가?\n5. publish 토글 → DB published 값이 반전되는가?\n6. reprocess → jobs에 queued 상태로 새 행이 INSERT되는가?\n7. SUPABASE_SERVICE_ROLE_KEY가 NEXT_PUBLIC_ prefix 없이 서버에서만 사용되는가?\n8. 새로 생성된 TypeScript 파일 첫 줄에 한국어 역할 주석이 있는가?"
   },
   "steps": [
-    { "step": 0, "name": "scaffold", "status": "completed", "completed_at": "2026-05-18T14:20:00+0900", "summary": "Next.js 15 dashboard scaffold, Tailwind CSS 4, next-themes root layout, semantic token CSS variables, and dashboard dependencies were added." },
-    { "step": 1, "name": "auth", "status": "pending" },
-    { "step": 2, "name": "packages-ui", "status": "pending" },
-    { "step": 3, "name": "card-list", "status": "pending" },
-    { "step": 4, "name": "card-detail", "status": "pending" },
-    { "step": 5, "name": "monitor", "status": "pending" },
-    { "step": 6, "name": "api-routes", "status": "pending" },
-    { "step": 7, "name": "deploy", "status": "pending" }
+    {
+      "step": 0,
+      "name": "scaffold",
+      "status": "completed",
+      "started_at": "2026-05-18T13:55:21+0900",
+      "completed_at": "2026-05-18T13:58:29+0900",
+      "summary": "Next.js 15 dashboard scaffold, Tailwind CSS 4, next-themes root layout, semantic token CSS variables, and dashboard dependencies were added."
+    },
+    {
+      "step": 1,
+      "name": "auth",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "name": "packages-ui",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "name": "card-list",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "name": "card-detail",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "name": "monitor",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "name": "api-routes",
+      "status": "pending"
+    },
+    {
+      "step": 7,
+      "name": "deploy",
+      "status": "pending"
+    }
   ],
   "created_at": "2026-05-17T19:30:00+0900"
 }
