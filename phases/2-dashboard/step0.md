@@ -134,6 +134,7 @@ Light 모드 기본, `.dark` 클래스 적용 시 Dark 모드 값으로 교체.
     --color-status-success: #12d589;
     --color-status-caution: #ff7a00;
     --color-status-info: #3385ff;
+    --color-status-dead: #5a5c63;
 
     /* line */
     --color-line-normal: rgba(112, 115, 124, 0.22);
@@ -159,6 +160,7 @@ Light 모드 기본, `.dark` 클래스 적용 시 Dark 모드 값으로 교체.
     --color-status-success: #2fe59a;
     --color-status-caution: #ff9533;
     --color-status-info: #69a5ff;
+    --color-status-dead: #8a8d96;
 
     --color-line-normal: rgba(151, 154, 160, 0.22);
     --color-line-strong: rgba(151, 154, 160, 0.48);

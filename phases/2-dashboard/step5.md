@@ -22,6 +22,7 @@
 
 ```typescript
 // 시스템 모니터 페이지 — 비용·큐·이벤트 현황
+import { config } from '@zettlink/shared'
 import { createSupabaseServerClient } from '../../../lib/supabase/server'
 import { AutoRefresh } from './AutoRefresh'
 
@@ -34,9 +35,10 @@ export default async function MonitorPage() {
   // async-parallel: 독립적인 3개 조회를 병렬 실행
   const [costResult, jobsResult, eventsResult] = await Promise.all([
     supabase
-      .from('cards')
-      .select('cost_usd, tokens_used')
-      .gte('created_at', todayStart.toISOString()),
+      .from('events')
+      .select('data')
+      .eq('type', 'llm.call')
+      .gte('ts', todayStart.toISOString()),
     supabase
       .from('jobs')
       .select('status')
@@ -48,10 +50,10 @@ export default async function MonitorPage() {
       .limit(30),
   ])
 
-  const cards = costResult.data ?? []
-  const todayCost = cards.reduce((sum, c) => sum + (c.cost_usd ?? 0), 0)
-  const todayTokens = cards.reduce((sum, c) => sum + (c.tokens_used ?? 0), 0)
-  const budgetUsd = parseFloat(process.env.BUDGET_DAILY_USD ?? '5.0')
+  const llmEvents = costResult.data ?? []
+  const todayCost = llmEvents.reduce((sum, evt) => sum + (((evt.data as Record<string, unknown>)?.cost_usd as number) ?? 0), 0)
+  const todayTokens = llmEvents.reduce((sum, evt) => sum + (((evt.data as Record<string, unknown>)?.tokens_used as number) ?? 0), 0)
+  const budgetUsd = config.budget.dailyUsd
   const budgetPct = Math.min((todayCost / budgetUsd) * 100, 100)
 
   const jobs = jobsResult.data ?? []
@@ -102,7 +104,7 @@ export default async function MonitorPage() {
             }} />
           </div>
           <p style={{ fontSize: '0.8125rem', color: 'var(--color-label-alternative)' }}>
-            토큰 {todayTokens.toLocaleString()}개 · 카드 {cards.length}개
+            토큰 {todayTokens.toLocaleString()}개 · LLM 호출 {llmEvents.length}회
           </p>
         </div>
       </section>
@@ -117,7 +119,7 @@ export default async function MonitorPage() {
             { label: '대기', key: 'queued', color: 'var(--color-status-caution)' },
             { label: '처리중', key: 'processing', color: 'var(--color-status-info)' },
             { label: '실패', key: 'failed', color: 'var(--color-status-error)' },
-            { label: '중단', key: 'dead', color: '#5a5c63' },
+            { label: '중단', key: 'dead', color: 'var(--color-status-dead)' },
           ] as const).map(({ label, key, color }) => (
             <div key={key} style={{
               padding: '1rem',

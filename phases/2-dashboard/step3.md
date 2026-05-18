@@ -24,6 +24,7 @@ admin 영역 공통 레이아웃. 서버에서 세션 재확인, 네비게이션
 ```typescript
 // admin 영역 공통 레이아웃 — 네비게이션 바 + 서버 측 admin 재확인
 import { redirect } from 'next/navigation'
+import { config } from '@zettlink/shared'
 import { createSupabaseServerClient } from '../../lib/supabase/server'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -32,8 +33,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (!user) redirect('/login')
 
-  const adminIds = (process.env.ADMIN_USER_IDS ?? '').split(',').map(s => s.trim()).filter(Boolean)
-  if (!adminIds.includes(user.id)) {
+  if (!config.adminUserIds.includes(user.id)) {
     return <div style={{ padding: '2rem' }}>Forbidden</div>
   }
 

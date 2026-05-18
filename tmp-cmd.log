@@ -1,0 +1,20 @@
+~/AI/dev/zettlink %  python3 scripts/execute.py 2-dashboard --strategy codex-claude
+
+============================================================
+  Harness Step Executor
+  Phase: 2-dashboard | Steps: 8
+  Workflow: PO + Reviewer (Gate 1 + Gate 2)
+  Strategy: codex-claude (PO=codex, Reviewer=claude)
+============================================================
+  Plan: phase-2-dashboard-plan.md (exists, skipping)
+
+  ── Gate 1: 플랜 승인 ──
+  ✗ Gate 1: ISSUES (1개, attempt 1/3)
+    - step1.md가 packages/db/src/client.ts의 createBrowserClient를 브라우저(Client Component)에서 사용하도록 계획하지만, packages/db는 @zettlink/shared의 config를 모듈 최상위에서 import한다. config.ts의 zod 스키마는 serviceRoleKey: z.string().min(1)(required)를 포함하며 process.env.SUPABASE_SERVICE_ROLE_KEY를 읽는다. 브라우저 번들에서 이 모듈이 로드되면 SUPABASE_SERVICE_ROLE_KEY가 undefined이므로 zod 파싱이 즉시 throw하고 로그인 페이지가 crash한다. 계획은 NEXT_PUBLIC_SUPABASE_URL/NEXT_PUBLIC_SUPABASE_ANON_KEY를 .env에 추가하도록 명시하지만, config.ts가 이 NEXT_PUBLIC_ 변수들을 읽도록 수정하거나 createBrowserClient에서 config 의존성을 분리하여 직접 process.env.NEXT_PUBLIC_SUPABASE_*를 읽도록 변경하는 단계가 누락되어 있다.
+  ✗ Gate 1: ISSUES (1개, attempt 2/3)       
+    - createBrowserClient() 브라우저 환경 변수 불일치: packages/db/src/client.ts의 createBrowserClient()가 config.supabase.url/config.supabase.anonKey를 사용하는데, 이 값들은 packages/shared/src/config.ts에서 process.env.SUPABASE_URL / process.env.SUPABASE_ANON_KEY를 읽는다. Next.js에서 NEXT_PUBLIC_ 접두사가 없는 환경 변수는 클라이언트 번들에 포함되지 않으므로, 로그인 페이지('use client')에서 createSupabaseBrowserClient()를 호출하면 URL과 anonKey가 undefined가 되어 초기화 실패한다. step1.md가 NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY를 .env에 추가하도록 명시하지만, createBrowserClient()가 실제로 이 NEXT_PUBLIC_ 변수들을 읽도록 packages/db/src/client.ts 또는 packages/shared/src/config.ts를 수정하는 작업이 plan에 빠져 있다.
+  ✗ Gate 1: ISSUES (1개, attempt 3/3)       
+    - Criterion 4 — 브라우저 번들에서 config 초기화 실패: packages/db/src/client.ts의 createBrowserClient()는 @zettlink/shared/config를 파일 최상단에서 import한다. config.ts의 Zod 스키마는 SUPABASE_SERVICE_ROLE_KEY를 z.string().min(1)(필수)로 요구한다. step1이 새로 추가하는 lib/supabase/browser.ts → createBrowserClient() 경로는 login page('use client')를 통해 Next.js 클라이언트 번들에 포함된다. 브라우저 번들에서 process.env.SUPABASE_SERVICE_ROLE_KEY는 undefined이므로 Zod 파싱이 모듈 평가 시점에 throw하고, login page 렌더 자체가 불가능해진다. step1~step2 어디에도 이 문제에 대한 해결 방침(serviceRoleKey를 optional로 변경, createBrowserClient 전용 모듈 분리 후 NEXT_PUBLIC_ env var 직접 참조, 또는 packages/db를 서버/브라우저 진입점으로 분리)이 명시되지 않는다.
+
+  Gate 1 failed after 3 attempts.
+  Fix issues manually and delete gate1-verdict.json to re-run.

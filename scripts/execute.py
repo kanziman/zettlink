@@ -293,15 +293,34 @@ class StepExecutor:
                 self._root,
                 "--sandbox",
                 sandbox,
-                "--ask-for-approval",
-                "never",
                 "-",
             ]
         raise ValueError(f"unsupported agent engine: {engine}")
 
+    def _agent_log_file(self) -> Path:
+        return self._phase_dir / "agent-calls.jsonl"
+
+    def _log_agent_call(self, *, engine: str, role: str, cmd: list[str],
+                        returncode: int, elapsed: float, stdout: str, stderr: str):
+        redacted_cmd = cmd[:-1] + ["<prompt>"] if engine == "claude" and cmd else cmd
+        entry = {
+            "ts": self._stamp(),
+            "phase": self._phase_name,
+            "engine": engine,
+            "role": role,
+            "cmd": redacted_cmd,
+            "exitCode": returncode,
+            "elapsedSec": round(elapsed, 2),
+            "stdoutChars": len(stdout or ""),
+            "stderrChars": len(stderr or ""),
+        }
+        with self._agent_log_file().open("a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
     def _call_agent(self, engine: str, role: str, prompt: str, timeout: int = 900) -> str:
         """Claude/Codex를 역할 기반 비대화형 agent로 호출하고 stdout을 반환한다."""
         cmd = self._agent_command(engine, role)
+        t0 = time.monotonic()
         if engine == "claude":
             result = subprocess.run(
                 cmd + [prompt],
@@ -319,6 +338,22 @@ class StepExecutor:
                 text=True,
                 timeout=timeout,
             )
+        elapsed = time.monotonic() - t0
+        self._log_agent_call(
+            engine=engine,
+            role=role,
+            cmd=cmd,
+            returncode=result.returncode,
+            elapsed=elapsed,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        )
+        if result.returncode != 0:
+            print(f"\n  ERROR: {engine} {role} agent failed (code {result.returncode}).")
+            if result.stderr:
+                print(f"  stderr: {result.stderr[:1000]}")
+            print(f"  Agent log: {self._agent_log_file().relative_to(ROOT)}")
+            sys.exit(result.returncode)
         return result.stdout
 
     def _invoke_claude(self, step: dict, preamble: str) -> dict:
