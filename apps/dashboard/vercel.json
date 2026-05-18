@@ -1,0 +1,5 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "cd ../.. && pnpm --filter @zettlink/dashboard build",
+  "installCommand": "cd ../.. && pnpm install"
+}

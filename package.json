@@ -9,7 +9,8 @@
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "gen-types": "bash scripts/gen-types.sh"
+    "gen-types": "bash scripts/gen-types.sh",
+    "deploy:dashboard": "tsx scripts/deploy-dashboard.ts"
   },
   "devDependencies": {
     "typescript": "^5.7.0",
