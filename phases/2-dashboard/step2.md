@@ -161,7 +161,7 @@ interface BadgeProps {
 const statusConfig: Record<Status, { bg: string; color: string; text: string }> = {
   done:       { bg: 'var(--color-status-success)', color: '#fff', text: '완료' },
   failed:     { bg: 'var(--color-status-error)',   color: '#fff', text: '실패' },
-  dead:       { bg: '#5a5c63',                     color: '#fff', text: '중단' },
+  dead:       { bg: 'var(--color-status-dead)',    color: '#fff', text: '중단' },
   pending:    { bg: 'var(--color-line-strong)',     color: 'var(--color-label-normal)', text: '대기' },
   processing: { bg: 'var(--color-status-info)',    color: '#fff', text: '처리중' },
   queued:     { bg: 'var(--color-status-caution)', color: '#fff', text: '큐' },

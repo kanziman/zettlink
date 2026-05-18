@@ -8,9 +8,9 @@ admin-gated Next.js 15 대시보드를 구현한다. Supabase Auth 로그인 후
 
 - **card.id = slug** — `titleToSlug(title)` / `repoToSlug(externalId)` 결과가 PK. 라우트는 `/cards/[slug]`.
 - **인증 흐름** — Supabase email/password → middleware에서 session 검증 + user.id ∈ ADMIN_USER_IDS. 비-admin은 403.
-- **서버 컴포넌트 기본** — 데이터 조회는 Server Component + `createServerClient(cookies())`. 버튼 인터랙션만 Client Component.
+- **서버/브라우저 DB 진입점 분리** — 서버 코드는 `@zettlink/db/server`, Client Component는 `@zettlink/db/browser`만 import한다. 브라우저 번들에서 `@zettlink/shared/config`가 평가되어 `SUPABASE_SERVICE_ROLE_KEY` 검증이 실행되지 않게 한다.
 - **packages/ui** — Tailwind CSS 4 + DESIGN.md semantic 토큰. Button, Badge, Tag, CardRow 4개 컴포넌트.
-- **enrich API** — Claude Sonnet 4.6 직접 호출 (`@anthropic-ai/sdk`). 비용 가드 체크 후 deep/til/guide 중 하나 생성. vault atomic write + DB 업데이트.
+- **enrich API** — Claude Sonnet 4.6 직접 호출 (`@anthropic-ai/sdk`). `events(type='llm.call')` 기반 비용 가드 체크 후 deep/til/guide 중 하나 생성. vault atomic write + DB 업데이트.
 - **reprocess** — 기존 card url로 새 job INSERT (force=true). worker가 다음 poll에 픽업.
 - **Vercel 배포** — rootDirectory=apps/dashboard, env vars 목록 문서화.
 
@@ -21,7 +21,7 @@ admin-gated Next.js 15 대시보드를 구현한다. Supabase Auth 로그인 후
 - 의존성: `next@^15`, `react@^19`, `@supabase/ssr`, `@supabase/supabase-js`, `next-themes`, `tailwindcss@^4`
 - `next.config.ts`, `postcss.config.mjs`, `tailwind.config.ts`
 - `app/layout.tsx` — root layout, ThemeProvider, `<html lang="ko">`
-- `app/globals.css` — DESIGN.md semantic 토큰을 CSS 변수로 (`--color-label-normal` 등)
+- `app/globals.css` — DESIGN.md semantic 토큰을 CSS 변수로 (`--color-label-normal`, `--color-status-dead` 등)
 - `tsconfig.json` extends `tsconfig.base.json`
 - 검증: `pnpm --filter dashboard build` 성공
 
@@ -29,7 +29,10 @@ admin-gated Next.js 15 대시보드를 구현한다. Supabase Auth 로그인 후
 - `middleware.ts` — matcher: `/((?!login|auth|_next).*)`, session 없으면 `/login` redirect, session 있으면 user.id ∈ config.adminUserIds 확인, 불일치 시 403 plain text
 - `app/login/page.tsx` — email + password form (Client Component), `supabase.auth.signInWithPassword()`, 성공 시 `/` redirect
 - `app/auth/callback/route.ts` — `code` 쿼리 파라미터 → `exchangeCodeForSession()` → `/` redirect (magic link / OAuth 대비)
-- `lib/supabase/server.ts` — `createServerClient(await cookies())` 래퍼 (Route Handler용은 읽기+쓰기 가능 버전)
+- `packages/db/src/server.ts` / `packages/db/src/browser.ts` — server/service/route 클라이언트와 browser 클라이언트 분리. `browser.ts`는 `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`만 직접 읽고 `@zettlink/shared`를 import하지 않음
+- `packages/db/package.json` — `./server`, `./browser` subpath export 추가
+- `lib/supabase/server.ts` — `@zettlink/db/server`의 `createServerClient(await cookies())` / `createRouteClient(await cookies())`만 래핑
+- `lib/supabase/browser.ts` — `@zettlink/db/browser`의 `createBrowserClient()`만 래핑
 - 검증: 미인증 → /login, 비-admin → 403, admin → 통과
 
 ### Step 2 — packages/ui
@@ -68,33 +71,34 @@ admin-gated Next.js 15 대시보드를 구현한다. Supabase Auth 로그인 후
 
 ### Step 5 — monitor
 - `app/(admin)/monitor/page.tsx` — 30초 자동 갱신 (Client Component, `useEffect` + `router.refresh()`)
-  - 오늘 비용: `SELECT SUM(cost_usd) FROM cards WHERE created_at >= today`
+  - 오늘 비용: `events`에서 오늘 `type='llm.call'`의 `data.cost_usd` 합산
   - 큐 현황: jobs by status count
   - 최근 이벤트: `events` 최신 30개 (type, level, card_id, ts, data 요약)
-  - budget daily_usd 대비 진행률 표시
+  - `config.budget.dailyUsd` 대비 진행률 표시
 - 검증: 페이지 로드 후 데이터 표시, 30초마다 갱신
 
 ### Step 6 — API routes
 - `app/api/enrich/route.ts` — POST {id, type}
   - session 검증 + admin 확인
-  - 비용 가드: 오늘 cost_usd SUM ≥ budget.dailyUsd → 400
-  - Supabase SELECT card
+  - session JWT route client로 Supabase SELECT card 및 오늘 `events(type='llm.call').data.cost_usd` SUM 조회
+  - 비용 가드: SUM ≥ `config.budget.dailyUsd` → service client로 관련 job `dead` + `budget.exceeded` 이벤트 + bot 알림 + 429
   - vault에서 transcript/README 텍스트 로드 (fs.readFile, vault_path 기준)
   - Claude Sonnet 4.6 호출 (deep/til/guide 프롬프트)
   - vault atomic write (deep.md / til.md / guide.md)
-  - DB UPDATE: has_deep/has_til/has_guide = true, updated_at
-  - events INSERT: type='enrich.done'
+  - service client로 DB UPDATE: has_deep/has_til/has_guide = true, updated_at
+  - service client로 events INSERT: type='llm.call', type='enrich.done'
   - 응답: {ok: true, content: string}
 
 - `app/api/publish/route.ts` — POST {id}
   - session 검증 + admin 확인
-  - Supabase UPDATE cards SET published = NOT published WHERE id = ?
+  - session JWT route client로 Supabase SELECT card
+  - service client로 UPDATE cards SET published = NOT published WHERE id = ?
   - 응답: {ok: true, published: boolean}
 
 - `app/api/reprocess/route.ts` — POST {id}
   - session 검증 + admin 확인
-  - Supabase SELECT card.url
-  - INSERT INTO jobs (raw_url=url, status='queued', force=true)
+  - session JWT route client로 Supabase SELECT card.url
+  - service client로 INSERT INTO jobs (raw_url=url, status='queued', force=true)
   - 응답: {ok: true, jobId: number}
 
 - 검증: 각 엔드포인트 인증 없이 → 401, 정상 흐름 → 기대 응답
@@ -112,8 +116,8 @@ admin-gated Next.js 15 대시보드를 구현한다. Supabase Auth 로그인 후
 ## Gate 1 검증 기준
 
 1. middleware가 session 없으면 /login redirect, session 있어도 ADMIN_USER_IDS에 없으면 403을 반환하는가?
-2. enrich route가 LLM 호출 전 오늘 비용 합산 체크를 수행하는가?
-3. publish route가 service_role 없이 session JWT 기반 서버 클라이언트를 사용하는가? (NEXT_PUBLIC_ prefix는 anon key에만)
+2. enrich route가 LLM 호출 전 `events(type='llm.call')`에서 오늘 비용을 합산하고 `config.budget.dailyUsd`를 확인하는가?
+3. 모든 dashboard Supabase 클라이언트가 `@zettlink/db` 팩토리를 통하며, service_role 없이 session JWT 기반 서버 클라이언트를 사용하는가? (NEXT_PUBLIC_ prefix는 anon key에만)
 4. packages/ui 컴포넌트가 DESIGN.md semantic 토큰 CSS 변수를 사용하는가?
 5. Server Component에서 external API 직접 호출 없이 Supabase 조회만 하는가?
 
