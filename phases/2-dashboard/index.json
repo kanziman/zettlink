@@ -60,7 +60,7 @@
       "name": "api-routes",
       "status": "completed",
       "started_at": "2026-05-18T18:51:46+0900",
-      "completed_at": "2026-05-18T19:05:00+0900",
+      "completed_at": "2026-05-18T18:55:35+0900",
       "summary": "enrich/publish/reprocess API Route Handlers added with session+admin auth, budget guard (events llm.call sum), vault atomic write, and service client write isolation."
     },
     {
