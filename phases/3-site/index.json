@@ -68,7 +68,7 @@
       "name": "deploy",
       "status": "completed",
       "started_at": "2026-05-19T13:35:25+0900",
-      "completed_at": "2026-05-19T13:41:00+0900",
+      "completed_at": "2026-05-19T13:36:48+0900",
       "summary": "scripts/deploy-site.ts (기존 파일 확인), apps/site/vercel.json(--filter @zettlink/site + --frozen-lockfile), 루트 package.json에 deploy:site 스크립트 추가. 환경변수 미설정 시 exit 1 동작 확인"
     }
   ],
