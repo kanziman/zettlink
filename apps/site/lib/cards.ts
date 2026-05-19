@@ -169,16 +169,21 @@ export async function getAllPublishedSlugs(): Promise<Array<{ platform: string; 
   }))
 }
 
+export type TagItem = { canonical_name: string; usage_count: number }
+
 /** published 카드에 달린 태그 목록 (usage_count 내림차순). */
-export async function getAllTags(): Promise<string[]> {
+export async function getAllTags(): Promise<TagItem[]> {
   const supabase = getClient()
   const { data } = await supabase
     .from('tags')
-    .select('canonical_name')
+    .select('canonical_name, usage_count')
     .order('usage_count', { ascending: false })
     .limit(50)
 
-  return ((data ?? []) as Array<{ canonical_name: string }>).map((t) => t.canonical_name)
+  return ((data ?? []) as Array<{ canonical_name: string; usage_count: number }>).map((t) => ({
+    canonical_name: t.canonical_name,
+    usage_count: t.usage_count ?? 0,
+  }))
 }
 
 // ─── internal helpers ────────────────────────────────────────────────────────

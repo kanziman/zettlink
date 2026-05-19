@@ -21,8 +21,8 @@ export default async function HomePage() {
         >
           {tags.map((t) => (
             <a
-              key={t}
-              href={`/tags/${encodeURIComponent(t)}`}
+              key={t.canonical_name}
+              href={`/tags/${encodeURIComponent(t.canonical_name)}`}
               style={{
                 padding: '0.25rem 0.75rem',
                 borderRadius: '9999px',
@@ -33,7 +33,7 @@ export default async function HomePage() {
                 textDecoration: 'none',
               }}
             >
-              {t}
+              {t.canonical_name}
             </a>
           ))}
         </div>

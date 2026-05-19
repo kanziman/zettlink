@@ -3,19 +3,25 @@ import { notFound } from 'next/navigation'
 import { CardRow } from '@zettlink/ui'
 import { getAllTags, getCardsByTag } from '../../../lib/cards'
 
+interface PageProps {
+  params: Promise<{ tag: string }>
+}
+
 export async function generateStaticParams() {
   try {
     const tags = await getAllTags()
     // output:'export'는 빈 배열을 허용하지 않으므로 태그가 없을 때 플레이스홀더 반환
     if (tags.length === 0) return [{ tag: '_placeholder_' }]
-    return tags.map((tag) => ({ tag: encodeURIComponent(tag) }))
+    return tags.map((tag) => ({ tag: encodeURIComponent(tag.canonical_name) }))
   } catch {
     return [{ tag: '_placeholder_' }]
   }
 }
 
-interface PageProps {
-  params: Promise<{ tag: string }>
+export async function generateMetadata({ params }: PageProps) {
+  const { tag } = await params
+  const decoded = decodeURIComponent(tag)
+  return { title: `#${decoded} — zettlink` }
 }
 
 export default async function TagPage({ params }: PageProps) {
@@ -27,16 +33,28 @@ export default async function TagPage({ params }: PageProps) {
 
   return (
     <div>
-      <h1
-        style={{
-          fontSize: '1.5rem',
-          fontWeight: 700,
-          marginBottom: '1.5rem',
-          color: 'var(--color-label-strong)',
-        }}
-      >
-        #{tag}
-      </h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+        <h1
+          style={{
+            fontSize: '1.5rem',
+            fontWeight: 700,
+            color: 'var(--color-label-strong)',
+            margin: 0,
+          }}
+        >
+          #{tag}
+        </h1>
+        <a
+          href="/tags"
+          style={{
+            fontSize: '0.875rem',
+            color: 'var(--color-label-alternative)',
+            textDecoration: 'none',
+          }}
+        >
+          ← 전체 태그
+        </a>
+      </div>
 
       <div
         data-pagefind-body

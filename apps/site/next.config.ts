@@ -9,6 +9,7 @@ dotenvConfig({ path: join(process.cwd(), '../../.env'), override: false })
 
 const nextConfig: NextConfig = {
   output: 'export',
+  trailingSlash: true,
   // @zettlink/ui와 @zettlink/shared 모두 트랜스파일 (ESM 소스 → 번들)
   transpilePackages: ['@zettlink/ui', '@zettlink/shared'],
   webpack(config) {
