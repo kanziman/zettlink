@@ -625,7 +625,8 @@ class StepExecutor:
             f"당신은 {self._project} 프로젝트의 코드 리뷰어입니다.\n\n"
             f"코드를 수정하지 마라. 이 Gate에서는 읽기와 검토만 수행하고, 마지막에 verdict JSON 파일만 작성한다.\n\n"
             f"## Gate {gate_num} 검토\n\n"
-            f"1. `git diff $(git merge-base HEAD main)..HEAD` 또는 `git log --oneline -20`을 실행해 변경사항을 파악하라.\n"
+            f"1. `git status --short`, `git diff`, `git diff --cached`, `git ls-files --others --exclude-standard`, "
+            f"`git diff $(git merge-base HEAD main)..HEAD`, `git log --oneline -20`을 실행해 committed/uncommitted/untracked 변경사항을 모두 파악하라.\n"
             f"2. 아래 기준을 각각 확인하라:\n\n{criteria}\n\n"
             f"3. 검토 결과를 `{rel_verdict}` 파일에 JSON으로 저장하라:\n"
             f'   이슈 없음: {{"verdict": "APPROVED", "issues": []}}\n'

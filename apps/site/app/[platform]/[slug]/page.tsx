@@ -142,13 +142,11 @@ export default async function CardPage({ params }: PageProps) {
           <h2 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 0.75rem', color: 'var(--color-label-normal)' }}>
             인사이트
           </h2>
-          <ul style={{ paddingLeft: '1.25rem', margin: 0, ...proseStyle }}>
-            {card.insights.map((item, idx) => (
-              <li key={idx} style={{ marginBottom: '0.375rem' }}>
-                {item}
-              </li>
-            ))}
-          </ul>
+          <div style={proseStyle}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {card.insights.map((item) => `- ${item}`).join('\n')}
+            </ReactMarkdown>
+          </div>
         </section>
       ) : null}
 

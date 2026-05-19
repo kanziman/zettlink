@@ -12,21 +12,29 @@ export async function generateStaticParams() {
     const tags = await getAllTags()
     // output:'export'는 빈 배열을 허용하지 않으므로 태그가 없을 때 플레이스홀더 반환
     if (tags.length === 0) return [{ tag: '_placeholder_' }]
-    return tags.map((tag) => ({ tag: encodeURIComponent(tag.canonical_name) }))
+    return tags.map((tag) => ({ tag: tag.canonical_name }))
   } catch {
     return [{ tag: '_placeholder_' }]
   }
 }
 
+function decodeTagParam(tag: string) {
+  try {
+    return decodeURIComponent(tag)
+  } catch {
+    return tag
+  }
+}
+
 export async function generateMetadata({ params }: PageProps) {
   const { tag } = await params
-  const decoded = decodeURIComponent(tag)
+  const decoded = decodeTagParam(tag)
   return { title: `#${decoded} — zettlink` }
 }
 
 export default async function TagPage({ params }: PageProps) {
   const { tag: encodedTag } = await params
-  const tag = decodeURIComponent(encodedTag)
+  const tag = decodeTagParam(encodedTag)
   const cards = await getCardsByTag(tag)
 
   if (cards.length === 0) notFound()
