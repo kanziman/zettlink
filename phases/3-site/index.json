@@ -60,7 +60,7 @@
       "name": "pagefind",
       "status": "completed",
       "started_at": "2026-05-19T13:32:53+0900",
-      "completed_at": "2026-05-19T14:10:00+0900",
+      "completed_at": "2026-05-19T13:35:25+0900",
       "summary": "PagefindSearch.tsx를 PagefindUI 방식에서 /pagefind/pagefind.js 직접 API 방식으로 교체(webpackIgnore, 커스텀 드롭다운 UI). layout.tsx에서 pagefind-ui.css 제거, 태그 링크 추가, nav 구조 정비. pnpm --filter site build 성공, out/pagefind/pagefind.js 생성 확인"
     },
     {
