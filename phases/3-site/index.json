@@ -28,7 +28,7 @@
       "name": "lib-cards",
       "status": "completed",
       "started_at": "2026-05-19T10:46:53+0900",
-      "completed_at": "2026-05-19T11:00:00+0900",
+      "completed_at": "2026-05-19T10:48:17+0900",
       "summary": "lib/cards.ts — anon 키 전용 빌드 타임 조회 함수 구현 (getPublishedCards/getCardBySlug/getCardsByTag/getAllPublishedSlugs/getAllTags). @zettlink/db 미사용, SERVICE_ROLE_KEY 미참조, 모든 쿼리에 published=true 조건 포함. typecheck + build 통과"
     },
     {
