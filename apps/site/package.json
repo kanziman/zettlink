@@ -6,9 +6,30 @@
   "engines": {
     "node": ">=22"
   },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build && pagefind --site out",
+    "start": "npx serve out",
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {
+    "@supabase/supabase-js": "^2",
+    "@zettlink/ui": "workspace:*",
     "next": "^15.0.0",
+    "next-themes": "^0.4",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-markdown": "^9",
+    "remark-gfm": "^4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/typography": "^0.5",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "pagefind": "^1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }

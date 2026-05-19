@@ -1,0 +1,65 @@
+/* 공개 사이트 전역 스타일 — Wanted Montage semantic token CSS 변수 */
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* label */
+    --color-label-normal: #171719;
+    --color-label-strong: #000000;
+    --color-label-neutral: rgba(46, 47, 51, 0.88);
+    --color-label-alternative: rgba(46, 47, 51, 0.61);
+    --color-label-assistive: rgba(46, 47, 51, 0.28);
+    --color-label-disable: rgba(46, 47, 51, 0.16);
+
+    /* background */
+    --color-background-normal: #ffffff;
+    --color-background-alternative: #f7f7f8;
+
+    /* primary */
+    --color-primary-normal: #0066ff;
+    --color-primary-strong: #005eeb;
+    --color-primary-heavy: #0054d1;
+
+    /* status */
+    --color-status-error: #ff4242;
+    --color-status-success: #12d589;
+    --color-status-caution: #ff7a00;
+    --color-status-info: #3385ff;
+    --color-status-dead: #5a5c63;
+
+    /* line */
+    --color-line-normal: rgba(112, 115, 124, 0.22);
+    --color-line-strong: rgba(112, 115, 124, 0.48);
+  }
+
+  .dark {
+    --color-label-normal: #f7f7f8;
+    --color-label-strong: #ffffff;
+    --color-label-neutral: rgba(226, 227, 229, 0.88);
+    --color-label-alternative: rgba(226, 227, 229, 0.61);
+    --color-label-assistive: rgba(226, 227, 229, 0.28);
+    --color-label-disable: rgba(226, 227, 229, 0.16);
+
+    --color-background-normal: #171719;
+    --color-background-alternative: #1b1c1e;
+
+    --color-primary-normal: #3385ff;
+    --color-primary-strong: #1a75ff;
+    --color-primary-heavy: #0066ff;
+
+    --color-status-error: #ff6363;
+    --color-status-success: #2fe59a;
+    --color-status-caution: #ff9533;
+    --color-status-info: #69a5ff;
+    --color-status-dead: #8a8d96;
+
+    --color-line-normal: rgba(151, 154, 160, 0.22);
+    --color-line-strong: rgba(151, 154, 160, 0.48);
+  }
+
+  body {
+    background-color: var(--color-background-normal);
+    color: var(--color-label-normal);
+    font-family: 'Pretendard', sans-serif;
+  }
+}
