@@ -4,8 +4,14 @@ import { CardRow } from '@zettlink/ui'
 import { getAllTags, getCardsByTag } from '../../../lib/cards'
 
 export async function generateStaticParams() {
-  const tags = await getAllTags()
-  return tags.map((tag) => ({ tag: encodeURIComponent(tag) }))
+  try {
+    const tags = await getAllTags()
+    // output:'export'는 빈 배열을 허용하지 않으므로 태그가 없을 때 플레이스홀더 반환
+    if (tags.length === 0) return [{ tag: '_placeholder_' }]
+    return tags.map((tag) => ({ tag: encodeURIComponent(tag) }))
+  } catch {
+    return [{ tag: '_placeholder_' }]
+  }
 }
 
 interface PageProps {

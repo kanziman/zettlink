@@ -103,6 +103,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2
         version: 2.105.4
+      '@zettlink/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@zettlink/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -140,6 +143,9 @@ importers:
       '@types/react-dom':
         specifier: ^19
         version: 19.2.3(@types/react@19.2.14)
+      dotenv:
+        specifier: ^16
+        version: 16.6.1
       pagefind:
         specifier: ^1
         version: 1.5.2
@@ -1369,6 +1375,10 @@ packages:
 
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
+
+  dotenv@16.6.1:
+    resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
+    engines: {node: '>=12'}
 
   dotenv@17.4.2:
     resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
@@ -3191,6 +3201,8 @@ snapshots:
   devlop@1.1.0:
     dependencies:
       dequal: 2.0.3
+
+  dotenv@16.6.1: {}
 
   dotenv@17.4.2: {}
 

@@ -18,7 +18,10 @@
     {
       "step": 1,
       "name": "scaffold",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-05-19T10:37:39+0900",
+      "completed_at": "2026-05-19T10:50:00+0900",
+      "summary": "Next.js 15 SSG scaffold — dotenv 루트 .env 로드, SUPABASE_URL 폴백, output:export 빈 배열 플레이스홀더, pagefind webpackIgnore 적용. pnpm --filter site build → out/index.html + out/pagefind/ 생성 확인"
     },
     {
       "step": 2,

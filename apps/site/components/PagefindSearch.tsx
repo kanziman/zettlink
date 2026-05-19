@@ -10,8 +10,10 @@ export function PagefindSearch() {
 
     async function loadPagefind() {
       try {
-        // @ts-expect-error — pagefind.js는 빌드 후 정적 파일로 주입된다
-        const { PagefindUI } = await import('/pagefind/pagefind-ui.js')
+        // webpackIgnore: 빌드 타임 정적 분석을 건너뜀. pagefind.js는 next build 후 주입된다
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        const { PagefindUI } = await import(/* webpackIgnore: true */ '/pagefind/pagefind-ui.js')
         if (!cancelled && ref.current) {
           new PagefindUI({
             element: ref.current,

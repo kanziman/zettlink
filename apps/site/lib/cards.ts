@@ -3,9 +3,10 @@
 import { createClient } from '@supabase/supabase-js'
 
 // 빌드 타임 anon 클라이언트 — RLS로 published=true 카드만 노출
+// SUPABASE_URL / SUPABASE_ANON_KEY는 루트 .env를 next.config.ts에서 로드한 폴백
 function getClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.SUPABASE_ANON_KEY
   if (!url || !key) {
     throw new Error('NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY 환경변수 없음')
   }

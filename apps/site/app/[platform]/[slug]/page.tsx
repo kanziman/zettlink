@@ -5,8 +5,14 @@ import remarkGfm from 'remark-gfm'
 import { getAllPublishedSlugs, getCardBySlug } from '../../../lib/cards'
 
 export async function generateStaticParams() {
-  const slugs = await getAllPublishedSlugs()
-  return slugs.map(({ platform, slug }) => ({ platform, slug }))
+  try {
+    const slugs = await getAllPublishedSlugs()
+    // output:'export'는 빈 배열을 허용하지 않으므로 published 카드가 없을 때 플레이스홀더 반환
+    if (slugs.length === 0) return [{ platform: 'youtube', slug: '_placeholder_' }]
+    return slugs.map(({ platform, slug }) => ({ platform, slug }))
+  } catch {
+    return [{ platform: 'youtube', slug: '_placeholder_' }]
+  }
 }
 
 interface PageProps {
