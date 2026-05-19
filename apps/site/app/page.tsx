@@ -1,77 +1,166 @@
-// 공개 사이트 홈 — published 카드 전체 리스트 + 태그 필터 링크
-import { CardRow } from '@zettlink/ui'
-import { getAllTags, getPublishedCards } from '../lib/cards'
+// 공개 사이트 홈 페이지 — published 카드 리스트, 태그 필터
+import { getPublishedCards, getAllTags } from '../lib/cards'
 
 export default async function HomePage() {
-  const [cards, tags] = await Promise.all([getPublishedCards(), getAllTags()])
+  const [cards, tags] = await Promise.all([
+    getPublishedCards(),
+    getAllTags(),
+  ])
 
   return (
     <div>
-      {/* 태그 필터 chip 목록 — 각 태그 클릭 시 /tags/[tag] 정적 페이지로 이동 */}
-      {tags.length > 0 && (
+      {/* 태그 필터 chips — 각 태그 클릭 시 /tags/[tag] 정적 페이지로 이동 */}
+      {tags.length > 0 ? (
         <div
           style={{
             display: 'flex',
             flexWrap: 'wrap',
-            gap: '0.375rem',
-            marginBottom: '1.5rem',
+            gap: '0.5rem',
+            marginBottom: '2rem',
           }}
         >
-          {tags.map((tag) => (
+          {tags.map((t) => (
             <a
-              key={tag}
-              href={`/tags/${encodeURIComponent(tag)}`}
+              key={t}
+              href={`/tags/${encodeURIComponent(t)}`}
               style={{
                 padding: '0.25rem 0.75rem',
-                borderRadius: '999px',
+                borderRadius: '9999px',
                 fontSize: '0.8125rem',
-                background: 'var(--color-background-alternative)',
-                color: 'var(--color-label-normal)',
+                border: '1px solid var(--color-line-strong)',
+                background: 'transparent',
+                color: 'var(--color-label-alternative)',
                 textDecoration: 'none',
-                border: '1px solid var(--color-line-normal)',
               }}
             >
-              {tag}
+              {t}
             </a>
           ))}
         </div>
-      )}
+      ) : null}
 
       {/* 카드 리스트 */}
-      <div
-        data-pagefind-body
-        style={{
-          border: '1px solid var(--color-line-normal)',
-          borderRadius: '12px',
-          overflow: 'hidden',
-        }}
-      >
+      <div data-pagefind-body>
         {cards.length === 0 ? (
           <p
             style={{
-              padding: '2rem',
+              color: 'var(--color-label-assistive)',
               textAlign: 'center',
-              color: 'var(--color-label-alternative)',
-              margin: 0,
+              padding: '4rem 0',
             }}
           >
-            아직 발행된 카드가 없습니다.
+            게시된 노트가 없습니다.
           </p>
         ) : (
-          cards.map((card) => (
-            <CardRow
-              key={card.id}
-              slug={card.id}
-              title={card.title}
-              url={card.url}
-              platform={card.platform}
-              status={card.status}
-              published={card.published}
-              tags={card.tags}
-              createdAt={card.created_at}
-              href={`/${card.platform}/${card.id}`}
-            />
-          ))
+          <ul
+            style={{
+              listStyle: 'none',
+              padding: 0,
+              margin: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 0,
+              border: '1px solid var(--color-line-normal)',
+              borderRadius: '12px',
+              overflow: 'hidden',
+            }}
+          >
+            {cards.map((card) => (
+              <li
+                key={card.id}
+                style={{ borderBottom: '1px solid var(--color-line-normal)' }}
+              >
+                <a
+                  href={`/${card.platform}/${card.id}`}
+                  style={{
+                    display: 'block',
+                    padding: '1.25rem 1rem',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'baseline',
+                      gap: '0.5rem',
+                      marginBottom: '0.25rem',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        padding: '0.125rem 0.5rem',
+                        borderRadius: '4px',
+                        background: 'var(--color-background-alternative)',
+                        color: 'var(--color-label-alternative)',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {card.platform}
+                    </span>
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        color: 'var(--color-label-normal)',
+                        fontSize: '1rem',
+                      }}
+                    >
+                      {card.title != null ? card.title : card.id}
+                    </span>
+                  </div>
+                  {card.summary != null ? (
+                    <p
+                      style={{
+                        color: 'var(--color-label-alternative)',
+                        fontSize: '0.875rem',
+                        lineHeight: '1.5',
+                        margin: '0.25rem 0',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {card.summary}
+                    </p>
+                  ) : null}
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '0.375rem',
+                      flexWrap: 'wrap',
+                      marginTop: '0.5rem',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {card.tags.map((t) => (
+                      <span
+                        key={t}
+                        style={{
+                          fontSize: '0.75rem',
+                          padding: '0.125rem 0.5rem',
+                          borderRadius: '9999px',
+                          border: '1px solid var(--color-line-normal)',
+                          color: 'var(--color-label-alternative)',
+                        }}
+                      >
+                        {t}
+                      </span>
+                    ))}
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--color-label-assistive)',
+                        marginLeft: 'auto',
+                      }}
+                    >
+                      {new Date(card.created_at).toLocaleDateString('ko-KR')}
+                    </span>
+                  </div>
+                </a>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </div>

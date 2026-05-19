@@ -52,6 +52,7 @@ type RawRow = {
   platform: string
   status: string
   published: boolean
+  summary: string | null
   created_at: string
   card_tags: Array<{ tags: { canonical_name: string } | null }> | null
 }
@@ -90,7 +91,7 @@ export async function getPublishedCards(tag?: string): Promise<CardListItem[]> {
 
     const { data } = await supabase
       .from('cards')
-      .select('id, title, url, platform, status, published, created_at, card_tags(tags(canonical_name))')
+      .select('id, title, url, platform, status, published, summary, created_at, card_tags(tags(canonical_name))')
       .in('id', cardIds)
       .eq('published', true)
       .order('created_at', { ascending: false })
@@ -100,7 +101,7 @@ export async function getPublishedCards(tag?: string): Promise<CardListItem[]> {
 
   const { data } = await supabase
     .from('cards')
-    .select('id, title, url, platform, status, published, created_at, card_tags(tags(canonical_name))')
+    .select('id, title, url, platform, status, published, summary, created_at, card_tags(tags(canonical_name))')
     .eq('published', true)
     .order('created_at', { ascending: false })
 
@@ -191,6 +192,7 @@ function normalizeList(data: unknown): CardListItem[] {
     platform: row.platform,
     status: row.status,
     published: row.published,
+    summary: row.summary ?? null,
     created_at: row.created_at,
     tags: (row.card_tags ?? []).flatMap((ct) =>
       ct.tags ? [ct.tags.canonical_name] : [],
