@@ -1,0 +1,55 @@
+{
+  "project": "zettlink",
+  "phase": "3-site",
+  "workflow": {
+    "gates": true,
+    "gate1_criteria": "1. supabase/migrations/0002_content_columns.sql가 deep_content/til_content/guide_content TEXT 컬럼을 cards에 추가하는가?\n2. enrich API step이 Claude 호출 결과를 cards.{type}_content에도 저장하도록 업데이트하는가?\n3. scaffold step이 output: 'export' + transpilePackages(@zettlink/ui, @zettlink/shared) + anon 키 전용 구성인가?\n4. lib/cards.ts가 SUPABASE_SERVICE_ROLE_KEY를 참조하지 않고 NEXT_PUBLIC_SUPABASE_ANON_KEY만 사용하는가?\n5. Pagefind step이 next build && pagefind --site out을 build script로 구성하고 PagefindSearch가 'use client'인가?",
+    "gate2_criteria": "1. 홈 페이지(/) — published 카드 리스트 표시, 태그 클릭 시 필터 동작하는가?\n2. 카드 상세(/youtube/<slug>) — title/summary/insights/tags 표시, markdown 렌더되는가?\n3. 심화 콘텐츠(has_deep=true 카드) — deep_content 섹션이 렌더되는가?\n4. 태그 페이지(/tags/<tag>) — 해당 태그 카드만 표시되는가?\n5. Pagefind 검색 — 키워드 입력 시 관련 카드가 결과에 표시되는가?\n6. unpublished 카드 — anon RLS로 사이트에 미노출되는가?\n7. pnpm deploy:site — Vercel 재빌드 트리거되는가?\n8. 새로 생성된 TypeScript 파일 첫 줄에 한국어 역할 주석이 있는가?"
+  },
+  "steps": [
+    {
+      "step": 0,
+      "name": "db-migration",
+      "status": "completed",
+      "started_at": "2026-05-19T10:34:51+0900",
+      "completed_at": "2026-05-19T10:45:00+0900",
+      "summary": "0002_content_columns.sql 생성 및 로컬 적용, enrich API에서 deep/til/guide_content 컬럼 저장, pnpm gen-types로 types.gen.ts 재생성 확인"
+    },
+    {
+      "step": 1,
+      "name": "scaffold",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "name": "lib-cards",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "name": "home-page",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "name": "card-detail",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "name": "tags-page",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "name": "pagefind",
+      "status": "pending"
+    },
+    {
+      "step": 7,
+      "name": "deploy",
+      "status": "pending"
+    }
+  ],
+  "created_at": "2026-05-19T00:00:00+0900"
+}
