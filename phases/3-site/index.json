@@ -36,7 +36,7 @@
       "name": "home-page",
       "status": "completed",
       "started_at": "2026-05-19T13:15:57+0900",
-      "completed_at": "2026-05-19T13:38:00+0900",
+      "completed_at": "2026-05-19T13:24:58+0900",
       "summary": "app/page.tsx — published 카드 리스트(summary 포함), 태그 chip(/tags/[tag] 링크), data-pagefind-body. lib/cards.ts에 summary 필드 추가(RawRow·select·normalizeList). searchParams는 output:export와 호환 불가, /tags/[tag] 정적 방식으로 태그 필터 구현. pnpm --filter site build 성공"
     },
     {
