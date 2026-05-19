@@ -3,9 +3,8 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   output: 'export',
-  // @zettlink/shared(config.ts)는 SERVICE_ROLE_KEY가 필요하므로 포함하지 않는다
-  // @zettlink/ui 컴포넌트만 트랜스파일
-  transpilePackages: ['@zettlink/ui'],
+  // @zettlink/ui와 @zettlink/shared 모두 트랜스파일 (ESM 소스 → 번들)
+  transpilePackages: ['@zettlink/ui', '@zettlink/shared'],
   webpack(config) {
     config.resolve.extensionAlias = {
       ...config.resolve.extensionAlias,
