@@ -1,5 +1,5 @@
-'use client'
 // 헤더 검색 UI — Pagefind JS API 동적 로드, 클라이언트 컴포넌트
+'use client'
 import { useState, useEffect, useRef } from 'react'
 
 type PagefindResult = {
