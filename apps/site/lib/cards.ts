@@ -171,12 +171,35 @@ export async function getAllPublishedSlugs(): Promise<Array<{ platform: string; 
 
 export type TagItem = { canonical_name: string; usage_count: number }
 
-/** published 카드에 달린 태그 목록 (usage_count 내림차순). */
+/** published 카드에 달린 태그 목록 (usage_count 내림차순). unpublished 전용 태그는 제외한다. */
 export async function getAllTags(): Promise<TagItem[]> {
   const supabase = getClient()
+
+  // 1. published 카드 ID 목록 조회
+  const { data: publishedCards } = await supabase
+    .from('cards')
+    .select('id')
+    .eq('published', true)
+
+  const publishedCardIds = ((publishedCards ?? []) as Array<{ id: string }>).map((c) => c.id)
+  if (publishedCardIds.length === 0) return []
+
+  // 2. 해당 카드에 연결된 고유 tag_id 조회
+  const { data: cardTagRows } = await supabase
+    .from('card_tags')
+    .select('tag_id')
+    .in('card_id', publishedCardIds)
+
+  const tagIds = [
+    ...new Set(((cardTagRows ?? []) as Array<{ tag_id: number }>).map((r) => r.tag_id)),
+  ]
+  if (tagIds.length === 0) return []
+
+  // 3. 해당 tag_id의 태그 정보 조회 (usage_count 내림차순)
   const { data } = await supabase
     .from('tags')
     .select('canonical_name, usage_count')
+    .in('id', tagIds)
     .order('usage_count', { ascending: false })
     .limit(50)
 
