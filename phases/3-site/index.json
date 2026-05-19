@@ -44,7 +44,7 @@
       "name": "card-detail",
       "status": "completed",
       "started_at": "2026-05-19T13:24:58+0900",
-      "completed_at": "2026-05-19T13:40:00+0900",
+      "completed_at": "2026-05-19T13:28:09+0900",
       "summary": "app/[platform]/[slug]/page.tsx — generateStaticParams/generateMetadata/CardPage 구현. &&JSX 조건부 렌더링을 삼항 연산자로 수정, @tailwindcss/typography @plugin 추가. pnpm --filter site build 성공, out/youtube/_placeholder_/index.html 생성 확인"
     },
     {
