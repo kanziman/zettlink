@@ -52,7 +52,7 @@
       "name": "tags-page",
       "status": "completed",
       "started_at": "2026-05-19T13:28:09+0900",
-      "completed_at": "2026-05-19T14:15:00+0900",
+      "completed_at": "2026-05-19T13:32:53+0900",
       "summary": "app/tags/page.tsx 신규 생성(태그 인덱스, usage_count 표시), app/tags/[tag]/page.tsx 업데이트(generateStaticParams·generateMetadata·백링크), getAllTags() 반환 타입을 TagItem[]으로 변경, trailingSlash:true 추가. pnpm --filter site build 성공, out/tags/index.html + out/tags/<tag>/index.html 생성 확인"
     },
     {
