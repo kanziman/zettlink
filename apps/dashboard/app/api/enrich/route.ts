@@ -248,10 +248,10 @@ export async function POST(request: Request) {
   }
   const enrichUpdate =
     enrichType === 'deep'
-      ? { ...baseUpdate, has_deep: true }
+      ? { ...baseUpdate, has_deep: true, deep_content: resultText }
       : enrichType === 'til'
-        ? { ...baseUpdate, has_til: true }
-        : { ...baseUpdate, has_guide: true }
+        ? { ...baseUpdate, has_til: true, til_content: resultText }
+        : { ...baseUpdate, has_guide: true, guide_content: resultText }
 
   await serviceDb.from('cards').update(enrichUpdate).eq('id', id)
 
