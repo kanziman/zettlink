@@ -1,5 +1,6 @@
 /* 공개 사이트 전역 스타일 — Wanted Montage semantic token CSS 변수 */
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @layer base {
   :root {

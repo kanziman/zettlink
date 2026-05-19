@@ -4,6 +4,16 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { getAllPublishedSlugs, getCardBySlug } from '../../../lib/cards'
 
+interface PageProps {
+  params: Promise<{ platform: string; slug: string }>
+}
+
+export async function generateMetadata({ params }: PageProps) {
+  const { platform, slug } = await params
+  const card = await getCardBySlug(platform, slug)
+  return { title: card?.title ?? slug }
+}
+
 export async function generateStaticParams() {
   try {
     const slugs = await getAllPublishedSlugs()
@@ -13,10 +23,6 @@ export async function generateStaticParams() {
   } catch {
     return [{ platform: 'youtube', slug: '_placeholder_' }]
   }
-}
-
-interface PageProps {
-  params: Promise<{ platform: string; slug: string }>
 }
 
 const PLATFORM_LABEL: Record<string, string> = {
@@ -95,7 +101,7 @@ export default async function CardPage({ params }: PageProps) {
         </div>
 
         {/* 태그 */}
-        {card.tags.length > 0 && (
+        {card.tags.length > 0 ? (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginTop: '0.75rem' }}>
             {card.tags.map((tag) => (
               <a
@@ -115,11 +121,11 @@ export default async function CardPage({ params }: PageProps) {
               </a>
             ))}
           </div>
-        )}
+        ) : null}
       </header>
 
       {/* 요약 */}
-      {card.summary && (
+      {card.summary !== null ? (
         <section style={{ marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 0.75rem', color: 'var(--color-label-normal)' }}>
             요약
@@ -128,10 +134,10 @@ export default async function CardPage({ params }: PageProps) {
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{card.summary}</ReactMarkdown>
           </div>
         </section>
-      )}
+      ) : null}
 
       {/* 인사이트 */}
-      {card.insights && card.insights.length > 0 && (
+      {card.insights !== null && card.insights.length > 0 ? (
         <section style={{ marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 0.75rem', color: 'var(--color-label-normal)' }}>
             인사이트
@@ -144,10 +150,10 @@ export default async function CardPage({ params }: PageProps) {
             ))}
           </ul>
         </section>
-      )}
+      ) : null}
 
       {/* 심화 콘텐츠 */}
-      {card.has_deep && card.deep_content && (
+      {card.has_deep && card.deep_content !== null ? (
         <section style={{ marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 0.75rem', color: 'var(--color-label-normal)' }}>
             심화 분석
@@ -156,9 +162,9 @@ export default async function CardPage({ params }: PageProps) {
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{card.deep_content}</ReactMarkdown>
           </div>
         </section>
-      )}
+      ) : null}
 
-      {card.has_til && card.til_content && (
+      {card.has_til && card.til_content !== null ? (
         <section style={{ marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 0.75rem', color: 'var(--color-label-normal)' }}>
             TIL
@@ -167,9 +173,9 @@ export default async function CardPage({ params }: PageProps) {
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{card.til_content}</ReactMarkdown>
           </div>
         </section>
-      )}
+      ) : null}
 
-      {card.has_guide && card.guide_content && (
+      {card.has_guide && card.guide_content !== null ? (
         <section style={{ marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 0.75rem', color: 'var(--color-label-normal)' }}>
             실용 가이드
@@ -178,7 +184,7 @@ export default async function CardPage({ params }: PageProps) {
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{card.guide_content}</ReactMarkdown>
           </div>
         </section>
-      )}
+      ) : null}
     </article>
   )
 }
