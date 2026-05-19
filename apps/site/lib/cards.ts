@@ -20,6 +20,7 @@ export type CardListItem = {
   platform: string
   status: string
   published: boolean
+  summary: string | null
   created_at: string
   tags: string[]
 }
