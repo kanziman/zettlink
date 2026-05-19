@@ -20,7 +20,8 @@
     },
     {
       "dir": "3-site",
-      "status": "planned"
+      "status": "error",
+      "failed_at": "2026-05-19T10:53:43+0900"
     }
   ]
 }
