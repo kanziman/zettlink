@@ -29,13 +29,14 @@ export async function POST(request: Request) {
 
   // write는 service client만 사용한다
   const serviceDb = createServiceClient()
-  await serviceDb
+  const { error: updateError } = await serviceDb
     .from('cards')
     .update({
       published: newPublished,
       updated_at: new Date().toISOString(),
     })
     .eq('id', body.id)
+  if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
 
   return NextResponse.json({ ok: true, published: newPublished })
 }

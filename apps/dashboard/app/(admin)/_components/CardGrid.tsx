@@ -1,7 +1,7 @@
 // 그리드 카드 목록 + 상세 모달 — 클라이언트 컴포넌트
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 
 export type CardForGrid = {
@@ -59,10 +59,10 @@ export function CardGrid({ cards }: CardGridProps) {
 
   const selectedCard = cards.find((c) => c.id === selectedId) ?? null
 
-  function closeModal() {
+  const closeModal = useCallback(() => {
     setSelectedId(null)
     setPublishError(null)
-  }
+  }, [])
 
   useEffect(() => {
     if (selectedCard == null) return
@@ -71,7 +71,7 @@ export function CardGrid({ cards }: CardGridProps) {
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [selectedCard])
+  }, [selectedCard, closeModal])
 
   async function handlePublishToggle(card: CardForGrid) {
     if (publishing) return
