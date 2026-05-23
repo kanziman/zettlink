@@ -1,7 +1,7 @@
 // 그리드 카드 목록 + 상세 모달 — 클라이언트 컴포넌트
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export type CardForGrid = {
@@ -37,6 +37,7 @@ function statusLabel(status: string): string {
   if (status === 'done') return '완료'
   if (status === 'processing') return '처리 중'
   if (status === 'failed') return '실패'
+  if (status === 'error') return '오류'
   return status
 }
 
@@ -63,7 +64,17 @@ export function CardGrid({ cards }: CardGridProps) {
     setPublishError(null)
   }
 
+  useEffect(() => {
+    if (selectedCard == null) return
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') closeModal()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [selectedCard])
+
   async function handlePublishToggle(card: CardForGrid) {
+    if (publishing) return
     setPublishing(true)
     setPublishError(null)
     try {
