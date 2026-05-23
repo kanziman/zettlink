@@ -11,7 +11,7 @@ interface PageProps {
 
 type SupabaseClient = Awaited<ReturnType<typeof createSupabaseServerClient>>
 
-type CardRow = {
+type SupabaseCardRow = {
   id: string
   title: string | null
   url: string
@@ -26,7 +26,7 @@ type CardRow = {
 async function fetchCards(
   supabase: SupabaseClient,
   { q, tag, status }: { q?: string; tag?: string; status?: string },
-): Promise<CardRow[]> {
+): Promise<SupabaseCardRow[]> {
   if (tag) {
     const { data: tagRow } = await supabase
       .from('tags')
@@ -50,8 +50,9 @@ async function fetchCards(
       .limit(50)
     if (q) query = query.ilike('title', `%${q}%`)
     if (status && status !== 'all') query = query.eq('status', status)
-    const { data } = await query
-    return (data ?? []) as CardRow[]
+    const { data, error } = await query
+    if (error) console.error('[fetchCards] tag query failed:', error.message)
+    return (data ?? []) as SupabaseCardRow[]
   }
 
   let query = supabase
@@ -61,8 +62,9 @@ async function fetchCards(
     .limit(50)
   if (q) query = query.ilike('title', `%${q}%`)
   if (status && status !== 'all') query = query.eq('status', status)
-  const { data } = await query
-  return (data ?? []) as CardRow[]
+  const { data, error } = await query
+  if (error) console.error('[fetchCards] query failed:', error.message)
+  return (data ?? []) as SupabaseCardRow[]
 }
 
 function StatChip({
@@ -93,22 +95,23 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const supabase = await createSupabaseServerClient()
 
   // async-parallel: 카드 목록·태그 목록·전체 통계 병렬 조회
-  const [cards, tagsResult, statsResult] = await Promise.all([
+  const [cards, tagsResult, totalResult, doneResult, publishedResult] = await Promise.all([
     fetchCards(supabase, { q, tag, status }),
     supabase
       .from('tags')
       .select('canonical_name')
       .order('usage_count', { ascending: false })
       .limit(30),
-    supabase.from('cards').select('status, published'),
+    supabase.from('cards').select('*', { count: 'exact', head: true }),
+    supabase.from('cards').select('*', { count: 'exact', head: true }).eq('status', 'done'),
+    supabase.from('cards').select('*', { count: 'exact', head: true }).eq('published', true),
   ])
 
   const tags = (tagsResult.data ?? []).map((t: { canonical_name: string }) => t.canonical_name)
-  const allCards = (statsResult.data ?? []) as Array<{ status: string; published: boolean }>
   const stats = {
-    total: allCards.length,
-    done: allCards.filter((c) => c.status === 'done').length,
-    published: allCards.filter((c) => c.published).length,
+    total: totalResult.count ?? 0,
+    done: doneResult.count ?? 0,
+    published: publishedResult.count ?? 0,
   }
 
   const activeStatus = status ?? 'all'
