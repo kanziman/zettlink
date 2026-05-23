@@ -1,6 +1,9 @@
-// 카드 리스트 메인 페이지 — 검색·태그 필터·상태 필터
-import { CardRow } from '@zettlink/ui'
+// 카드 리스트 메인 페이지 — 통계 행 + 태그/상태 필터 + 그리드 카드
 import { createSupabaseServerClient } from '../../lib/supabase/server'
+import { TagFilter } from './_components/TagFilter'
+import { StatusFilter } from './_components/StatusFilter'
+import { CardGrid } from './_components/CardGrid'
+import type { CardForGrid } from './_components/CardGrid'
 
 interface PageProps {
   searchParams: Promise<{ q?: string; tag?: string; status?: string }>
@@ -8,7 +11,7 @@ interface PageProps {
 
 type SupabaseClient = Awaited<ReturnType<typeof createSupabaseServerClient>>
 
-type CardWithTags = {
+type CardRow = {
   id: string
   title: string | null
   url: string
@@ -16,81 +19,123 @@ type CardWithTags = {
   status: string
   published: boolean
   created_at: string
+  summary: string | null
   card_tags: Array<{ tags: { canonical_name: string } | null }> | null
 }
 
 async function fetchCards(
   supabase: SupabaseClient,
   { q, tag, status }: { q?: string; tag?: string; status?: string },
-): Promise<{ data: CardWithTags[] | null; error: unknown }> {
-  // 태그 필터가 있을 때 해당 태그를 가진 card_id 목록을 먼저 조회
+): Promise<CardRow[]> {
   if (tag) {
     const { data: tagRow } = await supabase
       .from('tags')
       .select('id')
       .eq('canonical_name', tag)
       .single()
-
-    if (!tagRow) return { data: [], error: null }
+    if (!tagRow) return []
 
     const { data: cardTagRows } = await supabase
       .from('card_tags')
       .select('card_id')
       .eq('tag_id', tagRow.id)
-
-    const cardIds = (cardTagRows ?? []).map((r) => r.card_id)
-    if (cardIds.length === 0) return { data: [], error: null }
+    const cardIds = (cardTagRows ?? []).map((r: { card_id: string }) => r.card_id)
+    if (cardIds.length === 0) return []
 
     let query = supabase
       .from('cards')
-      .select('id, title, url, platform, status, published, created_at, card_tags(tags(canonical_name))')
+      .select('id, title, url, platform, status, published, created_at, summary, card_tags(tags(canonical_name))')
       .in('id', cardIds)
       .order('created_at', { ascending: false })
       .limit(50)
-
     if (q) query = query.ilike('title', `%${q}%`)
     if (status && status !== 'all') query = query.eq('status', status)
-
-    const result = await query
-    return { data: (result.data as CardWithTags[] | null), error: result.error }
+    const { data } = await query
+    return (data ?? []) as CardRow[]
   }
 
   let query = supabase
     .from('cards')
-    .select('id, title, url, platform, status, published, created_at, card_tags(tags(canonical_name))')
+    .select('id, title, url, platform, status, published, created_at, summary, card_tags(tags(canonical_name))')
     .order('created_at', { ascending: false })
     .limit(50)
-
   if (q) query = query.ilike('title', `%${q}%`)
   if (status && status !== 'all') query = query.eq('status', status)
+  const { data } = await query
+  return (data ?? []) as CardRow[]
+}
 
-  const result = await query
-  return { data: (result.data as CardWithTags[] | null), error: result.error }
+function StatChip({
+  value,
+  label,
+  color = 'var(--color-label-normal)',
+}: {
+  value: number
+  label: string
+  color?: string
+}) {
+  return (
+    <div style={{
+      background: 'var(--color-background-normal)',
+      border: '1px solid var(--color-line-normal)',
+      borderRadius: '10px',
+      padding: '0.75rem 1rem',
+      boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
+    }}>
+      <div style={{ fontSize: '1.5rem', fontWeight: 700, color }}>{value}</div>
+      <div style={{ fontSize: '0.75rem', color: 'var(--color-label-assistive)', marginTop: '2px' }}>{label}</div>
+    </div>
+  )
 }
 
 export default async function DashboardPage({ searchParams }: PageProps) {
   const { q, tag, status } = await searchParams
   const supabase = await createSupabaseServerClient()
 
-  // server-parallel-fetching: 카드 목록과 태그 목록을 병렬 조회
-  const [cardsResult, tagsResult] = await Promise.all([
+  // async-parallel: 카드 목록·태그 목록·전체 통계 병렬 조회
+  const [cards, tagsResult, statsResult] = await Promise.all([
     fetchCards(supabase, { q, tag, status }),
     supabase
       .from('tags')
       .select('canonical_name')
       .order('usage_count', { ascending: false })
       .limit(30),
+    supabase.from('cards').select('status, published'),
   ])
 
-  const cards = cardsResult.data ?? []
-  const tags = (tagsResult.data ?? []).map((t) => t.canonical_name)
+  const tags = (tagsResult.data ?? []).map((t: { canonical_name: string }) => t.canonical_name)
+  const allCards = (statsResult.data ?? []) as Array<{ status: string; published: boolean }>
+  const stats = {
+    total: allCards.length,
+    done: allCards.filter((c) => c.status === 'done').length,
+    published: allCards.filter((c) => c.published).length,
+  }
 
   const activeStatus = status ?? 'all'
 
+  const gridCards: CardForGrid[] = cards.map((c) => ({
+    id: c.id,
+    title: c.title,
+    url: c.url,
+    platform: c.platform,
+    status: c.status,
+    published: c.published,
+    created_at: c.created_at,
+    summary: c.summary,
+    tags: (c.card_tags ?? []).flatMap((ct) => (ct.tags ? [ct.tags.canonical_name] : [])),
+  }))
+
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      {/* 통계 행 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
+        <StatChip value={stats.total} label="전체 카드" />
+        <StatChip value={stats.done} label="완료" color="var(--color-status-success)" />
+        <StatChip value={stats.published} label="공개" color="var(--color-primary-normal)" />
+      </div>
+
       {/* 검색 바 */}
-      <form method="GET" style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+      <form method="GET" style={{ display: 'flex', gap: '0.5rem' }}>
         <input
           name="q"
           defaultValue={q}
@@ -105,8 +150,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             fontSize: '0.9375rem',
           }}
         />
-        {tag ? <input type="hidden" name="tag" value={tag} /> : null}
-        {status ? <input type="hidden" name="status" value={status} /> : null}
+        {tag != null ? <input type="hidden" name="tag" value={tag} /> : null}
+        {status != null ? <input type="hidden" name="status" value={status} /> : null}
         <button
           type="submit"
           style={{
@@ -124,111 +169,15 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       </form>
 
       {/* 태그 필터 */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '1rem' }}>
-        <a
-          href={`/?${new URLSearchParams({ ...(q ? { q } : {}), status: activeStatus }).toString()}`}
-          style={{
-            padding: '0.25rem 0.75rem',
-            borderRadius: '999px',
-            fontSize: '0.8125rem',
-            background: !tag ? 'var(--color-primary-normal)' : 'var(--color-background-alternative)',
-            color: !tag ? '#fff' : 'var(--color-label-normal)',
-            textDecoration: 'none',
-            border: '1px solid var(--color-line-normal)',
-          }}
-        >
-          전체
-        </a>
-        {tags.map((t) => (
-          <a
-            key={t}
-            href={`/?${new URLSearchParams({ tag: t, ...(q ? { q } : {}), status: activeStatus }).toString()}`}
-            style={{
-              padding: '0.25rem 0.75rem',
-              borderRadius: '999px',
-              fontSize: '0.8125rem',
-              background: tag === t ? 'var(--color-primary-normal)' : 'var(--color-background-alternative)',
-              color: tag === t ? '#fff' : 'var(--color-label-normal)',
-              textDecoration: 'none',
-              border: '1px solid var(--color-line-normal)',
-            }}
-          >
-            {t}
-          </a>
-        ))}
-      </div>
+      <TagFilter tags={tags} activeTag={tag} activeStatus={activeStatus} q={q} />
 
       {/* 상태 필터 */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
-        {(['all', 'done', 'failed'] as const).map((s) => (
-          <a
-            key={s}
-            href={`/?${new URLSearchParams({
-              ...(q ? { q } : {}),
-              ...(tag ? { tag } : {}),
-              status: s,
-            }).toString()}`}
-            style={{
-              padding: '0.25rem 0.75rem',
-              borderRadius: '6px',
-              fontSize: '0.8125rem',
-              background: activeStatus === s ? 'var(--color-primary-normal)' : 'transparent',
-              color: activeStatus === s ? '#fff' : 'var(--color-label-alternative)',
-              textDecoration: 'none',
-              border: '1px solid var(--color-line-normal)',
-            }}
-          >
-            {s === 'all' ? '전체' : s === 'done' ? '완료' : '실패'}
-          </a>
-        ))}
-      </div>
+      <StatusFilter activeStatus={activeStatus} activeTag={tag} q={q} />
 
-      {/* 카드 목록 */}
-      <div
-        style={{
-          border: '1px solid var(--color-line-normal)',
-          borderRadius: '12px',
-          overflow: 'hidden',
-        }}
-      >
-        {cards.length === 0 ? (
-          <p
-            style={{
-              padding: '2rem',
-              textAlign: 'center',
-              color: 'var(--color-label-alternative)',
-              margin: 0,
-            }}
-          >
-            카드가 없습니다.
-          </p>
-        ) : (
-          cards.map((card) => (
-            <CardRow
-              key={card.id}
-              slug={card.id}
-              title={card.title}
-              url={card.url}
-              platform={card.platform}
-              status={card.status}
-              published={card.published}
-              tags={(card.card_tags ?? []).flatMap((ct) =>
-                ct.tags ? [ct.tags.canonical_name] : [],
-              )}
-              createdAt={card.created_at}
-              href={`/cards/${card.id}`}
-            />
-          ))
-        )}
-      </div>
+      {/* 카드 그리드 */}
+      <CardGrid cards={gridCards} />
 
-      <p
-        style={{
-          marginTop: '1rem',
-          fontSize: '0.8125rem',
-          color: 'var(--color-label-assistive)',
-        }}
-      >
+      <p style={{ fontSize: '0.8125rem', color: 'var(--color-label-assistive)' }}>
         최대 50개 표시
       </p>
     </div>
