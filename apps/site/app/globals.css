@@ -1,66 +1,142 @@
 /* 공개 사이트 전역 스타일 — Wanted Montage semantic token CSS 변수 */
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+@config "../tailwind.config.mjs";
+
+:root {
+  /* ── Atomic Colors ── */
+  --blue-40: #0054D1;
+  --blue-45: #005EEB;
+  --blue-50: #0066FF;
+  --blue-55: #1A75FF;
+  --blue-60: #3385FF;
+
+  --coolNeutral-5:  #0F0F10;
+  --coolNeutral-10: #171719;
+  --coolNeutral-15: #1B1C1E;
+  --coolNeutral-17: #222325;
+  --coolNeutral-22: #2E2F33;
+  --coolNeutral-25: #37383C;
+  --coolNeutral-40: #5A5C63;
+  --coolNeutral-50: #70737C;
+  --coolNeutral-70: #989BA2;
+  --coolNeutral-80: #C2C4C8;
+  --coolNeutral-90: #DBDCDF;
+  --coolNeutral-96: #F0F1F2;
+  --coolNeutral-98: #F4F4F5;
+  --coolNeutral-99: #F7F7F8;
+
+  --green-50:  #12D589;
+  --green-60:  #2FE59A;
+  --orange-50: #FF7A00;
+  --orange-60: #FF9533;
+  --red-50:    #FF4242;
+  --red-60:    #FF6363;
+  --common-0:   #000000;
+  --common-100: #FFFFFF;
+
+  /* ── Semantic Colors (Light) ── */
+  --semantic-primary-normal: var(--blue-50);
+  --semantic-primary-strong: var(--blue-45);
+  --semantic-primary-heavy:  var(--blue-40);
+
+  --semantic-label-normal:      var(--coolNeutral-10);
+  --semantic-label-strong:      var(--common-0);
+  --semantic-label-neutral:     rgba(46, 47, 51, 0.88);
+  --semantic-label-alternative: rgba(55, 56, 60, 0.61);
+  --semantic-label-assistive:   rgba(55, 56, 60, 0.28);
+  --semantic-label-disable:     rgba(55, 56, 60, 0.16);
+
+  --semantic-background-normal-normal:      var(--common-100);
+  --semantic-background-normal-alternative: var(--coolNeutral-99);
+  --semantic-background-elevated-normal:    var(--common-100);
+
+  --semantic-interaction-inactive: var(--coolNeutral-70);
+  --semantic-interaction-disable:  var(--coolNeutral-98);
+
+  --semantic-line-normal-normal: rgba(112, 115, 124, 0.22);
+  --semantic-line-solid-normal:  var(--coolNeutral-96);
+
+  --semantic-status-positive:   var(--green-50);
+  --semantic-status-cautionary: var(--orange-50);
+  --semantic-status-negative:   var(--red-50);
+
+  --semantic-fill-normal: rgba(112, 115, 124, 0.08);
+  --semantic-fill-strong: rgba(112, 115, 124, 0.16);
+
+  --semantic-material-dimmer: rgba(23, 23, 25, 0.52);
+
+  --semantic-inverse-primary:    var(--blue-60);
+  --semantic-inverse-background: var(--coolNeutral-15);
+
+  /* ── Elevation Shadows ── */
+  --elevation-shadow-normal-xsmall: 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --elevation-shadow-normal-small:  0 2px 4px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --elevation-shadow-normal-medium: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.08);
+  --elevation-shadow-normal-large:  0 6px 10px rgba(0, 0, 0, 0.05), 0 16px 24px rgba(0, 0, 0, 0.1);
+  --elevation-shadow-normal-xlarge: 0 10px 15px rgba(0, 0, 0, 0.05), 0 24px 38px rgba(0, 0, 0, 0.12);
+  --elevation-shadow-spread-small:  0 0 60px rgba(0, 102, 255, 0.1);
+  --elevation-shadow-spread-medium: 0 15px 75px rgba(0, 102, 255, 0.16);
+
+  /* ── Typography ── */
+  --font-family: 'Pretendard', sans-serif;
+
+  --font-display1-size: 3.5rem;    --font-display1-lh: 4.5rem;    --font-display1-ls: -0.0319em; --font-display1-weight: 700;
+  --font-display2-size: 2.5rem;    --font-display2-lh: 3.25rem;   --font-display2-ls: -0.0282em; --font-display2-weight: 700;
+  --font-title1-size:   2.0rem;    --font-title1-lh:   2.75rem;   --font-title1-ls:   -0.0253em; --font-title1-weight:   700;
+  --font-title2-size:   1.75rem;   --font-title2-lh:   2.375rem;  --font-title2-ls:   -0.0236em; --font-title2-weight:   700;
+  --font-title3-size:   1.5rem;    --font-title3-lh:   2.0rem;    --font-title3-ls:   -0.023em;  --font-title3-weight:   700;
+  --font-heading1-size: 1.375rem;  --font-heading1-lh: 1.875rem;  --font-heading1-ls: -0.0194em; --font-heading1-weight: 600;
+  --font-heading2-size: 1.25rem;   --font-heading2-lh: 1.75rem;   --font-heading2-ls: -0.012em;  --font-heading2-weight: 600;
+  --font-headline1-size:1.125rem;  --font-headline1-lh:1.625rem;  --font-headline1-ls:-0.002em;  --font-headline1-weight:600;
+  --font-headline2-size:1.0625rem; --font-headline2-lh:1.5rem;    --font-headline2-ls:0em;       --font-headline2-weight:600;
+  --font-body1-size:    1.0rem;    --font-body1-lh:    1.5rem;    --font-body1-ls:    0.0057em;  --font-body1-weight:    400;
+  --font-body2-size:    0.9375rem; --font-body2-lh:    1.375rem;  --font-body2-ls:    0.0096em;  --font-body2-weight:    400;
+  --font-label1-size:   0.875rem;  --font-label1-lh:   1.25rem;   --font-label1-ls:   0.0145em;  --font-label1-weight:   500;
+  --font-label2-size:   0.8125rem; --font-label2-lh:   1.125rem;  --font-label2-ls:   0.0194em;  --font-label2-weight:   500;
+  --font-caption1-size: 0.75rem;   --font-caption1-lh: 1.0rem;    --font-caption1-ls: 0.0252em;  --font-caption1-weight: 500;
+  --font-caption2-size: 0.6875rem; --font-caption2-lh: 0.875rem;  --font-caption2-ls: 0.0311em;  --font-caption2-weight: 500;
+}
+
+.dark {
+  --semantic-primary-normal: var(--blue-60);
+  --semantic-primary-strong: var(--blue-55);
+  --semantic-primary-heavy:  var(--blue-50);
+
+  --semantic-label-normal:      var(--coolNeutral-99);
+  --semantic-label-strong:      var(--common-100);
+  --semantic-label-neutral:     rgba(219, 220, 223, 0.88);
+  --semantic-label-alternative: rgba(194, 196, 200, 0.61);
+  --semantic-label-assistive:   rgba(194, 196, 200, 0.28);
+  --semantic-label-disable:     rgba(152, 155, 162, 0.16);
+
+  --semantic-background-normal-normal:      var(--coolNeutral-15);
+  --semantic-background-normal-alternative: var(--coolNeutral-5);
+  --semantic-background-elevated-normal:    var(--coolNeutral-17);
+
+  --semantic-interaction-inactive: var(--coolNeutral-40);
+  --semantic-interaction-disable:  var(--coolNeutral-22);
+
+  --semantic-line-normal-normal: rgba(112, 115, 124, 0.32);
+  --semantic-line-solid-normal:  var(--coolNeutral-25);
+
+  --semantic-status-positive:   var(--green-60);
+  --semantic-status-cautionary: var(--orange-60);
+  --semantic-status-negative:   var(--red-60);
+
+  --semantic-fill-normal: rgba(112, 115, 124, 0.22);
+  --semantic-fill-strong: rgba(112, 115, 124, 0.28);
+
+  --semantic-material-dimmer: rgba(23, 23, 25, 0.74);
+
+  --semantic-inverse-primary:    var(--blue-50);
+  --semantic-inverse-background: var(--common-100);
+
+  --elevation-shadow-normal-small: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
 
 @layer base {
-  :root {
-    /* label */
-    --color-label-normal: #171719;
-    --color-label-strong: #000000;
-    --color-label-neutral: rgba(46, 47, 51, 0.88);
-    --color-label-alternative: rgba(46, 47, 51, 0.61);
-    --color-label-assistive: rgba(46, 47, 51, 0.28);
-    --color-label-disable: rgba(46, 47, 51, 0.16);
-
-    /* background */
-    --color-background-normal: #ffffff;
-    --color-background-alternative: #f7f7f8;
-
-    /* primary */
-    --color-primary-normal: #0066ff;
-    --color-primary-strong: #005eeb;
-    --color-primary-heavy: #0054d1;
-
-    /* status */
-    --color-status-error: #ff4242;
-    --color-status-success: #12d589;
-    --color-status-caution: #ff7a00;
-    --color-status-info: #3385ff;
-    --color-status-dead: #5a5c63;
-
-    /* line */
-    --color-line-normal: rgba(112, 115, 124, 0.22);
-    --color-line-strong: rgba(112, 115, 124, 0.48);
-  }
-
-  .dark {
-    --color-label-normal: #f7f7f8;
-    --color-label-strong: #ffffff;
-    --color-label-neutral: rgba(226, 227, 229, 0.88);
-    --color-label-alternative: rgba(226, 227, 229, 0.61);
-    --color-label-assistive: rgba(226, 227, 229, 0.28);
-    --color-label-disable: rgba(226, 227, 229, 0.16);
-
-    --color-background-normal: #171719;
-    --color-background-alternative: #1b1c1e;
-
-    --color-primary-normal: #3385ff;
-    --color-primary-strong: #1a75ff;
-    --color-primary-heavy: #0066ff;
-
-    --color-status-error: #ff6363;
-    --color-status-success: #2fe59a;
-    --color-status-caution: #ff9533;
-    --color-status-info: #69a5ff;
-    --color-status-dead: #8a8d96;
-
-    --color-line-normal: rgba(151, 154, 160, 0.22);
-    --color-line-strong: rgba(151, 154, 160, 0.48);
-  }
-
-  body {
-    background-color: var(--color-background-normal);
-    color: var(--color-label-normal);
-    font-family: 'Pretendard', sans-serif;
+  html, body {
+    @apply font-sans bg-background-normal-alternative text-label-normal transition-colors duration-300;
   }
 }
