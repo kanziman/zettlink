@@ -1,8 +1,9 @@
-// 홈 페이지 카드 리스트 — ?tag= URL param 클라이언트 필터링 (useEffect + window.location)
+// 홈 페이지 카드 그리드 — ?tag= URL param 필터링, B1 태그 칩 + usage_count 표시
 'use client'
 
 import { useState, useEffect } from 'react'
 import type { CardListItem, TagItem } from '../lib/cards'
+import { Card } from './Card'
 
 type Props = {
   cards: CardListItem[]
@@ -10,7 +11,6 @@ type Props = {
 }
 
 export function CardList({ cards, tags }: Props) {
-  // 초기값 undefined: 서버 pre-render 시 전체 카드 노출 → Pagefind 인덱싱 가능
   const [activeTag, setActiveTag] = useState<string | undefined>(undefined)
 
   useEffect(() => {
@@ -46,127 +46,71 @@ export function CardList({ cards, tags }: Props) {
     ? cards.filter((c) => c.tags.includes(activeTag))
     : cards
 
+  const totalCount = cards.length
+
+  // 필터 칩 공통 스타일
+  const chipBase =
+    'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-label2 font-medium transition-colors duration-150 cursor-pointer no-underline'
+  const chipInactive = 'bg-fill-normal text-label-alternative hover:bg-fill-strong'
+  const chipActive = 'bg-[rgba(0,102,255,0.1)] text-primary-normal'
+
   return (
     <div>
-      {/* 태그 필터 chips — ?tag=xxx URL param 방식 */}
-      {tags.length > 0 ? (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '2rem' }}>
+      {/* 태그 필터 칩 */}
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-7">
           <a
             href="/"
             onClick={handleAllClick}
-            style={{
-              padding: '0.25rem 0.75rem',
-              borderRadius: '9999px',
-              fontSize: '0.8125rem',
-              border: '1px solid var(--color-line-strong)',
-              background: activeTag == null ? 'var(--color-primary-normal)' : 'transparent',
-              color: activeTag == null ? '#fff' : 'var(--color-label-alternative)',
-              textDecoration: 'none',
-              cursor: 'pointer',
-            }}
+            className={[chipBase, activeTag == null ? chipActive : chipInactive].join(' ')}
           >
             전체
+            <span className="text-label-assistive text-caption1">
+              {totalCount}
+            </span>
           </a>
-          {tags.map((t) => (
-            <a
-              key={t.canonical_name}
-              href={`/?tag=${encodeURIComponent(t.canonical_name)}`}
-              onClick={(e) => handleTagClick(t.canonical_name, e)}
-              style={{
-                padding: '0.25rem 0.75rem',
-                borderRadius: '9999px',
-                fontSize: '0.8125rem',
-                border: '1px solid var(--color-line-strong)',
-                background: activeTag === t.canonical_name ? 'var(--color-primary-normal)' : 'transparent',
-                color: activeTag === t.canonical_name ? '#fff' : 'var(--color-label-alternative)',
-                textDecoration: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              {t.canonical_name}
-            </a>
-          ))}
+          {tags.map((t) => {
+            const isActive = activeTag === t.canonical_name
+            return (
+              <a
+                key={t.canonical_name}
+                href={`/?tag=${encodeURIComponent(t.canonical_name)}`}
+                onClick={(e) => handleTagClick(t.canonical_name, e)}
+                className={[chipBase, isActive ? chipActive : chipInactive].join(' ')}
+              >
+                <span className={isActive ? 'text-primary-normal/40' : 'text-label-assistive'}>
+                  #
+                </span>
+                {t.canonical_name}
+                <span className="text-label-assistive text-caption1">
+                  {t.usage_count}
+                </span>
+              </a>
+            )
+          })}
         </div>
-      ) : null}
+      )}
 
-      {/* 카드 리스트 — data-pagefind-body는 서버 pre-render 시 전체 카드 포함 */}
+      {/* 카드 그리드 */}
       <div data-pagefind-body>
         {filtered.length === 0 ? (
-          <p style={{ color: 'var(--color-label-assistive)', textAlign: 'center', padding: '4rem 0' }}>
+          <p className="text-label-assistive text-center py-16">
             게시된 노트가 없습니다.
           </p>
         ) : (
-          <ul
-            style={{
-              listStyle: 'none',
-              padding: 0,
-              margin: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 0,
-              border: '1px solid var(--color-line-normal)',
-              borderRadius: '12px',
-              overflow: 'hidden',
-            }}
-          >
+          <ul className="list-none p-0 m-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((card) => (
-              <li key={card.id} style={{ borderBottom: '1px solid var(--color-line-normal)' }}>
-                <a
-                  href={`/${card.platform}/${card.id}`}
-                  style={{ display: 'block', padding: '1.25rem 1rem', textDecoration: 'none' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                    <span
-                      style={{
-                        fontSize: '0.75rem',
-                        padding: '0.125rem 0.5rem',
-                        borderRadius: '4px',
-                        background: 'var(--color-background-alternative)',
-                        color: 'var(--color-label-alternative)',
-                        flexShrink: 0,
-                      }}
-                    >
-                      {card.platform}
-                    </span>
-                    <span style={{ fontWeight: 600, color: 'var(--color-label-normal)', fontSize: '1rem' }}>
-                      {card.title != null ? card.title : card.id}
-                    </span>
-                  </div>
-                  {card.summary != null ? (
-                    <p
-                      style={{
-                        color: 'var(--color-label-alternative)',
-                        fontSize: '0.875rem',
-                        lineHeight: '1.5',
-                        margin: '0.25rem 0',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {card.summary}
-                    </p>
-                  ) : null}
-                  <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap', marginTop: '0.5rem', alignItems: 'center' }}>
-                    {card.tags.map((t) => (
-                      <span
-                        key={t}
-                        style={{
-                          fontSize: '0.75rem',
-                          padding: '0.125rem 0.5rem',
-                          borderRadius: '9999px',
-                          border: '1px solid var(--color-line-normal)',
-                          color: 'var(--color-label-alternative)',
-                        }}
-                      >
-                        {t}
-                      </span>
-                    ))}
-                    <span style={{ fontSize: '0.75rem', color: 'var(--color-label-assistive)', marginLeft: 'auto' }}>
-                      {new Date(card.created_at).toLocaleDateString('ko-KR')}
-                    </span>
-                  </div>
+              <li key={card.id}>
+                <a href={`/${card.platform}/${card.id}`} className="block no-underline h-full">
+                  <Card
+                    hoverable
+                    platform={card.platform}
+                    title={card.title ?? card.id}
+                    summary={card.summary ?? undefined}
+                    tags={card.tags}
+                    date={new Date(card.created_at).toLocaleDateString('ko-KR')}
+                    className="h-full"
+                  />
                 </a>
               </li>
             ))}
