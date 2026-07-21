@@ -70,8 +70,8 @@ export const config: Config = schema.parse({
     token: process.env.GITHUB_TOKEN || undefined,
   },
   vercel: {
-    deploySiteHook: process.env.VERCEL_DEPLOY_HOOK_SITE || undefined,
-    deployDashboardHook: process.env.VERCEL_DEPLOY_HOOK_DASHBOARD || undefined,
+    deploySiteHook: process.env.VERCEL_DEPLOY_HOOK_SITE?.trim() || undefined,
+    deployDashboardHook: process.env.VERCEL_DEPLOY_HOOK_DASHBOARD?.trim() || undefined,
   },
   budget: {
     dailyUsd: parseNumber(process.env.BUDGET_DAILY_USD, 5.0),

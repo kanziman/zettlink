@@ -3,12 +3,10 @@ import { NextResponse } from 'next/server'
 import { readFile } from 'node:fs/promises'
 import { writeFile, rename, mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { createSupabaseRouteClient } from '../../../lib/supabase/server'
 import { createServiceClient } from '@zettlink/db/server'
 import { config } from '@zettlink/shared'
-
-const MODEL = 'claude-sonnet-4-6'
 // Next.js Route Handler는 apps/dashboard 디렉토리에서 실행된다
 // vault는 monorepo 루트에 있으므로 두 단계 위로 이동한다
 const ROOT = join(process.cwd(), '..', '..')
@@ -213,22 +211,30 @@ export async function POST(request: Request) {
   const content = await readVaultContent(card.vault_path, card.platform)
   const prompt = PROMPTS[enrichType](card.title ?? card.url, card.summary ?? '', content)
 
-  // Claude Sonnet 4.6 호출
-  const anthropic = new Anthropic({ apiKey: config.anthropic.apiKey })
-  const message = await anthropic.messages.create({
-    model: MODEL,
-    max_tokens: 2048,
-    messages: [{ role: 'user', content: prompt }],
+  // OpenRouter를 통한 클로드 호출
+  const openai = new OpenAI({
+    apiKey: config.openrouter.apiKey,
+    baseURL: 'https://openrouter.ai/api/v1',
+    defaultHeaders: {
+      'HTTP-Referer': 'https://github.com/zettlink',
+      'X-Title': 'zettlink',
+    },
   })
 
-  const resultText = message.content
-    .filter((b) => b.type === 'text')
-    .map((b) => (b as { type: 'text'; text: string }).text)
-    .join('')
+  const completion = await openai.chat.completions.create({
+    model: config.llm.model,
+    messages: [{ role: 'user', content: prompt }],
+    max_tokens: 2048,
+  })
+
+  const resultText = completion.choices[0]?.message?.content ?? ''
+
+  const promptTokens = completion.usage?.prompt_tokens ?? 0
+  const completionTokens = completion.usage?.completion_tokens ?? 0
+  const totalTokens = completion.usage?.total_tokens ?? 0
 
   // 토큰 기반 비용 추정 (Claude Sonnet 4.6: input $3/M, output $15/M)
-  const costUsd =
-    (message.usage.input_tokens * 3 + message.usage.output_tokens * 15) / 1_000_000
+  const costUsd = (promptTokens * 3 + completionTokens * 15) / 1_000_000
 
   // vault atomic write (CRITICAL: temp → rename)
   if (card.vault_path) {
@@ -242,8 +248,7 @@ export async function POST(request: Request) {
   // enrichType별 has_* 필드를 명시적으로 분기한다 (동적 키는 Supabase 타입과 충돌)
   const baseUpdate = {
     cost_usd: (card.cost_usd ?? 0) + costUsd,
-    tokens_used:
-      (card.tokens_used ?? 0) + message.usage.input_tokens + message.usage.output_tokens,
+    tokens_used: (card.tokens_used ?? 0) + totalTokens,
     updated_at: new Date().toISOString(),
   }
   const enrichUpdate =
@@ -262,12 +267,12 @@ export async function POST(request: Request) {
     type: 'llm.call',
     card_id: id,
     data: {
-      model: MODEL,
+      model: config.llm.model,
       operation: 'dashboard.enrich',
       enrich_type: enrichType,
-      input_tokens: message.usage.input_tokens,
-      output_tokens: message.usage.output_tokens,
-      tokens_used: message.usage.input_tokens + message.usage.output_tokens,
+      input_tokens: promptTokens,
+      output_tokens: completionTokens,
+      tokens_used: totalTokens,
       cost_usd: costUsd,
     },
   })
@@ -280,7 +285,7 @@ export async function POST(request: Request) {
     card_id: id,
     data: {
       enrich_type: enrichType,
-      tokens: message.usage.input_tokens + message.usage.output_tokens,
+      tokens: totalTokens,
       cost_usd: costUsd,
     },
   })
