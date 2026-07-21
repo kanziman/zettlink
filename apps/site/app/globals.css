@@ -374,11 +374,4 @@
   border-color: var(--semantic-primary-normal);
 }
 
-/* ── 스크롤바 숨김 유틸리티 ── */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+

@@ -12,6 +12,7 @@ type Props = {
 
 export function CardList({ cards, tags }: Props) {
   const [activeTag, setActiveTag] = useState<string | undefined>(undefined)
+  const [isExpanded, setIsExpanded] = useState(false)
 
   useEffect(() => {
     function readTag() {
@@ -69,8 +70,8 @@ export function CardList({ cards, tags }: Props) {
 
       {/* 태그 필터 칩 */}
       {tags.length > 0 && (
-        <div className="relative mb-8">
-          <div className="flex flex-nowrap gap-2.5 overflow-x-auto scrollbar-hide pb-2 -mx-6 px-6">
+        <div className="flex items-start gap-3 mb-8">
+          <div className="flex flex-wrap gap-2 flex-grow">
             <a
               href="/"
               onClick={handleAllClick}
@@ -81,7 +82,7 @@ export function CardList({ cards, tags }: Props) {
                 {totalCount}
               </span>
             </a>
-            {tags.map((t) => {
+            {(isExpanded ? tags : tags.slice(0, 8)).map((t) => {
               const isActive = activeTag === t.canonical_name
               return (
                 <a
@@ -101,8 +102,17 @@ export function CardList({ cards, tags }: Props) {
               )
             })}
           </div>
-          {/* 우측 페이딩 그라데이션 */}
-          <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-background-normal-alternative to-transparent" />
+          {tags.length > 8 && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="flex-shrink-0 w-11 h-11 rounded-full border border-line-normal-normal flex items-center justify-center text-label-alternative hover:text-primary-normal hover:bg-fill-normal transition-colors cursor-pointer focus:outline-none"
+              aria-label={isExpanded ? '태그 목록 접기' : '태그 목록 더보기'}
+            >
+              <span className="text-body1 font-bold">
+                {isExpanded ? '▴' : '▾'}
+              </span>
+            </button>
+          )}
         </div>
       )}
 

@@ -45,7 +45,18 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
             </div>
             <h2 className="text-heading2 font-bold text-label-strong mb-2 line-clamp-2">{title}</h2>
             {summary != null && (
-              <p className="text-body2 text-label-neutral mb-5 line-clamp-3 flex-grow leading-relaxed">{summary}</p>
+              <p
+                className="text-body2 text-label-neutral mb-5 flex-grow leading-relaxed"
+                style={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {summary}
+              </p>
             )}
             {tags != null && tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-auto">
