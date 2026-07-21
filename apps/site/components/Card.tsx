@@ -59,15 +59,15 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
               </p>
             )}
             {tags != null && tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-auto h-16 content-start">
-                {tags.slice(0, 4).map((tag) => (
+              <div className="flex flex-wrap gap-2 mt-auto h-16 overflow-hidden content-start">
+                {tags.slice(0, 3).map((tag) => (
                   <Badge key={tag} variant="subtle" color="neutral">
                     #{tag}
                   </Badge>
                 ))}
-                {tags.length > 4 && (
+                {tags.length > 3 && (
                   <Badge variant="subtle" color="primary" size="small">
-                    +{tags.length - 4}
+                    +{tags.length - 3}
                   </Badge>
                 )}
               </div>

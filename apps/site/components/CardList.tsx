@@ -61,7 +61,7 @@ export function CardList({ cards, tags }: Props) {
 
       {/* 태그 필터 칩 */}
       {tags.length > 0 && (
-        <div className="flex items-start gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-8">
           <div className="flex flex-wrap gap-2 flex-grow">
             <a
               href="/"
