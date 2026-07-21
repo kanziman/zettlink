@@ -17,7 +17,7 @@ export function Tag({ name, onClick, active = false }: TagProps) {
     color: active ? 'var(--color-static-white, white)' : 'var(--color-label-normal)',
     cursor: onClick ? 'pointer' : 'default',
     display: 'inline-block',
-    fontSize: '0.8125rem',
+    fontSize: '0.75rem',
     fontWeight: 500,
     padding: '0.25rem 0.625rem',
     transition: 'background 0.15s',

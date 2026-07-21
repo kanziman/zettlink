@@ -205,7 +205,7 @@
 
 @layer base {
   html, body {
-    @apply font-sans bg-background-normal-alternative text-label-normal transition-colors duration-300;
+    @apply font-sans bg-background-normal-alternative text-label-normal;
   }
 
   /* 전역 포커스 링 스타일 */
@@ -293,9 +293,10 @@
   color: var(--semantic-label-normal);
 }
 .detail-prose blockquote {
-  border-left: 3px solid var(--semantic-primary-normal);
-  padding-left: 1rem;
+  padding: 0.5rem 1rem;
   margin: 1em 0;
+  background: var(--semantic-fill-normal);
+  border-radius: 6px;
   color: var(--semantic-label-alternative);
   font-style: italic;
 }
@@ -371,4 +372,13 @@
 }
 .detail-insight-item:hover {
   border-color: var(--semantic-primary-normal);
+}
+
+/* ── 스크롤바 숨김 유틸리티 ── */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

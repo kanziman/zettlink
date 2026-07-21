@@ -46,18 +46,16 @@ function ContentSection({
   content,
   badgeText,
   badgeColorClass,
-  accentBorder,
 }: {
   title: string
   icon: React.ReactNode
   content: string | null
   badgeText: string
   badgeColorClass: string
-  accentBorder?: boolean
 }) {
   if (!content) return null
   return (
-    <section className={`detail-section flex flex-col gap-3 ${accentBorder ? 'border-l-[3px] border-l-primary-normal' : ''}`}>
+    <section className="detail-section flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <h2 className="text-body1 font-bold text-label-strong m-0 flex items-center gap-1.5">
           {icon}
@@ -154,7 +152,7 @@ export default async function CardPage({ params }: PageProps) {
 
       {/* ── 요약 ── */}
       {card.summary !== null && (
-        <section className="detail-section border-l-[3px] border-l-primary-normal bg-fill-normal flex flex-col gap-3">
+        <section className="detail-section bg-fill-normal flex flex-col gap-3">
           <h2 className="text-label1 font-bold text-primary-normal m-0 uppercase tracking-widest flex items-center gap-1.5">
             <IdeaIcon /> 요약
           </h2>

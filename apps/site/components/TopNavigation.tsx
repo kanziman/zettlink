@@ -29,11 +29,12 @@ export function TopNavigation({ searchSlot }: TopNavigationProps) {
             variant="outlined"
             color="assistive"
             size="medium"
-            className="h-11"
+            iconOnly
+            className="h-11 w-11 rounded-full flex items-center justify-center"
             onClick={() => setTheme(isDark ? 'light' : 'dark')}
-            leadingContent={<Icon name={isDark ? 'sun' : 'moon'} size={16} />}
+            aria-label="테마 전환"
           >
-            {isDark ? 'Light' : 'Dark'}
+            <Icon name={isDark ? 'sun' : 'moon'} size={20} />
           </Button>
         </div>
       </div>
