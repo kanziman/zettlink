@@ -28,7 +28,7 @@ function platformIconBg(platform: string): string {
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ hoverable = false, platform, title, summary, tags, date, className = '', children, ...props }, ref) => {
     const base =
-      'bg-background-elevated-normal text-label-normal border border-line-normal-normal p-6 rounded-[20px] shadow-normal-small transition-[transform,box-shadow] duration-200 flex flex-col'
+      'bg-background-elevated-normal text-label-normal border border-line-normal-alternative p-6 rounded-[20px] shadow-normal-small transition-[transform,box-shadow] duration-200 flex flex-col'
     const hover = hoverable ? 'hover:shadow-normal-medium hover:-translate-y-1 cursor-pointer' : ''
 
     return (
@@ -58,20 +58,36 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
                 {summary}
               </p>
             )}
-            {tags != null && tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-auto h-16 overflow-hidden content-start">
-                {tags.slice(0, 3).map((tag) => (
-                  <Badge key={tag} variant="subtle" color="neutral">
-                    #{tag}
-                  </Badge>
-                ))}
-                {tags.length > 3 && (
-                  <Badge variant="subtle" color="primary" size="small">
-                    +{tags.length - 3}
-                  </Badge>
-                )}
-              </div>
-            )}
+            {tags != null && tags.length > 0 && (() => {
+              let charCount = 0
+              const visibleTags: string[] = []
+              const maxChars = 28
+              for (const tag of tags) {
+                const len = tag.length + 2
+                if (charCount + len <= maxChars || visibleTags.length === 0) {
+                  visibleTags.push(tag)
+                  charCount += len
+                } else {
+                  break
+                }
+              }
+              const hiddenCount = tags.length - visibleTags.length
+
+              return (
+                <div className="flex flex-wrap gap-2 mt-auto h-16 overflow-hidden content-start">
+                  {visibleTags.map((tag) => (
+                    <Badge key={tag} variant="subtle" color="neutral">
+                      #{tag}
+                    </Badge>
+                  ))}
+                  {hiddenCount > 0 && (
+                    <Badge variant="subtle" color="primary" size="small">
+                      +{hiddenCount}
+                    </Badge>
+                  )}
+                </div>
+              )
+            })()}
           </>
         ) : (
           children

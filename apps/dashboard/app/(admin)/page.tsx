@@ -124,9 +124,9 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   }))
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* 통계 행 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
         <StatChip value={stats.total} label="전체 카드" />
         <StatChip value={stats.done} label="완료" color="var(--color-status-success)" />
         <StatChip value={stats.published} label="공개" color="var(--color-primary-normal)" />
