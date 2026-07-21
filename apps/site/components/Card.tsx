@@ -11,6 +11,9 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   summary?: string
   tags?: string[]
   date?: string
+  hasDeep?: boolean
+  hasTil?: boolean
+  hasGuide?: boolean
 }
 
 function platformIcon(platform: string): IconName {
@@ -26,7 +29,7 @@ function platformIconBg(platform: string): string {
 }
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ hoverable = false, platform, title, summary, tags, date, className = '', children, ...props }, ref) => {
+  ({ hoverable = false, platform, title, summary, tags, date, hasDeep, hasTil, hasGuide, className = '', children, ...props }, ref) => {
     const base =
       'bg-background-elevated-normal text-label-normal border border-line-normal-alternative p-6 rounded-[20px] shadow-normal-small transition-[transform,box-shadow] duration-200 flex flex-col'
     const hover = hoverable ? 'hover:shadow-normal-medium hover:-translate-y-1 cursor-pointer' : ''
@@ -39,9 +42,28 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
               <div className={`w-10 h-10 rounded-[10px] flex items-center justify-center ${platformIconBg(platform ?? '')}`}>
                 <Icon name={platformIcon(platform ?? '')} size={20} />
               </div>
-              {date != null && (
-                <span className="text-caption1 text-label-assistive">{date}</span>
-              )}
+              <div className="flex flex-col items-end gap-1">
+                {date != null && (
+                  <span className="text-caption1 text-label-assistive">{date}</span>
+                )}
+                <div className="flex gap-1.5 mt-0.5">
+                  {hasDeep && (
+                    <Badge variant="subtle" color="primary" size="small">
+                      Deep Dive
+                    </Badge>
+                  )}
+                  {hasTil && (
+                    <Badge variant="subtle" color="positive" size="small">
+                      TIL
+                    </Badge>
+                  )}
+                  {hasGuide && (
+                    <Badge variant="subtle" color="cautionary" size="small">
+                      Guide
+                    </Badge>
+                  )}
+                </div>
+              </div>
             </div>
             <h2 className="text-heading2 font-bold text-label-strong mb-2 line-clamp-2 h-14">{title}</h2>
             {summary != null && (

@@ -125,6 +125,9 @@ export function CardList({ cards, tags }: Props) {
                     summary={card.summary ?? undefined}
                     tags={card.tags}
                     date={new Date(card.created_at).toLocaleDateString('ko-KR')}
+                    hasDeep={card.has_deep}
+                    hasTil={card.has_til}
+                    hasGuide={card.has_guide}
                     className="h-full"
                   />
                 </a>
