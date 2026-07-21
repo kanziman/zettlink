@@ -1,0 +1,76 @@
+{
+  "project": "zettlink",
+  "phase": "3-site",
+  "workflow": {
+    "gates": true,
+    "gate1_criteria": "1. supabase/migrations/0002_content_columns.sql가 deep_content/til_content/guide_content TEXT 컬럼을 cards에 추가하는가?\n2. enrich API step이 Claude 호출 결과를 cards.{type}_content에도 저장하도록 업데이트하는가?\n3. scaffold step이 output: 'export' + transpilePackages(@zettlink/ui, @zettlink/shared) + anon 키 전용 구성인가?\n4. lib/cards.ts가 SUPABASE_SERVICE_ROLE_KEY를 참조하지 않고 NEXT_PUBLIC_SUPABASE_ANON_KEY만 사용하는가?\n5. Pagefind step이 next build && pagefind --site out을 build script로 구성하고 PagefindSearch가 'use client'인가?",
+    "gate2_criteria": "1. 홈 페이지(/) — published 카드 리스트 표시, 태그 클릭 시 필터 동작하는가?\n2. 카드 상세(/youtube/<slug>) — title/summary/insights/tags 표시, markdown 렌더되는가?\n3. 심화 콘텐츠(has_deep=true 카드) — deep_content 섹션이 렌더되는가?\n4. 태그 페이지(/tags/<tag>) — 해당 태그 카드만 표시되는가?\n5. Pagefind 검색 — 키워드 입력 시 관련 카드가 결과에 표시되는가?\n6. unpublished 카드 — anon RLS로 사이트에 미노출되는가?\n7. pnpm deploy:site — Vercel 재빌드 트리거되는가?\n8. 새로 생성된 TypeScript 파일 첫 줄에 한국어 역할 주석이 있는가?"
+  },
+  "steps": [
+    {
+      "step": 0,
+      "name": "db-migration",
+      "status": "completed",
+      "started_at": "2026-05-19T10:34:51+0900",
+      "completed_at": "2026-05-19T10:37:38+0900",
+      "summary": "0002_content_columns.sql 생성 및 로컬 적용, enrich API에서 deep/til/guide_content 컬럼 저장, pnpm gen-types로 types.gen.ts 재생성 확인"
+    },
+    {
+      "step": 1,
+      "name": "scaffold",
+      "status": "completed",
+      "started_at": "2026-05-19T10:37:39+0900",
+      "completed_at": "2026-05-19T10:46:53+0900",
+      "summary": "Next.js 15 SSG scaffold — dotenv 루트 .env 로드, SUPABASE_URL 폴백, output:export 빈 배열 플레이스홀더, pagefind webpackIgnore 적용. pnpm --filter site build → out/index.html + out/pagefind/ 생성 확인"
+    },
+    {
+      "step": 2,
+      "name": "lib-cards",
+      "status": "completed",
+      "started_at": "2026-05-19T10:46:53+0900",
+      "completed_at": "2026-05-19T10:48:17+0900",
+      "summary": "lib/cards.ts — anon 키 전용 빌드 타임 조회 함수 구현 (getPublishedCards/getCardBySlug/getCardsByTag/getAllPublishedSlugs/getAllTags). @zettlink/db 미사용, SERVICE_ROLE_KEY 미참조, 모든 쿼리에 published=true 조건 포함. typecheck + build 통과"
+    },
+    {
+      "step": 3,
+      "name": "home-page",
+      "status": "completed",
+      "started_at": "2026-05-19T13:15:57+0900",
+      "completed_at": "2026-05-19T13:24:58+0900",
+      "summary": "app/page.tsx — published 카드 리스트(summary 포함), 태그 chip(/tags/[tag] 링크), data-pagefind-body. lib/cards.ts에 summary 필드 추가(RawRow·select·normalizeList). searchParams는 output:export와 호환 불가, /tags/[tag] 정적 방식으로 태그 필터 구현. pnpm --filter site build 성공"
+    },
+    {
+      "step": 4,
+      "name": "card-detail",
+      "status": "completed",
+      "started_at": "2026-05-19T13:24:58+0900",
+      "completed_at": "2026-05-19T13:28:09+0900",
+      "summary": "app/[platform]/[slug]/page.tsx — generateStaticParams/generateMetadata/CardPage 구현. &&JSX 조건부 렌더링을 삼항 연산자로 수정, @tailwindcss/typography @plugin 추가. pnpm --filter site build 성공, out/youtube/_placeholder_/index.html 생성 확인"
+    },
+    {
+      "step": 5,
+      "name": "tags-page",
+      "status": "completed",
+      "started_at": "2026-05-19T13:28:09+0900",
+      "completed_at": "2026-05-19T13:32:53+0900",
+      "summary": "app/tags/page.tsx 신규 생성(태그 인덱스, usage_count 표시), app/tags/[tag]/page.tsx 업데이트(generateStaticParams·generateMetadata·백링크), getAllTags() 반환 타입을 TagItem[]으로 변경, trailingSlash:true 추가. pnpm --filter site build 성공, out/tags/index.html + out/tags/<tag>/index.html 생성 확인"
+    },
+    {
+      "step": 6,
+      "name": "pagefind",
+      "status": "completed",
+      "started_at": "2026-05-19T13:32:53+0900",
+      "completed_at": "2026-05-19T13:35:25+0900",
+      "summary": "PagefindSearch.tsx를 PagefindUI 방식에서 /pagefind/pagefind.js 직접 API 방식으로 교체(webpackIgnore, 커스텀 드롭다운 UI). layout.tsx에서 pagefind-ui.css 제거, 태그 링크 추가, nav 구조 정비. pnpm --filter site build 성공, out/pagefind/pagefind.js 생성 확인"
+    },
+    {
+      "step": 7,
+      "name": "deploy",
+      "status": "completed",
+      "started_at": "2026-05-19T13:35:25+0900",
+      "completed_at": "2026-05-19T13:36:48+0900",
+      "summary": "scripts/deploy-site.ts (기존 파일 확인), apps/site/vercel.json(--filter @zettlink/site + --frozen-lockfile), 루트 package.json에 deploy:site 스크립트 추가. 환경변수 미설정 시 exit 1 동작 확인"
+    }
+  ],
+  "created_at": "2026-05-19T00:00:00+0900"
+}

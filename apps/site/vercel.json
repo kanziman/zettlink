@@ -1,0 +1,6 @@
+{
+  "framework": null,
+  "buildCommand": "cd ../.. && pnpm --filter @zettlink/site build",
+  "outputDirectory": "out",
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile"
+}

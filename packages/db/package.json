@@ -3,12 +3,25 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.js"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "engines": {
@@ -18,5 +31,8 @@
     "@supabase/supabase-js": "^2",
     "@supabase/ssr": "^0",
     "@zettlink/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^2"
   }
 }

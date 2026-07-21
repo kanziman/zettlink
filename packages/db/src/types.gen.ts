@@ -68,7 +68,9 @@ export type Database = {
         Row: {
           cost_usd: number
           created_at: string
+          deep_content: string | null
           external_id: string
+          guide_content: string | null
           has_deep: boolean
           has_guide: boolean
           has_til: boolean
@@ -79,6 +81,7 @@ export type Database = {
           raw_metadata: Json | null
           status: string
           summary: string | null
+          til_content: string | null
           title: string | null
           tokens_used: number
           updated_at: string
@@ -88,7 +91,9 @@ export type Database = {
         Insert: {
           cost_usd?: number
           created_at?: string
+          deep_content?: string | null
           external_id: string
+          guide_content?: string | null
           has_deep?: boolean
           has_guide?: boolean
           has_til?: boolean
@@ -99,6 +104,7 @@ export type Database = {
           raw_metadata?: Json | null
           status?: string
           summary?: string | null
+          til_content?: string | null
           title?: string | null
           tokens_used?: number
           updated_at?: string
@@ -108,7 +114,9 @@ export type Database = {
         Update: {
           cost_usd?: number
           created_at?: string
+          deep_content?: string | null
           external_id?: string
+          guide_content?: string | null
           has_deep?: boolean
           has_guide?: boolean
           has_til?: boolean
@@ -119,6 +127,7 @@ export type Database = {
           raw_metadata?: Json | null
           status?: string
           summary?: string | null
+          til_content?: string | null
           title?: string | null
           tokens_used?: number
           updated_at?: string

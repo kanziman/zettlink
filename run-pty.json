@@ -1,0 +1,18 @@
+[
+  {
+    "title": "Dashboard",
+    "command": ["pnpm", "--filter", "dashboard", "dev"]
+  },
+  {
+    "title": "Site",
+    "command": ["pnpm", "--filter", "site", "dev"]
+  },
+  {
+    "title": "Bot",
+    "command": ["pnpm", "--filter", "bot", "dev"]
+  },
+  {
+    "title": "Worker",
+    "command": ["pnpm", "--filter", "worker", "dev"]
+  }
+]

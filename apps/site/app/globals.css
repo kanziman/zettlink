@@ -1,0 +1,355 @@
+/* 공개 사이트 전역 스타일 — 뉴스레터 팔레트(sky+orange) semantic token CSS 변수 */
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@config "../tailwind.config.mjs";
+
+:root {
+  /* ── Atomic Colors ── */
+  /* primary / secondary (sky) */
+  --sky-50:  #F0F9FF;
+  --sky-100: #E0F2FE;
+  --sky-200: #BAE6FD;
+  --sky-300: #7DD3FC;
+  --sky-400: #38BDF8;
+  --sky-500: #0EA5E9;
+  --sky-600: #0284C7;
+  --sky-700: #0369A1;
+  --sky-800: #075985;
+  --sky-900: #0C4A6E;
+  --sky-950: #082F49;
+
+  /* accent (orange) */
+  --orange-500: #F97316;
+  --orange-600: #EA580C;
+  --orange-700: #C2410C;
+
+  /* status */
+  --red-500:   #EF4444;
+  --red-600:   #DC2626;
+  --red-700:   #B91C1C;
+  --green-500: #16A34A;
+  --green-600: #22C55E;
+
+  /* neutral (slate) */
+  --slate-50:  #F8FAFC;
+  --slate-100: #F1F5F9;
+  --slate-200: #E2E8F0;
+  --slate-300: #CBD5E1;
+  --slate-400: #94A3B8;
+  --slate-500: #64748B;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1E293B;
+  --slate-900: #0F172A;
+  --slate-950: #020617;
+
+  --common-0:   #000000;
+  --common-100: #FFFFFF;
+
+  /* ── Semantic Colors (Light) ── */
+  --semantic-primary-normal: var(--sky-700);
+  --semantic-primary-strong: var(--sky-800);
+  --semantic-primary-heavy:  var(--sky-900);
+
+  --semantic-secondary-normal: var(--sky-500);
+
+  --semantic-accent-normal: var(--orange-600);
+  --semantic-accent-strong: var(--orange-700);
+
+  --semantic-label-normal:      var(--slate-800);
+  --semantic-label-strong:      var(--slate-950);
+  --semantic-label-neutral:     rgba(15, 23, 42, 0.88);
+  --semantic-label-alternative: rgba(15, 23, 42, 0.61);
+  --semantic-label-assistive:   rgba(15, 23, 42, 0.28);
+  --semantic-label-disable:     rgba(15, 23, 42, 0.16);
+
+  --semantic-background-normal-normal:      var(--common-100);
+  --semantic-background-normal-alternative: var(--sky-50);
+  --semantic-background-elevated-normal:    var(--common-100);
+
+  --semantic-interaction-inactive: var(--slate-400);
+  --semantic-interaction-disable:  var(--sky-100);
+
+  --semantic-line-normal-normal: rgba(3, 105, 161, 0.16);
+  --semantic-line-solid-normal:  var(--sky-100);
+
+  --semantic-status-positive:   var(--green-500);
+  --semantic-status-cautionary: var(--orange-600);
+  --semantic-status-negative:   var(--red-600);
+
+  --semantic-fill-normal: rgba(3, 105, 161, 0.06);
+  --semantic-fill-strong: rgba(3, 105, 161, 0.12);
+
+  --semantic-material-dimmer: rgba(8, 47, 73, 0.52);
+
+  --semantic-inverse-primary:    var(--sky-400);
+  --semantic-inverse-background: var(--sky-950);
+
+  /* ── Shared UI 토큰 (packages/ui 호환, --color-* 컨벤션) ── */
+  --color-primary-normal:  var(--sky-700);
+  --color-primary-strong:  var(--sky-800);
+  --color-primary-heavy:   var(--sky-900);
+  --color-secondary-normal: var(--sky-500);
+  --color-accent-normal:   var(--orange-600);
+  --color-accent-strong:   var(--orange-700);
+  --color-label-normal:      var(--slate-800);
+  --color-label-strong:      var(--slate-950);
+  --color-label-neutral:     rgba(15, 23, 42, 0.88);
+  --color-label-alternative: rgba(15, 23, 42, 0.61);
+  --color-label-assistive:   rgba(15, 23, 42, 0.28);
+  --color-label-disable:     rgba(15, 23, 42, 0.16);
+  --color-background-normal:      var(--common-100);
+  --color-background-alternative: var(--sky-50);
+  --color-status-error:   var(--red-600);
+  --color-status-success: var(--green-500);
+  --color-status-caution: var(--orange-600);
+  --color-status-info:    var(--sky-500);
+  --color-status-dead:    var(--slate-500);
+  --color-line-normal: rgba(3, 105, 161, 0.16);
+  --color-line-strong: rgba(3, 105, 161, 0.32);
+  --color-static-white: var(--common-100);
+
+  /* ── Elevation Shadows ── */
+  --elevation-shadow-normal-xsmall: 0 1px 2px -1px rgba(8, 47, 73, 0.10);
+  --elevation-shadow-normal-small:  0 2px 4px rgba(8, 47, 73, 0.05), 0 4px 6px rgba(8, 47, 73, 0.05);
+  --elevation-shadow-normal-medium: 0 4px 6px rgba(8, 47, 73, 0.05), 0 10px 15px rgba(8, 47, 73, 0.08);
+  --elevation-shadow-normal-large:  0 6px 10px rgba(8, 47, 73, 0.05), 0 16px 24px rgba(8, 47, 73, 0.10);
+  --elevation-shadow-normal-xlarge: 0 10px 15px rgba(8, 47, 73, 0.05), 0 24px 38px rgba(8, 47, 73, 0.12);
+  --elevation-shadow-spread-small:  0 0 60px rgba(3, 105, 161, 0.10);
+  --elevation-shadow-spread-medium: 0 15px 75px rgba(3, 105, 161, 0.16);
+
+  /* ── Typography ── */
+  --font-family: 'Pretendard', sans-serif;
+
+  --font-display1-size: 3.5rem;    --font-display1-lh: 4.5rem;    --font-display1-ls: -0.0319em; --font-display1-weight: 700;
+  --font-display2-size: 2.5rem;    --font-display2-lh: 3.25rem;   --font-display2-ls: -0.0282em; --font-display2-weight: 700;
+  --font-title1-size:   2.0rem;    --font-title1-lh:   2.75rem;   --font-title1-ls:   -0.0253em; --font-title1-weight:   700;
+  --font-title2-size:   1.75rem;   --font-title2-lh:   2.375rem;  --font-title2-ls:   -0.0236em; --font-title2-weight:   700;
+  --font-title3-size:   1.5rem;    --font-title3-lh:   2.0rem;    --font-title3-ls:   -0.023em;  --font-title3-weight:   700;
+  --font-heading1-size: 1.375rem;  --font-heading1-lh: 1.875rem;  --font-heading1-ls: -0.0194em; --font-heading1-weight: 600;
+  --font-heading2-size: 1.25rem;   --font-heading2-lh: 1.75rem;   --font-heading2-ls: -0.012em;  --font-heading2-weight: 600;
+  --font-headline1-size:1.125rem;  --font-headline1-lh:1.625rem;  --font-headline1-ls:-0.002em;  --font-headline1-weight:600;
+  --font-headline2-size:1.0625rem; --font-headline2-lh:1.5rem;    --font-headline2-ls:0em;       --font-headline2-weight:600;
+  --font-body1-size:    1.0rem;    --font-body1-lh:    1.5rem;    --font-body1-ls:    0.0057em;  --font-body1-weight:    400;
+  --font-body2-size:    0.9375rem; --font-body2-lh:    1.375rem;  --font-body2-ls:    0.0096em;  --font-body2-weight:    400;
+  --font-label1-size:   0.875rem;  --font-label1-lh:   1.25rem;   --font-label1-ls:   0.0145em;  --font-label1-weight:   500;
+  --font-label2-size:   0.8125rem; --font-label2-lh:   1.125rem;  --font-label2-ls:   0.0194em;  --font-label2-weight:   500;
+  --font-caption1-size: 0.75rem;   --font-caption1-lh: 1.0rem;    --font-caption1-ls: 0.0252em;  --font-caption1-weight: 500;
+  --font-caption2-size: 0.6875rem; --font-caption2-lh: 0.875rem;  --font-caption2-ls: 0.0311em;  --font-caption2-weight: 500;
+}
+
+.dark {
+  --semantic-primary-normal: var(--sky-400);
+  --semantic-primary-strong: var(--sky-300);
+  --semantic-primary-heavy:  var(--sky-200);
+
+  --semantic-secondary-normal: var(--sky-400);
+
+  --semantic-accent-normal: var(--orange-500);
+  --semantic-accent-strong: var(--orange-600);
+
+  --semantic-label-normal:      var(--slate-100);
+  --semantic-label-strong:      var(--slate-50);
+  --semantic-label-neutral:     rgba(241, 245, 249, 0.88);
+  --semantic-label-alternative: rgba(226, 232, 240, 0.61);
+  --semantic-label-assistive:   rgba(226, 232, 240, 0.28);
+  --semantic-label-disable:     rgba(203, 213, 225, 0.16);
+
+  --semantic-background-normal-normal:      var(--sky-950);
+  --semantic-background-normal-alternative: #0C1A24;
+  --semantic-background-elevated-normal:    #0C2438;
+
+  --semantic-interaction-inactive: var(--slate-500);
+  --semantic-interaction-disable:  #0C2438;
+
+  --semantic-line-normal-normal: rgba(125, 211, 252, 0.18);
+  --semantic-line-solid-normal:  #123141;
+
+  --semantic-status-positive:   var(--green-600);
+  --semantic-status-cautionary: var(--orange-500);
+  --semantic-status-negative:   var(--red-500);
+
+  --semantic-fill-normal: rgba(125, 211, 252, 0.10);
+  --semantic-fill-strong: rgba(125, 211, 252, 0.16);
+
+  --semantic-material-dimmer: rgba(2, 20, 30, 0.74);
+
+  --semantic-inverse-primary:    var(--sky-700);
+  --semantic-inverse-background: var(--sky-50);
+
+  /* Shared UI 토큰 (Dark) */
+  --color-primary-normal:  var(--sky-400);
+  --color-primary-strong:  var(--sky-300);
+  --color-primary-heavy:   var(--sky-200);
+  --color-secondary-normal: var(--sky-400);
+  --color-accent-normal:   var(--orange-500);
+  --color-accent-strong:   var(--orange-600);
+  --color-label-normal:      var(--slate-100);
+  --color-label-strong:      var(--slate-50);
+  --color-label-neutral:     rgba(241, 245, 249, 0.88);
+  --color-label-alternative: rgba(226, 232, 240, 0.61);
+  --color-label-assistive:   rgba(226, 232, 240, 0.28);
+  --color-label-disable:     rgba(203, 213, 225, 0.16);
+  --color-background-normal:      var(--sky-950);
+  --color-background-alternative: #0C1A24;
+  --color-status-error:   var(--red-500);
+  --color-status-success: var(--green-600);
+  --color-status-caution: var(--orange-500);
+  --color-status-info:    var(--sky-400);
+  --color-status-dead:    var(--slate-500);
+  --color-line-normal: rgba(125, 211, 252, 0.18);
+  --color-line-strong: rgba(125, 211, 252, 0.34);
+
+  --elevation-shadow-normal-small: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+@layer base {
+  html, body {
+    @apply font-sans bg-background-normal-alternative text-label-normal transition-colors duration-300;
+  }
+}
+
+/* ── Detail page prose (Markdown) ── */
+.detail-prose {
+  color: var(--semantic-label-neutral);
+  font-size: 0.9375rem;
+  line-height: 1.75;
+}
+.detail-prose h1,
+.detail-prose h2,
+.detail-prose h3,
+.detail-prose h4 {
+  color: var(--semantic-label-strong);
+  font-weight: 700;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  letter-spacing: -0.02em;
+}
+.detail-prose h2 { font-size: 1.25rem; }
+.detail-prose h3 { font-size: 1.125rem; }
+.detail-prose p {
+  margin-bottom: 1em;
+}
+.detail-prose ul,
+.detail-prose ol {
+  padding-left: 1.25em;
+  margin-bottom: 1em;
+}
+.detail-prose li {
+  margin-bottom: 0.375em;
+}
+.detail-prose li::marker {
+  color: var(--semantic-primary-normal);
+}
+.detail-prose a {
+  color: var(--semantic-primary-normal);
+  text-decoration: underline;
+  text-decoration-color: rgba(3, 105, 161, 0.3);
+  text-underline-offset: 2px;
+  transition: text-decoration-color 0.2s;
+}
+.detail-prose a:hover {
+  text-decoration-color: var(--semantic-primary-normal);
+}
+.detail-prose code {
+  font-size: 0.85em;
+  padding: 0.15em 0.4em;
+  border-radius: 6px;
+  background: var(--semantic-fill-normal);
+  color: var(--semantic-primary-strong);
+  font-family: 'Menlo', 'Consolas', monospace;
+}
+.detail-prose pre {
+  background: var(--semantic-background-elevated-normal);
+  border: 1px solid var(--semantic-line-normal-normal);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  margin-bottom: 1em;
+}
+.detail-prose pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.8125rem;
+  color: var(--semantic-label-normal);
+}
+.detail-prose blockquote {
+  border-left: 3px solid var(--semantic-primary-normal);
+  padding-left: 1rem;
+  margin: 1em 0;
+  color: var(--semantic-label-alternative);
+  font-style: italic;
+}
+.detail-prose strong {
+  color: var(--semantic-label-strong);
+  font-weight: 600;
+}
+.detail-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1em;
+}
+.detail-prose th,
+.detail-prose td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--semantic-line-normal-normal);
+  text-align: left;
+  font-size: 0.875rem;
+}
+.detail-prose th {
+  background: var(--semantic-fill-normal);
+  font-weight: 600;
+  color: var(--semantic-label-strong);
+}
+
+/* ── Detail page gradient bar ── */
+.detail-gradient-bar {
+  height: 4px;
+  border-radius: 16px 16px 0 0;
+  background: linear-gradient(90deg, var(--semantic-secondary-normal), var(--semantic-primary-normal));
+}
+
+/* ── Detail page section card ── */
+.detail-section {
+  background: var(--semantic-background-elevated-normal);
+  border: 1px solid var(--semantic-line-normal-normal);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--elevation-shadow-normal-small);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.detail-section:hover {
+  box-shadow: var(--elevation-shadow-normal-medium);
+}
+
+/* ── Back link hover effect ── */
+.detail-back-link {
+  transition: opacity 0.2s ease;
+}
+.detail-back-link:hover {
+  opacity: 0.75;
+}
+.detail-back-link:hover svg {
+  transform: translateX(-2px);
+  transition: transform 0.2s ease;
+}
+.detail-back-link svg {
+  transition: transform 0.2s ease;
+}
+
+/* ── Tag pill hover ── */
+.detail-tag {
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.detail-tag:hover {
+  background: var(--semantic-fill-strong) !important;
+  border-color: var(--semantic-primary-normal) !important;
+}
+
+/* ── Insight item hover ── */
+.detail-insight-item {
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.detail-insight-item:hover {
+  border-color: var(--semantic-primary-normal);
+}

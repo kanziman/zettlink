@@ -1,0 +1,162 @@
+<h2>Dashboard 레이아웃 방향</h2>
+<p class="subtitle">세 가지 구조 중 하나를 선택해 주세요. 현재 코드와의 변경 규모도 표시했습니다.</p>
+
+<div class="cards">
+
+  <!-- Option A -->
+  <div class="card" data-choice="A" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#F7F7F8; padding:16px;">
+      <!-- Nav -->
+      <div style="display:flex; align-items:center; justify-content:space-between; background:white; border-radius:8px; padding:8px 12px; margin-bottom:10px; border:1px solid rgba(112,115,124,0.12);">
+        <div style="font-size:11px; font-weight:700; color:#171719;">Zettlink</div>
+        <div style="width:24px; height:24px; border-radius:50%; background:#0066FF; opacity:0.8;"></div>
+      </div>
+      <!-- Stats row -->
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:10px;">
+        <div style="background:white; border-radius:8px; padding:8px; border:1px solid rgba(112,115,124,0.12); text-align:center;">
+          <div style="font-size:14px; font-weight:700; color:#0066FF;">24</div>
+          <div style="font-size:9px; color:#70737C; margin-top:2px;">Total</div>
+        </div>
+        <div style="background:white; border-radius:8px; padding:8px; border:1px solid rgba(112,115,124,0.12); text-align:center;">
+          <div style="font-size:14px; font-weight:700; color:#12D589;">8</div>
+          <div style="font-size:9px; color:#70737C; margin-top:2px;">Published</div>
+        </div>
+        <div style="background:white; border-radius:8px; padding:8px; border:1px solid rgba(112,115,124,0.12); text-align:center;">
+          <div style="font-size:14px; font-weight:700; color:#171719;">16</div>
+          <div style="font-size:9px; color:#70737C; margin-top:2px;">Draft</div>
+        </div>
+      </div>
+      <!-- Tab filters -->
+      <div style="display:flex; gap:4px; margin-bottom:10px; background:rgba(112,115,124,0.08); border-radius:8px; padding:3px;">
+        <div style="flex:1; background:white; border-radius:6px; padding:5px; text-align:center; font-size:10px; font-weight:600; color:#171719; box-shadow:0 1px 3px rgba(0,0,0,0.08);">All</div>
+        <div style="flex:1; padding:5px; text-align:center; font-size:10px; color:#70737C;">Published</div>
+        <div style="flex:1; padding:5px; text-align:center; font-size:10px; color:#70737C;">Unpublished</div>
+      </div>
+      <!-- Cards grid -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <div style="background:white; border-radius:8px; padding:8px; border:1px solid rgba(112,115,124,0.12);">
+          <div style="display:flex; align-items:center; gap:4px; margin-bottom:4px;">
+            <div style="width:14px; height:14px; background:rgba(255,0,0,0.1); border-radius:3px;"></div>
+            <div style="width:50%; height:6px; background:#eee; border-radius:3px;"></div>
+          </div>
+          <div style="width:100%; height:5px; background:#f4f4f5; border-radius:3px; margin-bottom:3px;"></div>
+          <div style="width:80%; height:5px; background:#f4f4f5; border-radius:3px;"></div>
+        </div>
+        <div style="background:white; border-radius:8px; padding:8px; border:1px solid rgba(112,115,124,0.12);">
+          <div style="display:flex; align-items:center; gap:4px; margin-bottom:4px;">
+            <div style="width:14px; height:14px; background:rgba(0,102,255,0.1); border-radius:3px;"></div>
+            <div style="width:60%; height:6px; background:#eee; border-radius:3px;"></div>
+          </div>
+          <div style="width:100%; height:5px; background:#f4f4f5; border-radius:3px; margin-bottom:3px;"></div>
+          <div style="width:70%; height:5px; background:#f4f4f5; border-radius:3px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — 현재 구조 개선</h3>
+      <p>통계 행 추가, 필터를 SegmentedControl(탭)으로 교체, 카드 폴리시. 변경 규모 최소 — 기존 코드를 점진 개선.</p>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="card" data-choice="B" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#F7F7F8; padding:16px;">
+      <!-- Nav -->
+      <div style="display:flex; align-items:center; justify-content:space-between; background:white; border-radius:8px; padding:8px 12px; margin-bottom:10px; border:1px solid rgba(112,115,124,0.12);">
+        <div style="font-size:11px; font-weight:700; color:#171719;">Zettlink</div>
+        <div style="width:24px; height:24px; border-radius:50%; background:#0066FF; opacity:0.8;"></div>
+      </div>
+      <!-- Two panel -->
+      <div style="display:grid; grid-template-columns:2fr 3fr; gap:6px; height:120px;">
+        <!-- Left list -->
+        <div style="background:white; border-radius:8px; padding:8px; border:1px solid rgba(112,115,124,0.12); overflow:hidden;">
+          <div style="font-size:9px; color:#70737C; margin-bottom:6px; font-weight:600;">24 CARDS</div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <div style="background:#F0F6FF; border-radius:5px; padding:5px; border-left:2px solid #0066FF;">
+              <div style="width:80%; height:5px; background:#CCE0FF; border-radius:2px;"></div>
+            </div>
+            <div style="background:#F7F7F8; border-radius:5px; padding:5px;">
+              <div style="width:65%; height:5px; background:#eee; border-radius:2px;"></div>
+            </div>
+            <div style="background:#F7F7F8; border-radius:5px; padding:5px;">
+              <div style="width:75%; height:5px; background:#eee; border-radius:2px;"></div>
+            </div>
+            <div style="background:#F7F7F8; border-radius:5px; padding:5px;">
+              <div style="width:55%; height:5px; background:#eee; border-radius:2px;"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Right detail -->
+        <div style="background:white; border-radius:8px; padding:10px; border:1px solid rgba(112,115,124,0.12);">
+          <div style="width:70%; height:8px; background:#1B1C1E; border-radius:3px; margin-bottom:6px;"></div>
+          <div style="width:100%; height:5px; background:#f4f4f5; border-radius:3px; margin-bottom:3px;"></div>
+          <div style="width:90%; height:5px; background:#f4f4f5; border-radius:3px; margin-bottom:8px;"></div>
+          <div style="display:flex; gap:4px; margin-bottom:8px;">
+            <div style="width:40px; height:18px; background:#0066FF; border-radius:4px;"></div>
+            <div style="width:40px; height:18px; background:#eee; border-radius:4px;"></div>
+            <div style="width:40px; height:18px; background:#eee; border-radius:4px;"></div>
+          </div>
+          <div style="width:100%; height:40px; background:#F7F7F8; border-radius:6px; border:1px solid rgba(112,115,124,0.1);"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — 2패널 (목록 + 상세)</h3>
+      <p>왼쪽에 카드 목록, 오른쪽에 상세 뷰 고정. 모달 제거. 페이지 이동 없이 빠른 탐색. 변경 규모 중간.</p>
+    </div>
+  </div>
+
+  <!-- Option C -->
+  <div class="card" data-choice="C" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0F0F10; padding:16px; border-radius:0;">
+      <!-- Nav dark -->
+      <div style="display:flex; align-items:center; justify-content:space-between; background:#1B1C1E; border-radius:8px; padding:8px 12px; margin-bottom:10px; border:1px solid rgba(112,115,124,0.2);">
+        <div style="font-size:11px; font-weight:700; color:#F7F7F8;">Zettlink</div>
+        <div style="width:24px; height:24px; border-radius:50%; background:#3385FF; opacity:0.9;"></div>
+      </div>
+      <!-- Stats row dark -->
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:10px;">
+        <div style="background:#1B1C1E; border-radius:8px; padding:8px; border:1px solid rgba(112,115,124,0.2); text-align:center;">
+          <div style="font-size:14px; font-weight:700; color:#3385FF;">24</div>
+          <div style="font-size:9px; color:#70737C; margin-top:2px;">Total</div>
+        </div>
+        <div style="background:#1B1C1E; border-radius:8px; padding:8px; border:1px solid rgba(112,115,124,0.2); text-align:center;">
+          <div style="font-size:14px; font-weight:700; color:#2FE59A;">8</div>
+          <div style="font-size:9px; color:#70737C; margin-top:2px;">Published</div>
+        </div>
+        <div style="background:#1B1C1E; border-radius:8px; padding:8px; border:1px solid rgba(112,115,124,0.2); text-align:center;">
+          <div style="font-size:14px; font-weight:700; color:#F7F7F8;">16</div>
+          <div style="font-size:9px; color:#70737C; margin-top:2px;">Draft</div>
+        </div>
+      </div>
+      <!-- Cards dark -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <div style="background:#222325; border-radius:8px; padding:8px; border:1px solid rgba(112,115,124,0.2);">
+          <div style="display:flex; align-items:center; gap:4px; margin-bottom:4px;">
+            <div style="width:14px; height:14px; background:rgba(255,100,100,0.15); border-radius:3px;"></div>
+            <div style="width:50%; height:6px; background:#37383C; border-radius:3px;"></div>
+          </div>
+          <div style="width:100%; height:5px; background:#2E2F33; border-radius:3px; margin-bottom:3px;"></div>
+          <div style="width:80%; height:5px; background:#2E2F33; border-radius:3px;"></div>
+        </div>
+        <div style="background:#222325; border-radius:8px; padding:8px; border:1px solid rgba(112,115,124,0.2);">
+          <div style="display:flex; align-items:center; gap:4px; margin-bottom:4px;">
+            <div style="width:14px; height:14px; background:rgba(51,133,255,0.15); border-radius:3px;"></div>
+            <div style="width:60%; height:6px; background:#37383C; border-radius:3px;"></div>
+          </div>
+          <div style="width:100%; height:5px; background:#2E2F33; border-radius:3px; margin-bottom:3px;"></div>
+          <div style="width:70%; height:5px; background:#2E2F33; border-radius:3px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — 다크 퍼스트 대시보드</h3>
+      <p>기본 테마를 다크 모드로. 개발 도구 느낌 강화. A와 동일한 그리드 구조, 컬러 팔레트만 반전. 변경 규모 최소.</p>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:20px; padding:12px 16px; background:rgba(112,115,124,0.06); border-radius:10px; font-size:12px; color:#5A5C63; border:1px solid rgba(112,115,124,0.12); line-height:1.7;">
+  <strong style="color:#37383C;">참고:</strong> 어떤 방향을 선택해도 Button gap 버그(현재 gap-4 → gap-2), Badge radius(rounded-md → rounded), Icon aria-label 정리 등 작은 버그도 함께 수정합니다.
+</div>

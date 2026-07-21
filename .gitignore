@@ -19,6 +19,7 @@ logs/*.log
 # phase execution outputs
 phases/**/phase*-output.json
 phases/**/step*-output.json
+phases/**/agent-calls.jsonl
 
 # test coverage reports
 coverage/

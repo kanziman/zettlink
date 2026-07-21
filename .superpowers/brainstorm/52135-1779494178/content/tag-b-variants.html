@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Pretendard', sans-serif;
+    background: #f7f7f8;
+    color: #171719;
+    padding: 32px 24px 64px;
+  }
+
+  h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .subtitle { font-size: 14px; color: rgba(55,56,60,0.55); margin-bottom: 36px; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+  .box {
+    background: #fff;
+    border-radius: 16px;
+    border: 2px solid transparent;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .box:hover { border-color: rgba(0,102,255,0.3); box-shadow: 0 4px 16px rgba(0,102,255,0.1); }
+  .box.selected { border-color: #0066ff; }
+
+  .box-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
+    text-transform: uppercase; color: #0066ff; margin-bottom: 6px;
+  }
+  .box-name { font-size: 14px; font-weight: 700; margin-bottom: 16px; color: #171719; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+  .row-label { font-size: 10px; color: rgba(55,56,60,0.4); margin-bottom: 6px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  .card-mini {
+    background: #f7f7f8; border-radius: 12px; padding: 14px;
+    border: 1px solid rgba(112,115,124,0.12);
+  }
+  .card-mini-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
+
+  .desc { font-size: 11px; color: rgba(55,56,60,0.55); line-height: 1.55; margin-top: 14px; }
+
+  /* ── B1: 기본 (rounded rect, muted #) ── */
+  .b1 {
+    padding: 4px 10px; border-radius: 6px;
+    background: rgba(112,115,124,0.1);
+    font-size: 13px; font-weight: 500;
+    color: rgba(55,56,60,0.75);
+    display: inline-flex; align-items: center;
+  }
+  .b1::before { content: '#'; color: rgba(112,115,124,0.45); margin-right: 1px; }
+  .b1.on { background: rgba(0,102,255,0.1); color: #0066ff; }
+  .b1.on::before { color: rgba(0,102,255,0.4); }
+
+  /* ── B2: pill + muted # ── */
+  .b2 {
+    padding: 4px 12px; border-radius: 99px;
+    background: rgba(112,115,124,0.1);
+    font-size: 13px; font-weight: 500;
+    color: rgba(55,56,60,0.75);
+    display: inline-flex; align-items: center;
+  }
+  .b2::before { content: '#'; color: rgba(112,115,124,0.45); margin-right: 1px; }
+  .b2.on { background: rgba(0,102,255,0.1); color: #0066ff; }
+  .b2.on::before { color: rgba(0,102,255,0.4); }
+
+  /* ── B3: solid primary active ── */
+  .b3 {
+    padding: 4px 10px; border-radius: 6px;
+    background: rgba(112,115,124,0.1);
+    font-size: 13px; font-weight: 500;
+    color: rgba(55,56,60,0.75);
+    display: inline-flex; align-items: center;
+  }
+  .b3::before { content: '#'; color: rgba(112,115,124,0.45); margin-right: 1px; }
+  .b3.on { background: #0066ff; color: #fff; }
+  .b3.on::before { color: rgba(255,255,255,0.6); }
+
+  /* ── B4: border + fill ── */
+  .b4 {
+    padding: 4px 10px; border-radius: 6px;
+    background: rgba(112,115,124,0.07);
+    border: 1px solid rgba(112,115,124,0.2);
+    font-size: 13px; font-weight: 500;
+    color: rgba(55,56,60,0.75);
+    display: inline-flex; align-items: center;
+  }
+  .b4::before { content: '#'; color: rgba(112,115,124,0.45); margin-right: 1px; }
+  .b4.on { background: rgba(0,102,255,0.08); border-color: rgba(0,102,255,0.35); color: #0066ff; }
+  .b4.on::before { color: rgba(0,102,255,0.4); }
+
+  /* ── B5: # 동색, larger ── */
+  .b5 {
+    padding: 5px 12px; border-radius: 6px;
+    background: rgba(112,115,124,0.1);
+    font-size: 13px; font-weight: 600;
+    color: rgba(55,56,60,0.65);
+    display: inline-flex; align-items: center; gap: 2px;
+  }
+  .b5 .hash { font-size: 12px; font-weight: 700; color: rgba(112,115,124,0.5); }
+  .b5.on { background: rgba(0,102,255,0.1); color: #0066ff; }
+  .b5.on .hash { color: #0066ff; }
+
+  /* ── B6: monospace #, pill ── */
+  .b6 {
+    padding: 4px 12px; border-radius: 99px;
+    background: rgba(112,115,124,0.1);
+    font-size: 13px; font-weight: 500;
+    color: rgba(55,56,60,0.75);
+    display: inline-flex; align-items: center; gap: 1px;
+  }
+  .b6 .hash { font-family: 'Menlo', 'Courier New', monospace; font-size: 12px; color: rgba(112,115,124,0.5); }
+  .b6.on { background: rgba(0,102,255,0.1); color: #0066ff; }
+  .b6.on .hash { color: rgba(0,102,255,0.45); }
+</style>
+<script>
+  function pick(el) {
+    document.querySelectorAll('.box').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    try { window.parent.postMessage({ type:'click', choice: el.dataset.choice, text: el.querySelector('.box-name').textContent }, '*'); } catch(e){}
+  }
+</script>
+</head>
+<body>
+
+<h2>B 스타일 변형 — 6가지</h2>
+<p class="subtitle">필터 칩(active / inactive)과 카드 내 인라인 태그 두 컨텍스트로 비교합니다.</p>
+
+<div class="grid">
+
+  <!-- B1 -->
+  <div class="box" data-choice="B1" onclick="pick(this)">
+    <div class="box-label">B1</div>
+    <div class="box-name">Rect + muted # (기본)</div>
+    <div class="row-label">필터 칩</div>
+    <div class="row">
+      <span class="b1 on">전체</span>
+      <span class="b1">AI</span>
+      <span class="b1">Next.js</span>
+      <span class="b1">Rust</span>
+    </div>
+    <div class="row-label">카드 내</div>
+    <div class="card-mini">
+      <div class="card-mini-title">Claude extended thinking 동작 원리</div>
+      <div class="row">
+        <span class="b1">AI</span>
+        <span class="b1">LLM</span>
+        <span class="b1">Claude</span>
+      </div>
+    </div>
+    <p class="desc">6px 모서리, fill tint, # 연하게. blog Badge 원본.</p>
+  </div>
+
+  <!-- B2 -->
+  <div class="box" data-choice="B2" onclick="pick(this)">
+    <div class="box-label">B2</div>
+    <div class="box-name">Pill + muted #</div>
+    <div class="row-label">필터 칩</div>
+    <div class="row">
+      <span class="b2 on">전체</span>
+      <span class="b2">AI</span>
+      <span class="b2">Next.js</span>
+      <span class="b2">Rust</span>
+    </div>
+    <div class="row-label">카드 내</div>
+    <div class="card-mini">
+      <div class="card-mini-title">Claude extended thinking 동작 원리</div>
+      <div class="row">
+        <span class="b2">AI</span>
+        <span class="b2">LLM</span>
+        <span class="b2">Claude</span>
+      </div>
+    </div>
+    <p class="desc">B1을 pill(99px)로만 변경. 좀 더 부드럽고 친근한 느낌.</p>
+  </div>
+
+  <!-- B3 -->
+  <div class="box" data-choice="B3" onclick="pick(this)">
+    <div class="box-label">B3</div>
+    <div class="box-name">Rect + solid active</div>
+    <div class="row-label">필터 칩</div>
+    <div class="row">
+      <span class="b3 on">전체</span>
+      <span class="b3">AI</span>
+      <span class="b3">Next.js</span>
+      <span class="b3">Rust</span>
+    </div>
+    <div class="row-label">카드 내</div>
+    <div class="card-mini">
+      <div class="card-mini-title">Claude extended thinking 동작 원리</div>
+      <div class="row">
+        <span class="b3">AI</span>
+        <span class="b3">LLM</span>
+        <span class="b3">Claude</span>
+      </div>
+    </div>
+    <p class="desc">active 시 파란 솔리드 배경. 선택 상태가 명확하고 강함.</p>
+  </div>
+
+  <!-- B4 -->
+  <div class="box" data-choice="B4" onclick="pick(this)">
+    <div class="box-label">B4</div>
+    <div class="box-name">Border + fill 혼합</div>
+    <div class="row-label">필터 칩</div>
+    <div class="row">
+      <span class="b4 on">전체</span>
+      <span class="b4">AI</span>
+      <span class="b4">Next.js</span>
+      <span class="b4">Rust</span>
+    </div>
+    <div class="row-label">카드 내</div>
+    <div class="card-mini">
+      <div class="card-mini-title">Claude extended thinking 동작 원리</div>
+      <div class="row">
+        <span class="b4">AI</span>
+        <span class="b4">LLM</span>
+        <span class="b4">Claude</span>
+      </div>
+    </div>
+    <p class="desc">테두리 + 배경 tint 동시 적용. active 시 파란 테두리. 구조감이 생김.</p>
+  </div>
+
+  <!-- B5 -->
+  <div class="box" data-choice="B5" onclick="pick(this)">
+    <div class="box-label">B5</div>
+    <div class="box-name"># 동색, 굵게</div>
+    <div class="row-label">필터 칩</div>
+    <div class="row">
+      <span class="b5 on"><span class="hash">#</span>전체</span>
+      <span class="b5"><span class="hash">#</span>AI</span>
+      <span class="b5"><span class="hash">#</span>Next.js</span>
+      <span class="b5"><span class="hash">#</span>Rust</span>
+    </div>
+    <div class="row-label">카드 내</div>
+    <div class="card-mini">
+      <div class="card-mini-title">Claude extended thinking 동작 원리</div>
+      <div class="row">
+        <span class="b5"><span class="hash">#</span>AI</span>
+        <span class="b5"><span class="hash">#</span>LLM</span>
+        <span class="b5"><span class="hash">#</span>Claude</span>
+      </div>
+    </div>
+    <p class="desc">active 시 # 도 파란색으로 변경. 텍스트와 # 가중치 차이로 리듬감.</p>
+  </div>
+
+  <!-- B6 -->
+  <div class="box" data-choice="B6" onclick="pick(this)">
+    <div class="box-label">B6</div>
+    <div class="box-name">Monospace # + pill</div>
+    <div class="row-label">필터 칩</div>
+    <div class="row">
+      <span class="b6 on"><span class="hash">#</span>전체</span>
+      <span class="b6"><span class="hash">#</span>AI</span>
+      <span class="b6"><span class="hash">#</span>Next.js</span>
+      <span class="b6"><span class="hash">#</span>Rust</span>
+    </div>
+    <div class="row-label">카드 내</div>
+    <div class="card-mini">
+      <div class="card-mini-title">Claude extended thinking 동작 원리</div>
+      <div class="row">
+        <span class="b6"><span class="hash">#</span>AI</span>
+        <span class="b6"><span class="hash">#</span>LLM</span>
+        <span class="b6"><span class="hash">#</span>Claude</span>
+      </div>
+    </div>
+    <p class="desc"># 만 고정폭 폰트, 나머지는 Pretendard. 개발 느낌 + pill의 부드러움.</p>
+  </div>
+
+</div>
+
+</body>
+</html>

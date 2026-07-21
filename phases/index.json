@@ -11,6 +11,18 @@
       "status": "completed",
       "failed_at": "2026-05-17T13:14:41+0900",
       "completed_at": "2026-05-17T19:22:14+0900"
+    },
+    {
+      "dir": "2-dashboard",
+      "status": "completed",
+      "failed_at": "2026-05-18T14:07:41+0900",
+      "completed_at": "2026-05-18T19:00:20+0900"
+    },
+    {
+      "dir": "3-site",
+      "status": "completed",
+      "failed_at": "2026-05-19T10:53:43+0900",
+      "completed_at": "2026-05-19T13:36:48+0900"
     }
   ]
 }

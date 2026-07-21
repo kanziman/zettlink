@@ -1,0 +1,165 @@
+<h2>카드 상세 모달 레이아웃</h2>
+<p class="subtitle">TIL / Guide / Deep Summary 생성 버튼과 콘텐츠를 어떻게 배치할까요?</p>
+
+<div class="cards">
+
+  <!-- Option A: Tabbed Content -->
+  <div class="card" data-choice="A" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#e8eaed; padding:12px; display:flex; align-items:center; justify-content:center;">
+      <div style="width:100%; max-width:380px; background:white; border-radius:16px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.15);">
+        <!-- Modal header -->
+        <div style="padding:14px 16px; border-bottom:1px solid rgba(112,115,124,0.12); display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div style="width:20px; height:20px; background:rgba(255,66,66,0.12); border-radius:5px; display:flex; align-items:center; justify-content:center;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FF4242" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+            </div>
+            <span style="font-size:11px; font-weight:600; color:#171719;">YouTube Video</span>
+          </div>
+          <div style="width:22px; height:22px; border-radius:6px; border:1px solid rgba(112,115,124,0.2); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; color:#70737C;">✕</div>
+        </div>
+
+        <!-- Title + badges -->
+        <div style="padding:14px 16px 0;">
+          <div style="font-size:14px; font-weight:700; color:#171719; margin-bottom:8px; line-height:1.4;">How to build an AI agent with Claude 3.5 Sonnet</div>
+          <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:12px;">
+            <span style="font-size:10px; background:rgba(18,213,137,0.1); color:#0FAF6E; padding:2px 8px; border-radius:20px; font-weight:600;">● Published</span>
+            <span style="font-size:10px; background:rgba(0,102,255,0.07); color:#0054D1; padding:2px 7px; border-radius:20px;">#AI</span>
+            <span style="font-size:10px; background:rgba(0,102,255,0.07); color:#0054D1; padding:2px 7px; border-radius:20px;">#Claude</span>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div style="display:flex; border-bottom:1px solid rgba(112,115,124,0.1); padding:0 16px;">
+          <div style="padding:8px 10px; font-size:11px; font-weight:600; color:#0066FF; border-bottom:2px solid #0066FF; margin-bottom:-1px;">Summary</div>
+          <div style="padding:8px 10px; font-size:11px; color:#70737C;">TIL</div>
+          <div style="padding:8px 10px; font-size:11px; color:#70737C;">Guide</div>
+          <div style="padding:8px 10px; font-size:11px; color:#70737C;">Deep</div>
+        </div>
+
+        <!-- Tab content -->
+        <div style="padding:12px 16px 14px;">
+          <div style="background:#F7F7F8; border-radius:8px; padding:10px; margin-bottom:10px;">
+            <div style="width:100%; height:6px; background:#e0e0e0; border-radius:3px; margin-bottom:4px;"></div>
+            <div style="width:90%; height:6px; background:#e8e8e8; border-radius:3px; margin-bottom:4px;"></div>
+            <div style="width:95%; height:6px; background:#e8e8e8; border-radius:3px;"></div>
+          </div>
+
+          <!-- Footer actions -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid rgba(112,115,124,0.1);">
+            <div style="display:flex; gap:6px;">
+              <div style="padding:6px 10px; background:#0066FF; border-radius:6px; font-size:10px; font-weight:600; color:white;">Generate TIL</div>
+              <div style="padding:6px 10px; border:1px solid rgba(0,102,255,0.3); border-radius:6px; font-size:10px; font-weight:600; color:#0066FF;">Generate Guide</div>
+            </div>
+            <div style="padding:6px 10px; background:#12D589; border-radius:6px; font-size:10px; font-weight:600; color:white;">Publish</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — 탭 네비게이션</h3>
+      <p>Summary / TIL / Guide / Deep 탭 전환. 생성된 내용이 탭 안에서 바로 보임. 액션 버튼은 하단 고정. 현재 모달 구조와 가장 유사.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Sidebar Actions -->
+  <div class="card" data-choice="B" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#e8eaed; padding:12px; display:flex; align-items:center; justify-content:center;">
+      <div style="width:100%; max-width:420px; background:white; border-radius:16px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.15);">
+        <!-- Modal header -->
+        <div style="padding:14px 16px; border-bottom:1px solid rgba(112,115,124,0.12); display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div style="width:20px; height:20px; background:rgba(255,66,66,0.12); border-radius:5px; display:flex; align-items:center; justify-content:center;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FF4242" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+            </div>
+            <span style="font-size:11px; font-weight:600; color:#171719;">How to build an AI agent with Claude 3.5</span>
+          </div>
+          <div style="width:22px; height:22px; border-radius:6px; border:1px solid rgba(112,115,124,0.2); display:flex; align-items:center; justify-content:center; font-size:12px; color:#70737C;">✕</div>
+        </div>
+
+        <!-- Two column body -->
+        <div style="display:grid; grid-template-columns:1fr 110px; min-height:150px;">
+          <!-- Main content -->
+          <div style="padding:14px; border-right:1px solid rgba(112,115,124,0.1);">
+            <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:10px;">
+              <span style="font-size:10px; background:rgba(18,213,137,0.1); color:#0FAF6E; padding:2px 8px; border-radius:20px; font-weight:600;">● Published</span>
+              <span style="font-size:10px; background:rgba(0,102,255,0.07); color:#0054D1; padding:2px 7px; border-radius:20px;">#AI</span>
+            </div>
+            <div style="background:#F7F7F8; border-radius:8px; padding:10px;">
+              <div style="font-size:9px; font-weight:600; color:#0066FF; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Auto Summary</div>
+              <div style="width:100%; height:5px; background:#e0e0e0; border-radius:3px; margin-bottom:3px;"></div>
+              <div style="width:90%; height:5px; background:#e8e8e8; border-radius:3px; margin-bottom:3px;"></div>
+              <div style="width:85%; height:5px; background:#e8e8e8; border-radius:3px; margin-bottom:3px;"></div>
+              <div style="width:95%; height:5px; background:#e8e8e8; border-radius:3px;"></div>
+            </div>
+          </div>
+          <!-- Sidebar actions -->
+          <div style="padding:12px 10px; display:flex; flex-direction:column; gap:6px; background:#FAFAFA;">
+            <div style="font-size:9px; font-weight:600; color:#70737C; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:2px;">Generate</div>
+            <div style="padding:7px 8px; border:1px solid rgba(0,102,255,0.3); border-radius:7px; font-size:10px; font-weight:600; color:#0066FF; text-align:center;">📖 TIL</div>
+            <div style="padding:7px 8px; border:1px solid rgba(112,115,124,0.2); border-radius:7px; font-size:10px; font-weight:600; color:#37383C; text-align:center;">📄 Guide</div>
+            <div style="padding:7px 8px; border:1px solid rgba(112,115,124,0.2); border-radius:7px; font-size:10px; font-weight:600; color:#37383C; text-align:center;">🔍 Deep</div>
+            <div style="height:1px; background:rgba(112,115,124,0.1); margin:2px 0;"></div>
+            <div style="padding:7px 8px; background:#12D589; border-radius:7px; font-size:10px; font-weight:700; color:white; text-align:center;">Publish</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — 사이드바 액션 패널</h3>
+      <p>왼쪽에 콘텐츠, 오른쪽 좁은 사이드바에 Generate + Publish 버튼. 항상 보이는 액션 패널. 생성 후 탭으로 전환해 결과 확인.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Action Cards at top -->
+  <div class="card" data-choice="C" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#e8eaed; padding:12px; display:flex; align-items:center; justify-content:center;">
+      <div style="width:100%; max-width:380px; background:white; border-radius:16px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.15);">
+        <!-- Modal header -->
+        <div style="padding:14px 16px; border-bottom:1px solid rgba(112,115,124,0.12); display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div style="width:4px; height:16px; background:#FF4242; border-radius:2px;"></div>
+            <span style="font-size:11px; font-weight:600; color:#171719;">How to build an AI agent...</span>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <div style="padding:4px 10px; background:#12D589; border-radius:20px; font-size:10px; font-weight:700; color:white;">Publish</div>
+            <div style="width:22px; height:22px; border-radius:6px; border:1px solid rgba(112,115,124,0.2); display:flex; align-items:center; justify-content:center; font-size:12px; color:#70737C;">✕</div>
+          </div>
+        </div>
+
+        <!-- Quick action row -->
+        <div style="padding:10px 16px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; border-bottom:1px solid rgba(112,115,124,0.1);">
+          <div style="background:#F0F6FF; border:1px solid rgba(0,102,255,0.15); border-radius:8px; padding:8px; text-align:center;">
+            <div style="font-size:14px; margin-bottom:2px;">📖</div>
+            <div style="font-size:9px; font-weight:600; color:#0066FF;">TIL</div>
+            <div style="font-size:8px; color:#3385FF; margin-top:1px;">생성됨</div>
+          </div>
+          <div style="background:#F7F7F8; border:1px dashed rgba(112,115,124,0.2); border-radius:8px; padding:8px; text-align:center; opacity:0.7;">
+            <div style="font-size:14px; margin-bottom:2px;">📄</div>
+            <div style="font-size:9px; font-weight:600; color:#37383C;">Guide</div>
+            <div style="font-size:8px; color:#989BA2; margin-top:1px;">생성하기</div>
+          </div>
+          <div style="background:#F7F7F8; border:1px dashed rgba(112,115,124,0.2); border-radius:8px; padding:8px; text-align:center; opacity:0.7;">
+            <div style="font-size:14px; margin-bottom:2px;">🔍</div>
+            <div style="font-size:9px; font-weight:600; color:#37383C;">Deep</div>
+            <div style="font-size:8px; color:#989BA2; margin-top:1px;">생성하기</div>
+          </div>
+        </div>
+
+        <!-- Content area -->
+        <div style="padding:12px 16px 14px;">
+          <div style="font-size:9px; font-weight:600; color:#70737C; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">Auto Summary</div>
+          <div style="background:#F7F7F8; border-radius:8px; padding:10px;">
+            <div style="width:100%; height:5px; background:#e0e0e0; border-radius:3px; margin-bottom:4px;"></div>
+            <div style="width:90%; height:5px; background:#e8e8e8; border-radius:3px; margin-bottom:4px;"></div>
+            <div style="width:80%; height:5px; background:#e8e8e8; border-radius:3px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — 산출물 상태 카드</h3>
+      <p>TIL / Guide / Deep을 상단에 3개 타일로 배치. 생성됨/미생성 상태가 한눈에 보임. 타일 클릭 시 해당 내용 펼침. Publish는 헤더에 고정.</p>
+    </div>
+  </div>
+
+</div>

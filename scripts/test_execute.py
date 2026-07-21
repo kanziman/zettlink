@@ -153,6 +153,7 @@ class TestAgentCommands:
         assert "--cd" in cmd
         assert "--sandbox" in cmd
         assert "danger-full-access" in cmd
+        assert "--ask-for-approval" not in cmd
         assert cmd[-1] == "-"
 
     def test_codex_reviewer_command_uses_workspace_write(self, executor):

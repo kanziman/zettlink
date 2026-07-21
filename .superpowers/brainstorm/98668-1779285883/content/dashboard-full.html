@@ -1,0 +1,174 @@
+<h2>통합 대시보드 최종 방향</h2>
+<p class="subtitle">지금까지 선택한 A+A+B를 한 화면에 합쳤습니다. 실제 코드 변경 전 최종 확인해 주세요.</p>
+
+<div class="mockup" style="max-width:760px; margin:0 auto;">
+  <div class="mockup-header">Dashboard — 전체 페이지 미리보기</div>
+  <div class="mockup-body" style="background:#F7F7F8; padding:0; border-radius:0 0 12px 12px; overflow:hidden;">
+
+    <!-- Top Navigation -->
+    <div style="background:white; border-bottom:1px solid rgba(112,115,124,0.13); padding:0 24px; height:56px; display:flex; align-items:center; justify-content:space-between;">
+      <div style="font-size:15px; font-weight:700; color:#171719; letter-spacing:-0.02em;">Zettlink</div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="padding:5px 10px; border:1px solid rgba(112,115,124,0.2); border-radius:7px; font-size:11px; font-weight:500; color:#37383C; display:flex; align-items:center; gap:5px;">
+          <span>🌙</span> Dark
+        </div>
+        <div style="width:30px; height:30px; border-radius:50%; background:#0066FF; color:white; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">A</div>
+      </div>
+    </div>
+
+    <div style="padding:24px;">
+
+      <!-- Page header -->
+      <div style="margin-bottom:20px;">
+        <h1 style="font-size:22px; font-weight:700; color:#171719; letter-spacing:-0.02em; margin:0 0 4px;">Knowledge Vault</h1>
+        <p style="font-size:13px; color:#70737C; margin:0;">Captured contents automatically summarized and tagged.</p>
+      </div>
+
+      <!-- Stats row -->
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px;">
+        <div style="background:white; border-radius:10px; padding:12px 14px; border:1px solid rgba(112,115,124,0.12); box-shadow:0 1px 2px rgba(0,0,0,0.04);">
+          <div style="font-size:20px; font-weight:700; color:#171719; margin-bottom:2px;">24</div>
+          <div style="font-size:11px; color:#70737C;">전체 카드</div>
+        </div>
+        <div style="background:white; border-radius:10px; padding:12px 14px; border:1px solid rgba(112,115,124,0.12); box-shadow:0 1px 2px rgba(0,0,0,0.04);">
+          <div style="font-size:20px; font-weight:700; color:#12D589; margin-bottom:2px;">8</div>
+          <div style="font-size:11px; color:#70737C;">Published</div>
+        </div>
+        <div style="background:white; border-radius:10px; padding:12px 14px; border:1px solid rgba(112,115,124,0.12); box-shadow:0 1px 2px rgba(0,0,0,0.04);">
+          <div style="font-size:20px; font-weight:700; color:#5A5C63; margin-bottom:2px;">16</div>
+          <div style="font-size:11px; color:#70737C;">Draft</div>
+        </div>
+      </div>
+
+      <!-- Search + SegmentedControl -->
+      <div style="display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:200px; background:white; border:1px solid rgba(112,115,124,0.18); border-radius:8px; padding:0 10px; height:36px; display:flex; align-items:center; gap:6px; box-shadow:0 1px 2px rgba(0,0,0,0.04);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#989BA2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span style="font-size:12px; color:#989BA2;">Search cards...</span>
+        </div>
+        <div style="background:rgba(112,115,124,0.08); border-radius:8px; padding:3px; display:flex; gap:1px;">
+          <div style="background:white; border-radius:6px; padding:5px 12px; font-size:11px; font-weight:600; color:#171719; box-shadow:0 1px 3px rgba(0,0,0,0.08); cursor:pointer;">All · 24</div>
+          <div style="padding:5px 12px; font-size:11px; color:#70737C; cursor:pointer;">Published</div>
+          <div style="padding:5px 12px; font-size:11px; color:#70737C; cursor:pointer;">Draft</div>
+        </div>
+      </div>
+
+      <!-- Card Grid (3 cards showing accent bar style) -->
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
+
+        <!-- Card 1: YouTube Published -->
+        <div style="background:white; border-radius:12px; border:1px solid rgba(112,115,124,0.13); border-left:3px solid #FF4242; padding:14px; box-shadow:0 2px 4px rgba(0,0,0,0.04),0 4px 6px rgba(0,0,0,0.03); cursor:pointer; transition:transform .15s;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="display:flex; align-items:center; gap:5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FF4242" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+              <span style="font-size:10px; font-weight:600; color:#FF4242;">YouTube</span>
+            </div>
+            <span style="font-size:9px; background:rgba(18,213,137,0.1); color:#0FAF6E; padding:2px 6px; border-radius:4px; font-weight:600;">Published</span>
+          </div>
+          <div style="font-size:12px; font-weight:700; color:#171719; line-height:1.4; margin-bottom:6px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">How to build an AI agent with Claude 3.5 Sonnet</div>
+          <div style="font-size:11px; color:#70737C; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:10px;">A guide on building autonomous agents. Covers structured outputs, tool use, and memory management.</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid rgba(112,115,124,0.08);">
+            <div style="display:flex; gap:3px;"><span style="font-size:9px; background:rgba(112,115,124,0.08); color:#5A5C63; padding:1px 5px; border-radius:3px;">#AI</span><span style="font-size:9px; background:rgba(112,115,124,0.08); color:#5A5C63; padding:1px 5px; border-radius:3px;">#Claude</span></div>
+            <span style="font-size:9px; color:#989BA2;">2026-05-14</span>
+          </div>
+        </div>
+
+        <!-- Card 2: GitHub Draft -->
+        <div style="background:white; border-radius:12px; border:1px solid rgba(112,115,124,0.13); border-left:3px solid #2E2F33; padding:14px; box-shadow:0 2px 4px rgba(0,0,0,0.04),0 4px 6px rgba(0,0,0,0.03); cursor:pointer;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="display:flex; align-items:center; gap:5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2E2F33" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+              <span style="font-size:10px; font-weight:600; color:#2E2F33;">GitHub</span>
+            </div>
+            <span style="font-size:9px; background:rgba(112,115,124,0.08); color:#70737C; padding:2px 6px; border-radius:4px;">Draft</span>
+          </div>
+          <div style="font-size:12px; font-weight:700; color:#171719; line-height:1.4; margin-bottom:6px;">vercel/next.js</div>
+          <div style="font-size:11px; color:#70737C; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:10px;">The React Framework. Source code for Next.js with SSR, SSG, and ISR support out of the box.</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid rgba(112,115,124,0.08);">
+            <div style="display:flex; gap:3px;"><span style="font-size:9px; background:rgba(112,115,124,0.08); color:#5A5C63; padding:1px 5px; border-radius:3px;">#React</span><span style="font-size:9px; background:rgba(112,115,124,0.08); color:#5A5C63; padding:1px 5px; border-radius:3px;">#Next.js</span></div>
+            <span style="font-size:9px; color:#989BA2;">2026-05-15</span>
+          </div>
+        </div>
+
+        <!-- Card 3: YouTube Processing -->
+        <div style="background:white; border-radius:12px; border:1px solid rgba(112,115,124,0.13); border-left:3px solid #FF7A00; padding:14px; box-shadow:0 2px 4px rgba(0,0,0,0.04),0 4px 6px rgba(0,0,0,0.03); opacity:0.7; cursor:pointer;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="display:flex; align-items:center; gap:5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FF7A00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+              <span style="font-size:10px; font-weight:600; color:#FF7A00;">YouTube</span>
+            </div>
+            <span style="font-size:9px; background:rgba(255,122,0,0.1); color:#FF7A00; padding:2px 6px; border-radius:4px; font-weight:600;">Processing…</span>
+          </div>
+          <div style="font-size:12px; font-weight:700; color:#171719; line-height:1.4; margin-bottom:6px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">Understanding React Server Components in 10 Minutes</div>
+          <div style="font-size:11px; color:#70737C; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:10px;">RSC explained simply. Why they matter and how to incrementally adopt them.</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid rgba(112,115,124,0.08);">
+            <div style="display:flex; gap:3px;"><span style="font-size:9px; background:rgba(112,115,124,0.08); color:#5A5C63; padding:1px 5px; border-radius:3px;">#React</span></div>
+            <span style="font-size:9px; color:#989BA2;">2026-05-15</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal overlay preview -->
+    <div style="margin:0 24px 24px; border-radius:14px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.14); border:1px solid rgba(112,115,124,0.15);">
+      <div style="background:#2E2F33; padding:8px 14px; display:flex; align-items:center; gap:6px;">
+        <div style="width:10px; height:10px; border-radius:50%; background:#FF5F57;"></div>
+        <div style="width:10px; height:10px; border-radius:50%; background:#FEBC2E;"></div>
+        <div style="width:10px; height:10px; border-radius:50%; background:#28C840;"></div>
+        <span style="font-size:10px; color:#989BA2; margin-left:4px;">카드 클릭 시 모달</span>
+      </div>
+      <div style="background:white;">
+        <!-- Modal header -->
+        <div style="padding:14px 18px; border-bottom:1px solid rgba(112,115,124,0.12); display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:4px; height:18px; background:#FF4242; border-radius:2px;"></div>
+            <span style="font-size:13px; font-weight:700; color:#171719;">How to build an AI agent with Claude 3.5 Sonnet</span>
+          </div>
+          <div style="width:26px; height:26px; border-radius:7px; border:1px solid rgba(112,115,124,0.2); display:flex; align-items:center; justify-content:center; font-size:13px; color:#70737C;">✕</div>
+        </div>
+
+        <!-- Two-column body -->
+        <div style="display:grid; grid-template-columns:1fr 130px; min-height:130px;">
+          <!-- Main content -->
+          <div style="padding:16px; border-right:1px solid rgba(112,115,124,0.1);">
+            <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:12px;">
+              <span style="font-size:10px; background:rgba(18,213,137,0.1); color:#0FAF6E; padding:2px 9px; border-radius:20px; font-weight:600;">● Published</span>
+              <span style="font-size:10px; background:rgba(0,102,255,0.07); color:#0054D1; padding:2px 8px; border-radius:20px;">#AI</span>
+              <span style="font-size:10px; background:rgba(0,102,255,0.07); color:#0054D1; padding:2px 8px; border-radius:20px;">#Claude</span>
+            </div>
+            <div style="background:#F7F7F8; border-radius:10px; padding:12px;">
+              <div style="font-size:9px; font-weight:700; color:#0066FF; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Auto Summary</div>
+              <div style="width:100%; height:5px; background:#e0e0e0; border-radius:3px; margin-bottom:3px;"></div>
+              <div style="width:92%; height:5px; background:#e8e8e8; border-radius:3px; margin-bottom:3px;"></div>
+              <div style="width:86%; height:5px; background:#e8e8e8; border-radius:3px; margin-bottom:3px;"></div>
+              <div style="width:95%; height:5px; background:#e8e8e8; border-radius:3px;"></div>
+            </div>
+          </div>
+          <!-- Sidebar actions -->
+          <div style="padding:14px 12px; background:#FAFAFA; display:flex; flex-direction:column; gap:7px;">
+            <div style="font-size:9px; font-weight:700; color:#70737C; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:1px;">Generate</div>
+            <div style="padding:8px 10px; border:1px solid rgba(0,102,255,0.25); border-radius:8px; font-size:11px; font-weight:600; color:#0066FF; text-align:center; cursor:pointer;">📖 TIL</div>
+            <div style="padding:8px 10px; border:1px solid rgba(112,115,124,0.2); border-radius:8px; font-size:11px; font-weight:600; color:#37383C; text-align:center; cursor:pointer;">📄 Guide</div>
+            <div style="padding:8px 10px; border:1px solid rgba(112,115,124,0.2); border-radius:8px; font-size:11px; font-weight:600; color:#37383C; text-align:center; cursor:pointer;">🔍 Deep</div>
+            <div style="height:1px; background:rgba(112,115,124,0.1); margin:1px 0;"></div>
+            <div style="padding:8px 10px; background:#FF4242; border-radius:8px; font-size:11px; font-weight:700; color:white; text-align:center; cursor:pointer;">Unpublish</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:20px; padding:14px 18px; background:rgba(0,102,255,0.05); border-radius:10px; border:1px solid rgba(0,102,255,0.12);">
+  <div style="font-size:13px; font-weight:600; color:#171719; margin-bottom:8px;">이 디자인에 포함되는 변경사항</div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:12px; color:#37383C; line-height:1.7;">
+    <div>✅ 통계 행 (Total / Published / Draft)</div>
+    <div>✅ 플랫폼 컬러 액센트 바 (카드 좌측)</div>
+    <div>✅ SegmentedControl 탭 필터</div>
+    <div>✅ 모달 사이드바 액션 패널</div>
+    <div>✅ Processing 상태 시각화 (주황)</div>
+    <div>✅ Button gap 버그 수정 (gap-4→gap-2)</div>
+    <div>✅ 태그 구분선 + 날짜 레이아웃 정리</div>
+    <div>✅ 모달 헤더 액센트 바 (플랫폼 컬러)</div>
+  </div>
+</div>

@@ -57,46 +57,48 @@ Atomic Design 원칙과 의미론적(Semantic) 토큰 구조를 채택하여 Lig
 
 #### 2.2.1. Atomic Colors (원시 색상 팔레트)
 
+> **팔레트 072 · 뉴스레터 플랫폼** — sky(메인·보조) + orange(악센트) 기반. 브랜드 6색: 메인 `#0369A1`, 보조 `#0EA5E9`, 악센트 `#EA580C`, 배경 `#F0F9FF`, 텍스트 `#0C4A6E`, 경고 `#DC2626`.
+
 | Palette | Key Values (HEX) |
 |---|---|
-| **blue** | 10:`#001536` 20:`#002966` 30:`#003E9C` 40:`#0054D1` 45:`#005EEB` **50:`#0066FF`** 55:`#1A75FF` 60:`#3385FF` 70:`#69A5FF` 90:`#C9DEFE` |
-| **coolNeutral** | 5:`#0F0F10` 10:`#171719` 15:`#1B1C1E` 22:`#2E2F33` 25:`#37383C` 40:`#5A5C63` **50:`#70737C`** 70:`#989BA2` 95:`#DBDCDF` 97:`#EAEBEC` 98:`#F4F4F5` **99:`#F7F7F8`** |
-| **neutral** | 10:`#0D0D0D` ... |
-| **red** | 40:`#E52222` **50:`#FF4242`** 60:`#FF6363` 90:`#FED5D5` |
-| **green** | 40:`#0FAF6E` **50:`#12D589`** 60:`#2FE59A` 90:`#C2F5E3` |
-| **orange** | 39:`#C95400` **50:`#FF7A00`** 60:`#FF9533` |
+| **sky** (primary·secondary) | 50:`#F0F9FF` 100:`#E0F2FE` 200:`#BAE6FD` 300:`#7DD3FC` 400:`#38BDF8` **500:`#0EA5E9`**(보조) 600:`#0284C7` **700:`#0369A1`**(메인) 800:`#075985` **900:`#0C4A6E`**(텍스트) 950:`#082F49` |
+| **orange** (accent) | **500:`#F97316`** **600:`#EA580C`**(악센트) 700:`#C2410C` |
+| **red** (status) | 500:`#EF4444` **600:`#DC2626`**(경고) 700:`#B91C1C` |
+| **green** (status) | **500:`#16A34A`** 600:`#22C55E` |
+| **slate** (neutral) | 400:`#94A3B8` **500:`#64748B`** 600:`#475569` |
 | **common** | 0:`#000000` 100:`#FFFFFF` |
-| redOrange, lime, cyan, lightBlue, violet, purple, pink | — 각 팔레트 10~99 단계 |
 
 #### 2.2.2. Semantic Color Tokens
 
 | Token | Light | Dark | 용도 |
 |---|---|---|---|
-| `primary.normal` | blue[50] `#0066FF` | blue[60] `#3385FF` | 주요 버튼, 활성 상태 |
-| `primary.strong` | blue[45] | blue[55] | Hover 상태 |
-| `primary.heavy` | blue[40] | blue[50] | Active/Pressed 상태 |
-| `label.normal` | coolNeutral[10] | coolNeutral[99] | 기본 텍스트 |
-| `label.strong` | common[0] `#000` | common[100] `#FFF` | 강조 텍스트 |
-| `label.neutral` | coolNeutral[22] @ 88% | coolNeutral[90] @ 88% | 보조 텍스트 |
-| `label.alternative` | coolNeutral[25] @ 61% | coolNeutral[80] @ 61% | 대안 텍스트 |
-| `label.assistive` | coolNeutral[25] @ 28% | coolNeutral[80] @ 28% | 보조 설명 |
-| `label.disable` | coolNeutral[25] @ 16% | coolNeutral[70] @ 16% | 비활성 텍스트 |
-| `background.normal.normal` | common[100] | coolNeutral[15] | 기본 페이지 배경 |
-| `background.normal.alternative` | coolNeutral[99] | coolNeutral[5] | 보조 배경 |
-| `background.elevated.normal` | common[100] | coolNeutral[17] | 카드, 팝업 배경 |
-| `interaction.inactive` | coolNeutral[70] | coolNeutral[40] | 비활성 인터랙션 |
-| `interaction.disable` | coolNeutral[98] | coolNeutral[22] | 비활성 배경 |
-| `line.normal.normal` | coolNeutral[50] @ 22% | coolNeutral[50] @ 32% | 기본 구분선 |
-| `line.solid.normal` | coolNeutral[96] | coolNeutral[25] | 실선 구분선 |
-| `status.positive` | green[50] | green[60] | 성공/긍정 |
-| `status.cautionary` | orange[50] | orange[60] | 경고 |
-| `status.negative` | red[50] | red[60] | 오류/위험 |
-| `fill.normal` | coolNeutral[50] @ 8% | coolNeutral[50] @ 22% | 기본 채우기 |
-| `fill.strong` | coolNeutral[50] @ 16% | coolNeutral[50] @ 28% | 강조 채우기 |
-| `material.dimmer` | coolNeutral[10] @ 52% | coolNeutral[10] @ 74% | 모달 딤 처리 |
-| `inverse.primary` | blue[60] | blue[50] | 반전 주요 컬러 |
-| `inverse.background` | coolNeutral[15] | common[100] | 반전 배경 |
-| `accent.background.*` | redOrange/lime/cyan/lightBlue/violet/purple/pink [50] | — [60] | 다양한 액센트 배경 |
+| `primary.normal` | sky[700] `#0369A1` | sky[400] `#38BDF8` | 주요 버튼, 활성 상태 |
+| `primary.strong` | sky[800] | sky[300] | Hover 상태 |
+| `primary.heavy` | sky[900] | sky[200] | Active/Pressed 상태 |
+| `secondary.normal` | sky[500] `#0EA5E9` | sky[400] | 보조 강조, 링크, 태그 틴트 |
+| `accent.normal` | orange[600] `#EA580C` | orange[500] | CTA 버튼, 전환 유도 |
+| `accent.strong` | orange[700] | orange[600] | CTA Hover |
+| `label.normal` | sky[900] `#0C4A6E` | sky[100] | 기본 텍스트 |
+| `label.strong` | sky[950] `#082F49` | sky[50] | 강조 텍스트 |
+| `label.neutral` | sky[900] @ 88% | sky[100] @ 88% | 보조 텍스트 |
+| `label.alternative` | sky[900] @ 61% | sky[200] @ 61% | 대안 텍스트 |
+| `label.assistive` | sky[900] @ 28% | sky[200] @ 28% | 보조 설명 |
+| `label.disable` | sky[900] @ 16% | sky[300] @ 16% | 비활성 텍스트 |
+| `background.normal.normal` | common[100] `#FFF` | sky[950] `#082F49` | 기본 페이지 배경 |
+| `background.normal.alternative` | sky[50] `#F0F9FF` | `#0C1A24` | 보조 배경 |
+| `background.elevated.normal` | common[100] | `#0C2438` | 카드, 팝업 배경 |
+| `interaction.inactive` | slate[400] | slate[500] | 비활성 인터랙션 |
+| `interaction.disable` | sky[100] | `#0C2438` | 비활성 배경 |
+| `line.normal.normal` | sky[700] @ 16% | sky[300] @ 18% | 기본 구분선 |
+| `line.solid.normal` | sky[100] | `#123141` | 실선 구분선 |
+| `status.positive` | green[500] `#16A34A` | green[600] | 성공/긍정 |
+| `status.cautionary` | orange[600] | orange[500] | 경고/주의 |
+| `status.negative` | red[600] `#DC2626` | red[500] | 오류/위험 |
+| `fill.normal` | sky[700] @ 6% | sky[300] @ 10% | 기본 채우기 |
+| `fill.strong` | sky[700] @ 12% | sky[300] @ 16% | 강조 채우기 |
+| `material.dimmer` | sky[950] @ 52% | `#02141E` @ 74% | 모달 딤 처리 |
+| `inverse.primary` | sky[400] | sky[700] | 반전 주요 컬러 |
+| `inverse.background` | sky[950] | sky[50] | 반전 배경 |
 
 ---
 

@@ -293,15 +293,34 @@ class StepExecutor:
                 self._root,
                 "--sandbox",
                 sandbox,
-                "--ask-for-approval",
-                "never",
                 "-",
             ]
         raise ValueError(f"unsupported agent engine: {engine}")
 
+    def _agent_log_file(self) -> Path:
+        return self._phase_dir / "agent-calls.jsonl"
+
+    def _log_agent_call(self, *, engine: str, role: str, cmd: list[str],
+                        returncode: int, elapsed: float, stdout: str, stderr: str):
+        redacted_cmd = cmd[:-1] + ["<prompt>"] if engine == "claude" and cmd else cmd
+        entry = {
+            "ts": self._stamp(),
+            "phase": self._phase_name,
+            "engine": engine,
+            "role": role,
+            "cmd": redacted_cmd,
+            "exitCode": returncode,
+            "elapsedSec": round(elapsed, 2),
+            "stdoutChars": len(stdout or ""),
+            "stderrChars": len(stderr or ""),
+        }
+        with self._agent_log_file().open("a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
     def _call_agent(self, engine: str, role: str, prompt: str, timeout: int = 900) -> str:
         """Claude/Codex를 역할 기반 비대화형 agent로 호출하고 stdout을 반환한다."""
         cmd = self._agent_command(engine, role)
+        t0 = time.monotonic()
         if engine == "claude":
             result = subprocess.run(
                 cmd + [prompt],
@@ -319,6 +338,22 @@ class StepExecutor:
                 text=True,
                 timeout=timeout,
             )
+        elapsed = time.monotonic() - t0
+        self._log_agent_call(
+            engine=engine,
+            role=role,
+            cmd=cmd,
+            returncode=result.returncode,
+            elapsed=elapsed,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        )
+        if result.returncode != 0:
+            print(f"\n  ERROR: {engine} {role} agent failed (code {result.returncode}).")
+            if result.stderr:
+                print(f"  stderr: {result.stderr[:1000]}")
+            print(f"  Agent log: {self._agent_log_file().relative_to(ROOT)}")
+            sys.exit(result.returncode)
         return result.stdout
 
     def _invoke_claude(self, step: dict, preamble: str) -> dict:
@@ -590,7 +625,8 @@ class StepExecutor:
             f"당신은 {self._project} 프로젝트의 코드 리뷰어입니다.\n\n"
             f"코드를 수정하지 마라. 이 Gate에서는 읽기와 검토만 수행하고, 마지막에 verdict JSON 파일만 작성한다.\n\n"
             f"## Gate {gate_num} 검토\n\n"
-            f"1. `git diff $(git merge-base HEAD main)..HEAD` 또는 `git log --oneline -20`을 실행해 변경사항을 파악하라.\n"
+            f"1. `git status --short`, `git diff`, `git diff --cached`, `git ls-files --others --exclude-standard`, "
+            f"`git diff $(git merge-base HEAD main)..HEAD`, `git log --oneline -20`을 실행해 committed/uncommitted/untracked 변경사항을 모두 파악하라.\n"
             f"2. 아래 기준을 각각 확인하라:\n\n{criteria}\n\n"
             f"3. 검토 결과를 `{rel_verdict}` 파일에 JSON으로 저장하라:\n"
             f'   이슈 없음: {{"verdict": "APPROVED", "issues": []}}\n'

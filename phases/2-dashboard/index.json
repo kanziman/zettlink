@@ -1,0 +1,77 @@
+{
+  "project": "zettlink",
+  "phase": "2-dashboard",
+  "workflow": {
+    "gates": true,
+    "gate1_criteria": "1. scaffold step이 Tailwind CSS 4 + next-themes 설정을 포함하고, packages/ui가 DESIGN.md semantic 토큰(CSS 변수)을 사용하는가?\n2. auth step이 middleware에서 session 없으면 /login redirect, user.id ∉ ADMIN_USER_IDS면 403을 반환하도록 명시하는가?\n3. enrich API step이 LLM 호출 전 events(type='llm.call')에서 오늘 비용을 합산하고 config.budget.dailyUsd cap을 체크하는가?\n4. 모든 데이터 조회가 packages/db의 createServerClient/createRouteClient를 통하며, NEXT_PUBLIC_ prefix가 anon key와 URL에만 허용되는가?\n5. Server Component에서 외부 API 직접 호출 없이 Supabase 조회만 하는가?",
+    "gate2_criteria": "1. 미인증 요청 → /login 리다이렉트가 동작하는가?\n2. 비-admin user_id → 403이 반환되는가?\n3. admin 로그인 → 카드 리스트가 표시되는가?\n4. enrich 호출 → DB has_deep/has_til/has_guide=true로 업데이트되는가?\n5. publish 토글 → DB published 값이 반전되는가?\n6. reprocess → jobs에 queued 상태로 새 행이 INSERT되는가?\n7. SUPABASE_SERVICE_ROLE_KEY가 NEXT_PUBLIC_ prefix 없이 서버에서만 사용되는가?\n8. 새로 생성된 TypeScript 파일 첫 줄에 한국어 역할 주석이 있는가?"
+  },
+  "steps": [
+    {
+      "step": 0,
+      "name": "scaffold",
+      "status": "completed",
+      "started_at": "2026-05-18T13:55:21+0900",
+      "completed_at": "2026-05-18T13:58:29+0900",
+      "summary": "Next.js 15 dashboard scaffold, Tailwind CSS 4, next-themes root layout, semantic token CSS variables, and dashboard dependencies were added."
+    },
+    {
+      "step": 1,
+      "name": "auth",
+      "status": "completed",
+      "started_at": "2026-05-18T13:58:29+0900",
+      "completed_at": "2026-05-18T14:04:29+0900",
+      "summary": "Supabase Auth middleware, login/callback routes, and server/browser DB entrypoint split were added."
+    },
+    {
+      "step": 2,
+      "name": "packages-ui",
+      "status": "completed",
+      "started_at": "2026-05-18T14:04:29+0900",
+      "completed_at": "2026-05-18T14:07:19+0900",
+      "summary": "Shared UI package metadata, tsconfig, and Button/Badge/Tag/CardRow components were added with semantic CSS variables."
+    },
+    {
+      "step": 3,
+      "name": "card-list",
+      "status": "completed",
+      "started_at": "2026-05-18T18:39:17+0900",
+      "completed_at": "2026-05-18T18:47:51+0900",
+      "summary": "Admin layout (sticky nav + LogoutButton), card list page with search/tag/status filters, parallel Supabase fetch with Promise.all, and dotenv root .env loading in next.config.ts were added."
+    },
+    {
+      "step": 4,
+      "name": "card-detail",
+      "status": "completed",
+      "started_at": "2026-05-18T18:47:51+0900",
+      "completed_at": "2026-05-18T18:49:40+0900",
+      "summary": "Card detail Server Component with React.cache(), CardActions Client Component with enrich/publish/reprocess fetch calls and router.refresh()."
+    },
+    {
+      "step": 5,
+      "name": "monitor",
+      "status": "completed",
+      "started_at": "2026-05-18T18:49:40+0900",
+      "completed_at": "2026-05-18T18:51:46+0900",
+      "summary": "Monitor page with Server Component data fetching (Promise.all parallel: cost/jobs/events), progress bar, job queue counts, recent events list, and AutoRefresh Client Component for 30s auto-refresh."
+    },
+    {
+      "step": 6,
+      "name": "api-routes",
+      "status": "completed",
+      "started_at": "2026-05-18T18:51:46+0900",
+      "completed_at": "2026-05-18T18:55:35+0900",
+      "summary": "enrich/publish/reprocess API Route Handlers added with session+admin auth, budget guard (events llm.call sum), vault atomic write, and service client write isolation."
+    },
+    {
+      "step": 7,
+      "name": "deploy",
+      "status": "completed",
+      "started_at": "2026-05-18T18:55:35+0900",
+      "completed_at": "2026-05-18T18:57:14+0900",
+      "summary": "apps/dashboard/vercel.json, scripts/deploy-dashboard.ts, and deploy:dashboard root script added. .env.example already had NEXT_PUBLIC_SUPABASE_* keys."
+    }
+  ],
+  "created_at": "2026-05-17T19:30:00+0900",
+  "completed_at": "2026-05-18T19:00:20+0900"
+}
