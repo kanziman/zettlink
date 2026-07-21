@@ -61,7 +61,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
             {tags != null && tags.length > 0 && (() => {
               let charCount = 0
               const visibleTags: string[] = []
-              const maxChars = 28
+              const maxChars = 42
               for (const tag of tags) {
                 const len = tag.length + 2
                 if (charCount + len <= maxChars || visibleTags.length === 0) {
