@@ -57,16 +57,7 @@ export function CardList({ cards, tags }: Props) {
 
   return (
     <div className="flex flex-col">
-      {/* 히어로 슬로건 영역 */}
-      <div className="mb-8 mt-2">
-        <h1 className="text-title1 font-extrabold text-label-strong tracking-tight mb-2">
-          zettlink
-        </h1>
-        <p className="text-body1 text-label-neutral max-w-2xl leading-relaxed tracking-tight">
-          YouTube 영상과 GitHub 레포지토리의 핵심 요약, 주요 인사이트, 그리고 실용 가이드까지.
-          개발자를 위해 정교하게 정제된 1인 지식 아카이브입니다.
-        </p>
-      </div>
+      <h1 className="sr-only">zettlink — 지식 카드 아카이브</h1>
 
       {/* 태그 필터 칩 */}
       {tags.length > 0 && (
