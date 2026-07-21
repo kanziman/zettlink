@@ -46,7 +46,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
             <h2 className="text-heading2 font-bold text-label-strong mb-2 line-clamp-2">{title}</h2>
             {summary != null && (
               <p
-                className="text-body2 text-label-neutral mb-5 leading-relaxed"
+                className="text-body2 text-label-neutral mb-5 leading-relaxed h-[4.5rem]"
                 style={{
                   display: '-webkit-box',
                   WebkitLineClamp: 3,
