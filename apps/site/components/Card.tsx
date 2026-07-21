@@ -19,6 +19,12 @@ function platformIcon(platform: string): IconName {
   return 'file-text'
 }
 
+function platformIconBg(platform: string): string {
+  if (platform === 'youtube') return 'bg-red-500/10 text-red-600 dark:text-red-500'
+  if (platform === 'github') return 'bg-label-strong/10 text-label-strong'
+  return 'bg-primary-normal/10 text-primary-normal'
+}
+
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ hoverable = false, platform, title, summary, tags, date, className = '', children, ...props }, ref) => {
     const base =
@@ -30,7 +36,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
         {title != null ? (
           <>
             <div className="flex justify-between items-start mb-4">
-              <div className="w-10 h-10 rounded-[10px] bg-primary-normal/10 text-primary-normal flex items-center justify-center">
+              <div className={`w-10 h-10 rounded-[10px] flex items-center justify-center ${platformIconBg(platform ?? '')}`}>
                 <Icon name={platformIcon(platform ?? '')} size={20} />
               </div>
               {date != null && (
@@ -39,7 +45,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
             </div>
             <h2 className="text-heading2 font-bold text-label-strong mb-2 line-clamp-2">{title}</h2>
             {summary != null && (
-              <p className="text-body1 text-label-neutral mb-6 line-clamp-3 flex-grow">{summary}</p>
+              <p className="text-body2 text-label-neutral mb-5 line-clamp-3 flex-grow leading-relaxed">{summary}</p>
             )}
             {tags != null && tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-auto">

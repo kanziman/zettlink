@@ -50,7 +50,7 @@ export function CardList({ cards, tags }: Props) {
 
   // 필터 칩 공통 스타일
   const chipBase =
-    'inline-flex items-center gap-1.5 px-3 py-2.5 rounded-md text-label2 font-medium transition-colors duration-150 cursor-pointer no-underline'
+    'inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-md text-label2 font-medium transition-colors duration-150 cursor-pointer no-underline'
   const chipInactive = 'bg-fill-normal text-label-alternative hover:bg-fill-strong'
   const chipActive = 'bg-primary-normal/10 text-primary-normal'
 
@@ -61,7 +61,7 @@ export function CardList({ cards, tags }: Props) {
         <h1 className="text-title1 font-extrabold text-label-strong tracking-tight mb-2">
           zettlink
         </h1>
-        <p className="text-body1 text-label-alternative max-w-2xl leading-relaxed">
+        <p className="text-body1 text-label-neutral max-w-2xl leading-relaxed tracking-tight">
           YouTube 영상과 GitHub 레포지토리의 핵심 요약, 주요 인사이트, 그리고 실용 가이드까지.
           개발자를 위해 정교하게 정제된 1인 지식 아카이브입니다.
         </p>
@@ -69,36 +69,40 @@ export function CardList({ cards, tags }: Props) {
 
       {/* 태그 필터 칩 */}
       {tags.length > 0 && (
-        <div className="flex flex-nowrap gap-2 mb-8 overflow-x-auto scrollbar-hide pb-2 -mx-6 px-6">
-          <a
-            href="/"
-            onClick={handleAllClick}
-            className={[chipBase, activeTag == null ? chipActive : chipInactive].join(' ')}
-          >
-            전체
-            <span className="text-label-assistive text-caption1">
-              {totalCount}
-            </span>
-          </a>
-          {tags.map((t) => {
-            const isActive = activeTag === t.canonical_name
-            return (
-              <a
-                key={t.canonical_name}
-                href={`/?tag=${encodeURIComponent(t.canonical_name)}`}
-                onClick={(e) => handleTagClick(t.canonical_name, e)}
-                className={[chipBase, isActive ? chipActive : chipInactive].join(' ')}
-              >
-                <span className={isActive ? 'text-primary-normal/40' : 'text-label-assistive'}>
-                  #
-                </span>
-                {t.canonical_name}
-                <span className="text-label-assistive text-caption1">
-                  {t.usage_count}
-                </span>
-              </a>
-            )
-          })}
+        <div className="relative mb-8">
+          <div className="flex flex-nowrap gap-2.5 overflow-x-auto scrollbar-hide pb-2 -mx-6 px-6">
+            <a
+              href="/"
+              onClick={handleAllClick}
+              className={[chipBase, activeTag == null ? chipActive : chipInactive].join(' ')}
+            >
+              전체
+              <span className="text-label-assistive text-caption1">
+                {totalCount}
+              </span>
+            </a>
+            {tags.map((t) => {
+              const isActive = activeTag === t.canonical_name
+              return (
+                <a
+                  key={t.canonical_name}
+                  href={`/?tag=${encodeURIComponent(t.canonical_name)}`}
+                  onClick={(e) => handleTagClick(t.canonical_name, e)}
+                  className={[chipBase, isActive ? chipActive : chipInactive].join(' ')}
+                >
+                  <span className={isActive ? 'text-primary-normal/40' : 'text-label-assistive'}>
+                    #
+                  </span>
+                  {t.canonical_name}
+                  <span className="text-label-assistive text-caption1">
+                    {t.usage_count}
+                  </span>
+                </a>
+              )
+            })}
+          </div>
+          {/* 우측 페이딩 그라데이션 */}
+          <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-background-normal-alternative to-transparent" />
         </div>
       )}
 
