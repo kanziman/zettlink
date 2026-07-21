@@ -3,6 +3,16 @@ import { notFound } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { getAllPublishedSlugs, getCardBySlug } from '../../../lib/cards'
+import {
+  ArrowLeftIcon,
+  LinkIcon,
+  IdeaIcon,
+  KeyIcon,
+  CheckIcon,
+  BookOpenIcon,
+  EditIcon,
+  ToolIcon,
+} from '../../_components/Icons'
 
 interface PageProps {
   params: Promise<{ platform: string; slug: string }>
@@ -15,19 +25,53 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 export async function generateStaticParams() {
-  try {
-    const slugs = await getAllPublishedSlugs()
-    // output:'export'는 빈 배열을 허용하지 않으므로 published 카드가 없을 때 플레이스홀더 반환
-    if (slugs.length === 0) return [{ platform: 'youtube', slug: '_placeholder_' }]
-    return slugs.map(({ platform, slug }) => ({ platform, slug }))
-  } catch {
-    return [{ platform: 'youtube', slug: '_placeholder_' }]
-  }
+  const slugs = await getAllPublishedSlugs()
+  if (slugs.length === 0) return [{ platform: 'youtube', slug: '_placeholder_' }]
+  return slugs.map(({ platform, slug }) => ({ platform, slug }))
 }
 
 const PLATFORM_LABEL: Record<string, string> = {
   youtube: 'YouTube',
   github: 'GitHub',
+}
+
+const PLATFORM_BADGE_CLASSES: Record<string, string> = {
+  youtube: 'bg-[rgba(239,68,68,0.08)] text-[#EF4444] border-[rgba(239,68,68,0.15)]',
+  github: 'bg-fill-normal text-label-strong border-line-normal-normal',
+}
+
+function ContentSection({
+  title,
+  icon,
+  content,
+  badgeText,
+  badgeColorClass,
+  accentBorder,
+}: {
+  title: string
+  icon: React.ReactNode
+  content: string | null
+  badgeText: string
+  badgeColorClass: string
+  accentBorder?: boolean
+}) {
+  if (!content) return null
+  return (
+    <section className={`detail-section flex flex-col gap-3 ${accentBorder ? 'border-l-[3px] border-l-primary-normal' : ''}`}>
+      <div className="flex items-center justify-between">
+        <h2 className="text-body1 font-bold text-label-strong m-0 flex items-center gap-1.5">
+          {icon}
+          {title}
+        </h2>
+        <span className={`text-caption2 font-semibold px-2 py-0.5 rounded-md text-white ${badgeColorClass}`}>
+          {badgeText}
+        </span>
+      </div>
+      <div className="detail-prose">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+      </div>
+    </section>
+  )
 }
 
 export default async function CardPage({ params }: PageProps) {
@@ -40,149 +84,134 @@ export default async function CardPage({ params }: PageProps) {
     ? card.created_at
     : date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
 
-  const proseStyle = {
-    lineHeight: 1.7,
-    color: 'var(--color-label-normal)',
-  } as const
+  const platformClasses = PLATFORM_BADGE_CLASSES[card.platform] ?? 'bg-fill-normal text-label-alternative border-line-normal-normal'
 
   return (
-    <article data-pagefind-body>
-      {/* 헤더 */}
-      <header style={{ marginBottom: '2rem' }}>
-        <h1
-          data-pagefind-meta="title"
-          style={{
-            fontSize: '1.75rem',
-            fontWeight: 700,
-            lineHeight: 1.4,
-            color: 'var(--color-label-strong)',
-            margin: '0 0 0.75rem',
-          }}
+    <article data-pagefind-body className="flex flex-col gap-5 max-w-3xl mx-auto">
+      {/* ── 뒤로가기 ── */}
+      <div>
+        <a
+          href="/"
+          className="detail-back-link text-label1 font-semibold text-primary-normal no-underline inline-flex items-center gap-1.5"
         >
-          {card.title ?? card.url}
-        </h1>
+          <ArrowLeftIcon /> 목록으로 돌아가기
+        </a>
+      </div>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+      {/* ── 히어로 헤더 ── */}
+      <header className="bg-background-elevated-normal border border-line-normal-normal rounded-2xl shadow-normal-medium overflow-hidden">
+        {/* Gradient top bar */}
+        <div className="detail-gradient-bar" />
+
+        <div className="p-5 sm:p-6 flex flex-col gap-3">
           {/* 플랫폼 뱃지 */}
-          <span
-            style={{
-              padding: '0.125rem 0.5rem',
-              borderRadius: '4px',
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              background: 'var(--color-background-alternative)',
-              color: 'var(--color-label-alternative)',
-              border: '1px solid var(--color-line-normal)',
-            }}
-          >
-            {PLATFORM_LABEL[card.platform] ?? card.platform}
-          </span>
-
-          {/* 원본 URL */}
-          <a
-            href={card.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              fontSize: '0.8125rem',
-              color: 'var(--color-primary-normal)',
-              textDecoration: 'none',
-            }}
-          >
-            원본 보기 →
-          </a>
-
-          {/* 날짜 */}
-          <span
-            style={{ fontSize: '0.8125rem', color: 'var(--color-label-assistive)', marginLeft: 'auto' }}
-          >
-            {dateLabel}
-          </span>
-        </div>
-
-        {/* 태그 */}
-        {card.tags.length > 0 ? (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginTop: '0.75rem' }}>
-            {card.tags.map((tag) => (
-              <a
-                key={tag}
-                href={`/tags/${encodeURIComponent(tag)}`}
-                style={{
-                  padding: '0.125rem 0.625rem',
-                  borderRadius: '999px',
-                  fontSize: '0.75rem',
-                  background: 'var(--color-background-alternative)',
-                  color: 'var(--color-label-alternative)',
-                  textDecoration: 'none',
-                  border: '1px solid var(--color-line-normal)',
-                }}
-              >
-                {tag}
-              </a>
-            ))}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`text-caption2 font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${platformClasses}`}>
+              {PLATFORM_LABEL[card.platform] ?? card.platform}
+            </span>
           </div>
-        ) : null}
+
+          {/* 제목 */}
+          <h1
+            data-pagefind-meta="title"
+            className="text-title2 sm:text-title1 font-extrabold text-label-strong m-0 tracking-tight leading-tight"
+          >
+            {card.title ?? card.url}
+          </h1>
+
+          {/* 메타 정보 */}
+          <div className="flex flex-wrap items-center gap-3 text-label2">
+            <a
+              href={card.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-primary-normal no-underline font-medium hover:opacity-75 transition-opacity break-all"
+            >
+              <LinkIcon /> 원본 링크 방문하기 →
+            </a>
+            <span className="text-line-normal-normal hidden sm:inline">|</span>
+            <span className="text-label-alternative">
+              생성일: {dateLabel}
+            </span>
+          </div>
+
+          {/* 태그 */}
+          {card.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {card.tags.map((tag) => (
+                <a
+                  key={tag}
+                  href={`/tags/${encodeURIComponent(tag)}`}
+                  className="detail-tag px-2.5 py-1 rounded-full text-label2 font-medium bg-fill-normal text-primary-normal no-underline border border-fill-strong"
+                >
+                  #{tag}
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
       </header>
 
-      {/* 요약 */}
-      {card.summary !== null ? (
-        <section style={{ marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 0.75rem', color: 'var(--color-label-normal)' }}>
-            요약
+      {/* ── 요약 ── */}
+      {card.summary !== null && (
+        <section className="detail-section border-l-[3px] border-l-primary-normal bg-fill-normal flex flex-col gap-3">
+          <h2 className="text-label1 font-bold text-primary-normal m-0 uppercase tracking-widest flex items-center gap-1.5">
+            <IdeaIcon /> 요약
           </h2>
-          <div style={proseStyle}>
+          <div className="detail-prose">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{card.summary}</ReactMarkdown>
           </div>
         </section>
-      ) : null}
+      )}
 
-      {/* 인사이트 */}
-      {card.insights !== null && card.insights.length > 0 ? (
-        <section style={{ marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 0.75rem', color: 'var(--color-label-normal)' }}>
-            인사이트
+      {/* ── 인사이트 ── */}
+      {card.insights !== null && card.insights.length > 0 && (
+        <section className="detail-section flex flex-col gap-3.5">
+          <h2 className="text-label1 font-bold text-label-strong m-0 flex items-center gap-1.5">
+            <KeyIcon /> 인사이트
           </h2>
-          <div style={proseStyle}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {card.insights.map((item) => `- ${item}`).join('\n')}
-            </ReactMarkdown>
-          </div>
+          <ul className="p-0 m-0 list-none flex flex-col gap-2.5">
+            {card.insights.map((ins, i) => (
+              <li
+                key={i}
+                className="detail-insight-item leading-relaxed text-body2 text-label-neutral py-2.5 px-3.5 rounded-xl bg-background-normal-alternative border border-line-normal-normal flex items-start gap-3"
+              >
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary-normal text-white text-caption1 font-bold flex items-center justify-center mt-0.5">
+                  {i + 1}
+                </span>
+                <span className="flex-1">{ins}</span>
+              </li>
+            ))}
+          </ul>
         </section>
-      ) : null}
+      )}
 
-      {/* 심화 콘텐츠 */}
-      {card.has_deep && card.deep_content !== null ? (
-        <section style={{ marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 0.75rem', color: 'var(--color-label-normal)' }}>
-            심화 분석
-          </h2>
-          <div style={proseStyle}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{card.deep_content}</ReactMarkdown>
-          </div>
-        </section>
-      ) : null}
+      {/* ── 심화 분석 ── */}
+      <ContentSection
+        title="심화 분석"
+        icon={<BookOpenIcon />}
+        content={card.deep_content}
+        badgeText="Deep Dive"
+        badgeColorClass="bg-primary-normal"
+      />
 
-      {card.has_til && card.til_content !== null ? (
-        <section style={{ marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 0.75rem', color: 'var(--color-label-normal)' }}>
-            TIL
-          </h2>
-          <div style={proseStyle}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{card.til_content}</ReactMarkdown>
-          </div>
-        </section>
-      ) : null}
+      {/* ── TIL ── */}
+      <ContentSection
+        title="TIL (Today I Learned)"
+        icon={<EditIcon />}
+        content={card.til_content}
+        badgeText="TIL"
+        badgeColorClass="bg-accent-normal"
+      />
 
-      {card.has_guide && card.guide_content !== null ? (
-        <section style={{ marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 0.75rem', color: 'var(--color-label-normal)' }}>
-            실용 가이드
-          </h2>
-          <div style={proseStyle}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{card.guide_content}</ReactMarkdown>
-          </div>
-        </section>
-      ) : null}
+      {/* ── 실용 가이드 ── */}
+      <ContentSection
+        title="실용 가이드"
+        icon={<ToolIcon />}
+        content={card.guide_content}
+        badgeText="Guide"
+        badgeColorClass="bg-status-positive"
+      />
     </article>
   )
 }

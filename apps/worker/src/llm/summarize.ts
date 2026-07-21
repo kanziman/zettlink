@@ -18,6 +18,7 @@ export interface SummaryResult {
   summary: string
   insights: string[]
   tags: string[]
+  englishSlug: string
   tokensUsed: number
   costUsd: number
 }
@@ -40,6 +41,7 @@ const tools: OpenAI.Chat.ChatCompletionTool[] = [{
       type: 'object',
       properties: {
         title: { type: 'string', description: '콘텐츠 제목 (원본 언어)' },
+        english_slug: { type: 'string', description: 'URL-safe English slug: 2-5 lowercase words joined by hyphens, summarising the content (e.g. "react-server-components-deep-dive")' },
         summary: { type: 'string', description: '한국어 요약 (3~5문장)' },
         insights: {
           type: 'array',
@@ -56,7 +58,7 @@ const tools: OpenAI.Chat.ChatCompletionTool[] = [{
           maxItems: 10,
         },
       },
-      required: ['title', 'summary', 'insights', 'tags'],
+      required: ['title', 'english_slug', 'summary', 'insights', 'tags'],
     },
   },
 }]
@@ -119,6 +121,7 @@ export async function summarize(
 
   const parsed = JSON.parse(toolCall.function.arguments) as {
     title: string
+    english_slug: string
     summary: string
     insights: string[]
     tags: string[]
@@ -159,6 +162,7 @@ export async function summarize(
     summary: parsed.summary,
     insights: parsed.insights,
     tags: parsed.tags,
+    englishSlug: parsed.english_slug ?? '',
     tokensUsed,
     costUsd,
   }

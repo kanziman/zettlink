@@ -2,6 +2,11 @@
 // @zettlink/shared/config 를 import하지 않는다 (SERVICE_ROLE_KEY 검증 없어야 함)
 import { createClient } from '@supabase/supabase-js'
 
+type SupabaseQueryError = {
+  message: string
+  code?: string
+}
+
 // 빌드 타임 anon 클라이언트 — RLS로 published=true 카드만 노출
 // SUPABASE_URL / SUPABASE_ANON_KEY는 루트 .env를 next.config.ts에서 로드한 폴백
 function getClient() {
@@ -112,7 +117,7 @@ export async function getPublishedCards(tag?: string): Promise<CardListItem[]> {
 export async function getCardBySlug(platform: string, slug: string): Promise<CardDetail | null> {
   const supabase = getClient()
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('cards')
     .select(
       'id, title, url, platform, status, published, summary, insights, has_deep, has_til, has_guide, deep_content, til_content, guide_content, created_at, card_tags(tags(canonical_name))',
@@ -122,6 +127,8 @@ export async function getCardBySlug(platform: string, slug: string): Promise<Car
     .eq('published', true)
     .single()
 
+  if (isNoRowsError(error)) return null
+  if (error) throw new Error(`getCardBySlug failed: ${error.message}`)
   if (!data) return null
 
   // Supabase 제네릭 없이 사용하므로 안전한 unknown→타입 캐스트 적용
@@ -158,10 +165,12 @@ export async function getCardsByTag(tag: string): Promise<CardListItem[]> {
 /** generateStaticParams용 [{platform, slug}] 배열. */
 export async function getAllPublishedSlugs(): Promise<Array<{ platform: string; slug: string }>> {
   const supabase = getClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('cards')
     .select('id, platform')
     .eq('published', true)
+
+  if (error) throw new Error(`getAllPublishedSlugs failed: ${error.message}`)
 
   return ((data ?? []) as Array<{ id: string; platform: string }>).map((row) => ({
     platform: row.platform,
@@ -226,4 +235,8 @@ function normalizeList(data: unknown): CardListItem[] {
       ct.tags ? [ct.tags.canonical_name] : [],
     ),
   }))
+}
+
+function isNoRowsError(error: SupabaseQueryError | null): boolean {
+  return error?.code === 'PGRST116'
 }

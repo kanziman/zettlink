@@ -234,6 +234,8 @@ React 컴포넌트·훅·페이지(.tsx)를 작성하기 전에 반드시 /react
 
 ## 검증 기준
 - pnpm --filter site build → published 카드 N개 페이지 생성
+- publish/배포 후 실제 published 상세 URL 1개가 200을 반환하는지 확인
+- site Supabase query error는 404로 숨기지 말고 build/test 실패로 노출
 - pnpm deploy → Vercel 빌드 → 공개 URL 접근
 - 미published 카드 직접 URL → 404
 ```

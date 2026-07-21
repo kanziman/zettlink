@@ -1,7 +1,7 @@
 // 카드 리스트 행 컴포넌트
 import type { CSSProperties } from 'react'
-import { Badge, type Status } from './Badge.js'
-import { Tag } from './Tag.js'
+import { Badge, type Status } from './Badge'
+import { Tag } from './Tag'
 
 interface CardRowProps {
   slug: string

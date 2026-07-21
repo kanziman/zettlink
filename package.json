@@ -5,6 +5,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "dev": "run-pty run-pty.json",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
@@ -14,10 +15,13 @@
     "deploy:site": "tsx scripts/deploy-site.ts"
   },
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "run-pty": "^6.0.2",
+    "typescript": "^5.7.0"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

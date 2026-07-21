@@ -4,6 +4,7 @@ import { TagFilter } from './_components/TagFilter'
 import { StatusFilter } from './_components/StatusFilter'
 import { CardGrid } from './_components/CardGrid'
 import type { CardForGrid } from './_components/CardGrid'
+import { SearchIcon } from './_components/Icons'
 
 interface PageProps {
   searchParams: Promise<{ q?: string; tag?: string; status?: string }>
@@ -77,15 +78,9 @@ function StatChip({
   color?: string
 }) {
   return (
-    <div style={{
-      background: 'var(--color-background-normal)',
-      border: '1px solid var(--color-line-normal)',
-      borderRadius: '10px',
-      padding: '0.75rem 1rem',
-      boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
-    }}>
-      <div style={{ fontSize: '1.5rem', fontWeight: 700, color }}>{value}</div>
-      <div style={{ fontSize: '0.75rem', color: 'var(--color-label-assistive)', marginTop: '2px' }}>{label}</div>
+    <div className="stat-chip">
+      <div className="stat-value" style={{ color }}>{value}</div>
+      <div className="stat-label">{label}</div>
     </div>
   )
 }
@@ -138,35 +133,17 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       </div>
 
       {/* 검색 바 */}
-      <form method="GET" style={{ display: 'flex', gap: '0.5rem' }}>
+      <form method="GET" className="search-container">
+        <SearchIcon className="search-icon" />
         <input
           name="q"
           defaultValue={q}
-          placeholder="제목 또는 URL 검색"
-          style={{
-            flex: 1,
-            padding: '0.625rem 0.875rem',
-            borderRadius: '8px',
-            border: '1px solid var(--color-line-strong)',
-            background: 'var(--color-background-normal)',
-            color: 'var(--color-label-normal)',
-            fontSize: '0.9375rem',
-          }}
+          className="search-input"
+          placeholder="제목 또는 URL 검색..."
         />
         {tag != null ? <input type="hidden" name="tag" value={tag} /> : null}
         {status != null ? <input type="hidden" name="status" value={status} /> : null}
-        <button
-          type="submit"
-          style={{
-            padding: '0.625rem 1.25rem',
-            borderRadius: '8px',
-            background: 'var(--color-primary-normal)',
-            color: '#fff',
-            border: 'none',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
+        <button type="submit" className="search-button">
           검색
         </button>
       </form>

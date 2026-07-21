@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>안 B · 카드 그리드 브라이트 — zettlink</title>
+<link rel="stylesheet" as="style" crossorigin
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+  /* ── 뉴스레터 팔레트 토큰 (3안 공통) ── */
+  :root{
+    --sky-50:#F0F9FF;--sky-100:#E0F2FE;--sky-200:#BAE6FD;--sky-300:#7DD3FC;--sky-400:#38BDF8;
+    --sky-500:#0EA5E9;--sky-600:#0284C7;--sky-700:#0369A1;--sky-800:#075985;--sky-900:#0C4A6E;--sky-950:#082F49;
+    --orange-500:#F97316;--orange-600:#EA580C;--orange-700:#C2410C;
+    --red-500:#EF4444;--red-600:#DC2626;--red-700:#B91C1C;
+    --slate-50:#F8FAFC;--slate-200:#E2E8F0;--slate-400:#94A3B8;--slate-500:#64748B;--slate-600:#475569;--slate-900:#0F172A;
+    --white:#FFFFFF;
+
+    --color-primary-normal:var(--sky-700);
+    --color-primary-strong:var(--sky-800);
+    --color-primary-heavy:var(--sky-900);
+    --color-secondary-normal:var(--sky-500);
+    --color-accent-normal:var(--orange-600);
+    --color-accent-strong:var(--orange-700);
+    --color-background-normal:var(--white);
+    --color-background-alternative:var(--sky-50);
+    --color-label-normal:var(--sky-900);
+    --color-label-strong:var(--sky-950);
+    --color-label-alternative:var(--slate-600);
+    --color-status-error:var(--red-600);
+    --color-status-success:#16A34A;
+    --color-status-info:var(--sky-500);
+    --color-status-caution:var(--orange-600);
+    --color-line-normal:rgba(3,105,161,.16);
+    --color-line-strong:rgba(3,105,161,.28);
+  }
+  .dark{
+    --color-primary-normal:var(--sky-400);
+    --color-primary-strong:var(--sky-300);
+    --color-primary-heavy:var(--sky-200);
+    --color-secondary-normal:var(--sky-400);
+    --color-accent-normal:var(--orange-500);
+    --color-accent-strong:var(--orange-600);
+    --color-background-normal:#082F49;
+    --color-background-alternative:#0C1A24;
+    --color-label-normal:#E0F2FE;
+    --color-label-strong:#F0F9FF;
+    --color-label-alternative:#7DA0B4;
+    --color-line-normal:rgba(125,211,252,.18);
+    --color-line-strong:rgba(125,211,252,.30);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Pretendard',system-ui,sans-serif;
+    background:var(--color-background-alternative);
+    color:var(--color-label-normal);line-height:1.6;-webkit-font-smoothing:antialiased;
+    transition:background .3s ease,color .3s ease;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 0}
+  .brand{font-weight:800;font-size:1.1rem;letter-spacing:-.02em;color:var(--color-label-strong)}
+  .brand span{color:var(--color-accent-normal)}
+  .nav{display:flex;align-items:center;gap:16px}
+  .nav a{font-size:.9rem;font-weight:600;color:var(--color-label-alternative);text-decoration:none}
+  .nav a:hover{color:var(--color-primary-normal)}
+  .toggle{border:1px solid var(--color-line-normal);background:var(--color-background-normal);
+    color:var(--color-label-alternative);width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:1rem}
+  .toggle:hover{border-color:var(--color-primary-normal);color:var(--color-primary-normal)}
+
+  /* hero split */
+  .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center;padding:52px 0 40px}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;font-weight:700;letter-spacing:.04em;
+    color:var(--color-secondary-normal);background:color-mix(in srgb,var(--color-secondary-normal) 12%,transparent);
+    padding:6px 12px;border-radius:999px;margin-bottom:18px}
+  h1{font-size:clamp(2.1rem,4.4vw,3rem);line-height:1.14;letter-spacing:-.032em;font-weight:800;color:var(--color-label-strong)}
+  .lede{margin-top:18px;font-size:1.08rem;color:var(--color-label-alternative);max-width:30rem}
+  .subscribe{margin-top:28px;max-width:30rem}
+  .field{display:flex;gap:8px}
+  .field input{flex:1;height:52px;padding:0 16px;font-size:1rem;font-family:inherit;
+    border:1px solid var(--color-line-strong);border-radius:12px;background:var(--color-background-normal);color:var(--color-label-normal)}
+  .field input::placeholder{color:var(--color-label-alternative)}
+  .field input:focus{outline:2px solid var(--color-primary-normal);outline-offset:1px;border-color:var(--color-primary-normal)}
+  .cta{height:52px;padding:0 22px;border:0;border-radius:12px;font-weight:700;font-size:1rem;font-family:inherit;
+    cursor:pointer;white-space:nowrap;background:var(--color-accent-normal);color:#fff;transition:.2s}
+  .cta:hover{background:var(--color-accent-strong)}
+  .stats{display:flex;gap:24px;margin-top:22px}
+  .stat b{display:block;font-size:1.3rem;color:var(--color-primary-normal);letter-spacing:-.02em}
+  .stat span{font-size:.82rem;color:var(--color-label-alternative)}
+
+  /* hero preview card */
+  .hero-card{background:var(--color-background-normal);border:1px solid var(--color-line-normal);border-radius:20px;
+    box-shadow:0 18px 40px -20px rgba(3,105,161,.35);overflow:hidden}
+  .hero-card .bar{height:6px;background:linear-gradient(90deg,var(--color-secondary-normal),var(--color-primary-normal))}
+  .hero-card .inner{padding:24px}
+  .badge{display:inline-block;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;
+    color:#fff;background:var(--color-accent-normal);padding:4px 10px;border-radius:7px;margin-bottom:14px}
+  .hero-card .kicker{font-size:.78rem;font-weight:700;color:var(--color-secondary-normal)}
+  .hero-card h3{margin:6px 0 10px;font-size:1.25rem;letter-spacing:-.02em;color:var(--color-label-strong)}
+  .hero-card p{font-size:.94rem;color:var(--color-label-alternative)}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px}
+  .tag{font-size:.75rem;font-weight:600;padding:5px 10px;border-radius:999px;
+    background:color-mix(in srgb,var(--color-secondary-normal) 12%,transparent);color:var(--color-primary-strong)}
+
+  /* archive grid */
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin:44px 0 20px}
+  .section-head h2{font-size:1.4rem;letter-spacing:-.02em;color:var(--color-label-strong)}
+  .section-head a{font-size:.88rem;font-weight:600;color:var(--color-primary-normal);text-decoration:none}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .card{background:var(--color-background-normal);border:1px solid var(--color-line-normal);border-radius:16px;
+    padding:20px;text-decoration:none;color:inherit;transition:.18s;position:relative}
+  .card:hover{transform:translateY(-3px);border-color:var(--color-secondary-normal);
+    box-shadow:0 14px 30px -18px rgba(3,105,161,.5)}
+  .card .src{font-size:.72rem;font-weight:700;color:var(--color-secondary-normal);text-transform:uppercase;letter-spacing:.04em}
+  .card h3{margin:8px 0 8px;font-size:1.06rem;line-height:1.35;letter-spacing:-.01em;color:var(--color-label-strong)}
+  .card p{font-size:.88rem;color:var(--color-label-alternative)}
+  .card .meta{margin-top:14px;display:flex;gap:8px;align-items:center;font-size:.78rem;color:var(--color-label-alternative)}
+  .card .featured{position:absolute;top:16px;right:16px;font-size:.68rem;font-weight:800;color:#fff;
+    background:var(--color-accent-normal);padding:3px 8px;border-radius:6px}
+
+  footer{margin-top:52px;padding:32px 0 64px;border-top:1px solid var(--color-line-normal);
+    color:var(--color-label-alternative);font-size:.85rem;text-align:center}
+
+  @media(max-width:860px){.hero{grid-template-columns:1fr}.grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}.nav a{display:none}}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">zett<span>·</span>link</div>
+      <div class="nav">
+        <a href="#">아카이브</a>
+        <a href="#">태그</a>
+        <button class="toggle" onclick="document.documentElement.classList.toggle('dark')" aria-label="테마 전환">◐</button>
+      </div>
+    </div>
+
+    <section class="hero">
+      <div>
+        <span class="eyebrow">● 매주 화요일 · 무료 뉴스레터</span>
+        <h1>던진 링크가<br>정리된 지식으로.</h1>
+        <p class="lede">YouTube·GitHub URL을 던지면 요약·태그·인사이트가 자동으로. 매주 엄선한 한 통을 받아보세요.</p>
+        <form class="subscribe" onsubmit="return false">
+          <div class="field">
+            <input type="email" placeholder="이메일 주소" aria-label="이메일" />
+            <button class="cta" type="submit">무료 구독</button>
+          </div>
+        </form>
+        <div class="stats">
+          <div class="stat"><b>42편</b><span>누적 발행</span></div>
+          <div class="stat"><b>1.2k</b><span>구독자</span></div>
+          <div class="stat"><b>0</b><span>광고</span></div>
+        </div>
+      </div>
+
+      <div class="hero-card" aria-label="샘플 콘텐츠 미리보기">
+        <div class="bar"></div>
+        <div class="inner">
+          <span class="badge">이번 주</span>
+          <div class="kicker">YouTube · 요약 + 인사이트</div>
+          <h3>좋은 포트폴리오는 결과물이 아니라 판단을 보여준다</h3>
+          <p>채용자가 실제로 보는 것은 화려함이 아니라 문제를 좁힌 방식. 핵심 판단 기준 3가지.</p>
+          <div class="tags">
+            <span class="tag"># 포트폴리오</span>
+            <span class="tag"># 디자인커리어</span>
+            <span class="tag"># 채용</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-head">
+      <h2>지난 아카이브</h2>
+      <a href="#">전체 보기 →</a>
+    </div>
+    <div class="grid">
+      <a class="card" href="#">
+        <span class="featured">FEATURED</span>
+        <span class="src">GitHub</span>
+        <h3>러스트로 CLI 토큰을 60% 줄인 방법</h3>
+        <p>프록시 계층으로 dev 명령 출력을 압축해 컨텍스트를 아끼는 설계.</p>
+        <div class="meta">07.14 · 6분 읽기</div>
+      </a>
+      <a class="card" href="#">
+        <span class="src">YouTube</span>
+        <h3>1인 지식관리, 결국 검색이 전부다</h3>
+        <p>Pagefind로 정적 사이트에 풀텍스트 검색을 붙이는 실전 정리.</p>
+        <div class="meta">07.07 · 4분 읽기</div>
+      </a>
+      <a class="card" href="#">
+        <span class="src">GitHub</span>
+        <h3>LLM 비용을 예산 캡으로 지키기</h3>
+        <p>호출 전 오늘자 cost를 합산하고 초과 시 즉시 중단하는 가드.</p>
+        <div class="meta">06.30 · 5분 읽기</div>
+      </a>
+      <a class="card" href="#">
+        <span class="src">YouTube</span>
+        <h3>atomic write가 vault를 구한다</h3>
+        <p>temp+rename으로 mid-write 크래시에도 일관성을 지키는 패턴.</p>
+        <div class="meta">06.23 · 3분 읽기</div>
+      </a>
+      <a class="card" href="#">
+        <span class="src">GitHub</span>
+        <h3>Server Components 기본값으로 시작하기</h3>
+        <p>Next.js 15 App Router에서 클라이언트 경계를 최소화하는 법.</p>
+        <div class="meta">06.16 · 7분 읽기</div>
+      </a>
+      <a class="card" href="#">
+        <span class="src">YouTube</span>
+        <h3>태그 정규화가 검색 품질을 만든다</h3>
+        <p>단위 테스트 100% 커버로 태그 흔들림을 없앤 이야기.</p>
+        <div class="meta">06.09 · 4분 읽기</div>
+      </a>
+    </div>
+
+    <footer>zettlink · 매주 화요일 발행 · 언제든 한 번의 클릭으로 구독 해지</footer>
+  </div>
+</body>
+</html>

@@ -1,4 +1,6 @@
 // 태그 chip 컴포넌트
+'use client'
+
 import type { CSSProperties, KeyboardEvent } from 'react'
 
 interface TagProps {

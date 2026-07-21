@@ -1,0 +1,50 @@
+<h2>네비게이션 스타일 — 어떻게 할까요?</h2>
+<p class="subtitle">blog의 TopNavigation 기준으로 두 가지 방향입니다.</p>
+
+<div class="cards">
+
+  <!-- Option A: Minimal -->
+  <div class="card" data-choice="minimal" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #f7f7f8;">
+      <div style="font-family: sans-serif; border: 1px solid rgba(112,115,124,0.2); border-radius: 10px; overflow: hidden; background: #fff;">
+        <div style="height: 52px; border-bottom: 1px solid rgba(112,115,124,0.15); padding: 0 20px; display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-weight: 700; font-size: 16px; letter-spacing: -0.02em;">zettlink</span>
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <span style="font-size: 13px; color: #888;">태그</span>
+            <div style="width: 30px; height: 30px; border: 1px solid rgba(112,115,124,0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px;">🔍</div>
+          </div>
+        </div>
+        <div style="padding: 24px 20px 8px; color: #ccc; font-size: 11px; text-align: center;">— 카드 그리드 —</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — 미니멀</h3>
+      <p>로고 + 태그 링크 + 검색 아이콘. 현재와 유사. 콘텐츠에 집중.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Full Nav -->
+  <div class="card" data-choice="full" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #f7f7f8;">
+      <div style="font-family: sans-serif; border: 1px solid rgba(112,115,124,0.2); border-radius: 10px; overflow: hidden; background: #f7f7f8;">
+        <div style="height: 56px; border-bottom: 1px solid rgba(112,115,124,0.15); padding: 0 20px; display: flex; align-items: center; justify-content: space-between; background: #f7f7f8;">
+          <span style="font-weight: 700; font-size: 17px; letter-spacing: -0.02em;">zettlink</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="padding: 6px 10px; border: 1px solid rgba(112,115,124,0.3); border-radius: 8px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: #888; background: #fff;">
+              <span>🔍</span>
+            </div>
+            <div style="padding: 6px 12px; border: 1px solid rgba(112,115,124,0.3); border-radius: 8px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: #666; background: #fff;">
+              <span>🌙</span> Dark
+            </div>
+          </div>
+        </div>
+        <div style="padding: 24px 20px 8px; color: #ccc; font-size: 11px; text-align: center;">— 카드 그리드 —</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — 풀 nav</h3>
+      <p>로고 + 검색 버튼 + 다크모드 토글. blog TopNavigation 그대로. 테마 전환 UI가 명시적.</p>
+    </div>
+  </div>
+
+</div>

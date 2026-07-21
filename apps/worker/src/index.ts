@@ -123,7 +123,6 @@ async function dispatch(job: DbJob): Promise<void> {
 
     if (canonical.platform === 'youtube') {
       extract = await extractYoutube(canonical.externalId)
-      cardId = existingCard?.id ?? (titleToSlug((extract as YoutubeExtract).title) || canonical.externalId)
       await db.from('events').insert({
         level: 'info',
         type: 'extract.youtube',
@@ -137,7 +136,6 @@ async function dispatch(job: DbJob): Promise<void> {
       })
     } else {
       extract = await extractGithub(canonical.externalId)
-      cardId = existingCard?.id ?? repoToSlug(canonical.externalId)
       await db.from('events').insert({
         level: 'info',
         type: 'extract.github',
@@ -149,38 +147,52 @@ async function dispatch(job: DbJob): Promise<void> {
       })
     }
 
-    // 5. 카드 INSERT 또는 processing 상태로 UPDATE
+    // 5. 기존 카드: processing 상태로 전환
     if (existingCard) {
+      cardId = existingCard.id
       await db
         .from('cards')
         .update({ status: 'processing', url: canonical.canonical })
-        .eq('id', existingCard.id)
-    } else {
-      await db.from('cards').insert({
-        id: cardId,
-        url: canonical.canonical,
-        platform: canonical.platform,
-        external_id: canonical.externalId,
-        status: 'processing',
-      })
+        .eq('id', cardId)
     }
 
     // 6. LLM 요약 (checkBudget + llm.call 이벤트는 summarize 내부에서 처리)
     const summary = await summarize(extract, canonical.platform, job.id)
 
-    // 7. 카드 LLM 결과 반영
-    await db
-      .from('cards')
-      .update({
+    // 7. 카드 INSERT(신규) 또는 UPDATE(기존)
+    if (existingCard) {
+      await db
+        .from('cards')
+        .update({
+          title: summary.title,
+          summary: summary.summary,
+          insights: summary.insights as unknown as import('@zettlink/db').Database['public']['Tables']['cards']['Update']['insights'],
+          tokens_used: summary.tokensUsed,
+          cost_usd: summary.costUsd,
+          status: 'done',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', cardId)
+    } else {
+      // 신규 카드: YouTube는 LLM english_slug 우선, GitHub는 repoToSlug
+      if (canonical.platform === 'youtube') {
+        cardId = summary.englishSlug || titleToSlug((extract as YoutubeExtract).title) || canonical.externalId
+      } else {
+        cardId = repoToSlug(canonical.externalId)
+      }
+      await db.from('cards').insert({
+        id: cardId,
+        url: canonical.canonical,
+        platform: canonical.platform,
+        external_id: canonical.externalId,
         title: summary.title,
         summary: summary.summary,
-        insights: summary.insights as unknown as import('@zettlink/db').Database['public']['Tables']['cards']['Update']['insights'],
+        insights: summary.insights as unknown as import('@zettlink/db').Database['public']['Tables']['cards']['Insert']['insights'],
         tokens_used: summary.tokensUsed,
         cost_usd: summary.costUsd,
         status: 'done',
-        updated_at: new Date().toISOString(),
       })
-      .eq('id', cardId)
+    }
 
     // 8. 태그 정규화 + card_tags 연결
     await normalizeTags(summary.tags, cardId)

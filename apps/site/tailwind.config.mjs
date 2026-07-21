@@ -5,6 +5,7 @@ export default {
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx}',
     './lib/**/*.{js,ts,jsx,tsx}',
+    '../../packages/ui/src/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {
@@ -13,6 +14,13 @@ export default {
           normal: 'var(--semantic-primary-normal)',
           strong: 'var(--semantic-primary-strong)',
           heavy: 'var(--semantic-primary-heavy)',
+        },
+        secondary: {
+          normal: 'var(--semantic-secondary-normal)',
+        },
+        accent: {
+          normal: 'var(--semantic-accent-normal)',
+          strong: 'var(--semantic-accent-strong)',
         },
         label: {
           normal: 'var(--semantic-label-normal)',

@@ -1,8 +1,9 @@
 // 그리드 카드 목록 + 상세 모달 — 클라이언트 컴포넌트
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { CloseIcon, IdeaIcon } from './Icons'
 
 export type CardForGrid = {
   id: string
@@ -16,15 +17,19 @@ export type CardForGrid = {
   tags: string[]
 }
 
-const PLATFORM_ACCENT: Record<string, string> = {
-  youtube: '#FF4242',
-  github: '#37383C',
-}
-
-function accentColor(platform: string, status: string): string {
-  if (status === 'processing') return 'var(--color-status-caution)'
-  if (status === 'failed' || status === 'error') return 'var(--color-status-error)'
-  return PLATFORM_ACCENT[platform] ?? 'var(--color-label-alternative)'
+function platformBadgeStyle(platform: string): React.CSSProperties {
+  if (platform === 'youtube') {
+    return {
+      background: 'rgba(239, 68, 68, 0.08)',
+      color: '#EF4444',
+      borderColor: 'rgba(239, 68, 68, 0.2)',
+    }
+  }
+  return {
+    background: 'rgba(71, 85, 105, 0.08)',
+    color: '#475569',
+    borderColor: 'rgba(71, 85, 105, 0.2)',
+  }
 }
 
 function platformLabel(platform: string): string {
@@ -106,10 +111,9 @@ export function CardGrid({ cards }: CardGridProps) {
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-        gap: '1rem',
+        gap: '1.25rem',
       }}>
         {cards.map((card) => {
-          const accent = accentColor(card.platform, card.status)
           const isProcessing = card.status === 'processing'
           return (
             <div
@@ -118,37 +122,45 @@ export function CardGrid({ cards }: CardGridProps) {
               style={{
                 background: 'var(--color-background-normal)',
                 border: '1px solid var(--color-line-normal)',
-                borderLeft: `3px solid ${accent}`,
-                borderRadius: '12px',
-                padding: '1.125rem',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                borderRadius: '16px',
+                padding: '1.25rem',
+                boxShadow: '0 4px 12px rgba(12, 74, 110, 0.03)',
                 cursor: isProcessing ? 'default' : 'pointer',
                 opacity: isProcessing ? 0.65 : 1,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '0.5rem',
-                transition: 'box-shadow 0.2s, transform 0.2s',
+                gap: '0.625rem',
+                transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease',
               }}
               onMouseEnter={(e) => {
                 if (isProcessing) return
                 const el = e.currentTarget as HTMLDivElement
-                el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'
-                el.style.transform = 'translateY(-2px)'
+                el.style.boxShadow = '0 12px 24px -4px rgba(12, 74, 110, 0.08), 0 4px 12px -2px rgba(12, 74, 110, 0.04)'
+                el.style.transform = 'translateY(-3px)'
+                el.style.borderColor = 'rgba(3, 105, 161, 0.28)'
               }}
               onMouseLeave={(e) => {
                 const el = e.currentTarget as HTMLDivElement
-                el.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'
+                el.style.boxShadow = '0 4px 12px rgba(12, 74, 110, 0.03)'
                 el.style.transform = ''
+                el.style.borderColor = 'var(--color-line-normal)'
               }}
             >
               {/* 플랫폼 + 상태 */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: accent }}>
+                <span style={{
+                  fontSize: '0.6875rem',
+                  fontWeight: 600,
+                  padding: '2px 8px',
+                  borderRadius: '6px',
+                  border: '1px solid transparent',
+                  ...platformBadgeStyle(card.platform)
+                }}>
                   {platformLabel(card.platform)}
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
                   {card.status !== 'done' && (
-                    <span style={{ fontSize: '0.75rem', color: statusColor(card.status) }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 500, color: statusColor(card.status) }}>
                       {statusLabel(card.status)}
                     </span>
                   )}
@@ -157,9 +169,10 @@ export function CardGrid({ cards }: CardGridProps) {
                       fontSize: '0.6875rem',
                       fontWeight: 600,
                       color: 'var(--color-status-success)',
-                      background: 'rgba(18,213,137,0.1)',
+                      background: 'rgba(22,163,74,0.08)',
                       padding: '1px 6px',
                       borderRadius: '4px',
+                      border: '1px solid rgba(22,163,74,0.15)',
                     }}>공개</span>
                   )}
                 </div>
@@ -171,6 +184,7 @@ export function CardGrid({ cards }: CardGridProps) {
                 fontWeight: 700,
                 margin: 0,
                 lineHeight: 1.4,
+                color: 'var(--color-label-strong)',
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
@@ -185,7 +199,7 @@ export function CardGrid({ cards }: CardGridProps) {
                   fontSize: '0.8125rem',
                   color: 'var(--color-label-alternative)',
                   margin: 0,
-                  lineHeight: 1.5,
+                  lineHeight: 1.6,
                   display: '-webkit-box',
                   WebkitLineClamp: 3,
                   WebkitBoxOrient: 'vertical',
@@ -197,15 +211,16 @@ export function CardGrid({ cards }: CardGridProps) {
               )}
 
               {/* 태그 + 날짜 */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', paddingTop: '0.5rem', borderTop: '1px solid var(--color-line-normal)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', paddingTop: '0.625rem', borderTop: '1px solid rgba(3, 105, 161, 0.06)' }}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                   {card.tags.slice(0, 3).map((tag) => (
                     <span
                       key={tag}
                       style={{
                         fontSize: '0.6875rem',
+                        fontWeight: 500,
                         padding: '1px 5px',
-                        borderRadius: '4px',
+                        borderRadius: '6px',
                         background: 'var(--color-background-alternative)',
                         color: 'var(--color-label-alternative)',
                         border: '1px solid var(--color-line-normal)',
@@ -231,7 +246,9 @@ export function CardGrid({ cards }: CardGridProps) {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0, 0, 0, 0.5)',
+            background: 'rgba(8, 47, 73, 0.4)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
             zIndex: 100,
             display: 'flex',
             alignItems: 'center',
@@ -243,14 +260,15 @@ export function CardGrid({ cards }: CardGridProps) {
             onClick={(e) => e.stopPropagation()}
             style={{
               width: '100%',
-              maxWidth: '560px',
-              maxHeight: '80vh',
+              maxWidth: '540px',
+              maxHeight: '85vh',
               background: 'var(--color-background-normal)',
-              borderRadius: '16px',
-              boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+              borderRadius: '20px',
+              boxShadow: '0 20px 50px rgba(8, 47, 73, 0.15)',
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
+              border: '1px solid var(--color-line-normal)',
             }}
           >
             {/* 모달 헤더 */}
@@ -258,19 +276,19 @@ export function CardGrid({ cards }: CardGridProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '1rem 1.25rem',
+              padding: '1.125rem 1.5rem',
               borderBottom: '1px solid var(--color-line-normal)',
               flexShrink: 0,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-                <div style={{
-                  width: '3px',
-                  height: '18px',
-                  borderRadius: '2px',
-                  background: accentColor(selectedCard.platform, selectedCard.status),
-                  flexShrink: 0,
-                }} />
-                <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-label-alternative)' }}>
+                <span style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  padding: '2px 8px',
+                  borderRadius: '6px',
+                  border: '1px solid transparent',
+                  ...platformBadgeStyle(selectedCard.platform)
+                }}>
                   {platformLabel(selectedCard.platform)}
                 </span>
               </div>
@@ -281,18 +299,24 @@ export function CardGrid({ cards }: CardGridProps) {
                   border: 'none',
                   cursor: 'pointer',
                   color: 'var(--color-label-alternative)',
-                  fontSize: '1.125rem',
+                  fontSize: '1.25rem',
                   lineHeight: 1,
                   padding: '0.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'opacity 0.2s',
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
               >
-                ✕
+                <CloseIcon />
               </button>
             </div>
 
             {/* 모달 바디 */}
-            <div style={{ padding: '1.25rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <h2 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700, lineHeight: 1.4 }}>
+            <div style={{ padding: '1.5rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <h2 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700, lineHeight: 1.45, color: 'var(--color-label-strong)' }}>
                 {selectedCard.title ?? selectedCard.id}
               </h2>
 
@@ -302,22 +326,24 @@ export function CardGrid({ cards }: CardGridProps) {
                   fontSize: '0.75rem',
                   fontWeight: 600,
                   padding: '2px 8px',
-                  borderRadius: '4px',
-                  background: selectedCard.published ? 'rgba(18,213,137,0.1)' : 'var(--color-background-alternative)',
+                  borderRadius: '6px',
+                  background: selectedCard.published ? 'rgba(22,163,74,0.08)' : 'var(--color-background-alternative)',
                   color: selectedCard.published ? 'var(--color-status-success)' : 'var(--color-label-alternative)',
-                  border: `1px solid ${selectedCard.published ? 'rgba(18,213,137,0.3)' : 'var(--color-line-normal)'}`,
+                  border: `1px solid ${selectedCard.published ? 'rgba(22,163,74,0.2)' : 'var(--color-line-normal)'}`,
                 }}>
-                  {selectedCard.published ? '● 공개' : '비공개'}
+                  {selectedCard.published ? '공개' : '비공개'}
                 </span>
                 {selectedCard.tags.map((tag) => (
                   <span
                     key={tag}
                     style={{
                       fontSize: '0.75rem',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      background: 'rgba(0,102,255,0.08)',
+                      fontWeight: 500,
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                      background: 'rgba(3, 105, 161, 0.06)',
                       color: 'var(--color-primary-normal)',
+                      border: '1px solid rgba(3, 105, 161, 0.12)',
                     }}
                   >
                     #{tag}
@@ -325,21 +351,41 @@ export function CardGrid({ cards }: CardGridProps) {
                 ))}
               </div>
 
-              {/* 요약 */}
+              {/* 요약 (Key Takeaway) */}
               {selectedCard.summary != null && (
                 <div style={{
-                  background: 'var(--color-background-alternative)',
-                  borderRadius: '10px',
-                  padding: '0.875rem 1rem',
+                  background: 'rgba(3, 105, 161, 0.04)',
+                  borderRadius: '12px',
+                  padding: '1.125rem 1.25rem',
+                  border: '1px solid rgba(3, 105, 161, 0.08)',
                 }}>
-                  <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: 1.7, color: 'var(--color-label-neutral)' }}>
+                  <div style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    color: 'var(--color-primary-normal)',
+                    marginBottom: '0.5rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.375rem',
+                  }}>
+                    <IdeaIcon /> 핵심 요약
+                  </div>
+                  <p style={{
+                    margin: 0,
+                    fontSize: '0.875rem',
+                    lineHeight: 1.65,
+                    color: 'var(--color-label-normal)',
+                    fontWeight: 450,
+                  }}>
                     {selectedCard.summary}
                   </p>
                 </div>
               )}
 
               {publishError != null && (
-                <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-status-error)' }}>
+                <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-status-error)', fontWeight: 500 }}>
                   {publishError}
                 </p>
               )}
@@ -348,8 +394,8 @@ export function CardGrid({ cards }: CardGridProps) {
             {/* 모달 푸터 */}
             <div style={{
               display: 'flex',
-              gap: '0.625rem',
-              padding: '1rem 1.25rem',
+              gap: '0.75rem',
+              padding: '1.125rem 1.5rem',
               borderTop: '1px solid var(--color-line-normal)',
               flexShrink: 0,
             }}>
@@ -360,14 +406,23 @@ export function CardGrid({ cards }: CardGridProps) {
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '8px',
+                  padding: '0.625rem 1rem',
+                  borderRadius: '10px',
                   fontSize: '0.875rem',
                   fontWeight: 600,
                   textDecoration: 'none',
-                  border: '1px solid var(--color-line-normal)',
+                  border: '1px solid var(--color-line-strong)',
                   color: 'var(--color-label-normal)',
-                  background: 'transparent',
+                  background: 'var(--color-background-normal)',
+                  transition: 'background 0.2s, border-color 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--color-background-alternative)'
+                  e.currentTarget.style.borderColor = 'var(--color-primary-normal)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--color-background-normal)'
+                  e.currentTarget.style.borderColor = 'var(--color-line-strong)'
                 }}
               >
                 상세 보기
@@ -377,15 +432,31 @@ export function CardGrid({ cards }: CardGridProps) {
                 disabled={publishing}
                 style={{
                   flex: 1,
-                  padding: '0.5rem 1rem',
-                  borderRadius: '8px',
+                  padding: '0.625rem 1rem',
+                  borderRadius: '10px',
                   fontSize: '0.875rem',
                   fontWeight: 600,
-                  border: 'none',
                   cursor: publishing ? 'not-allowed' : 'pointer',
                   opacity: publishing ? 0.6 : 1,
-                  background: selectedCard.published ? 'rgba(255,66,66,0.1)' : 'var(--color-primary-normal)',
-                  color: selectedCard.published ? 'var(--color-status-error)' : '#fff',
+                  background: selectedCard.published ? 'rgba(239, 68, 68, 0.08)' : 'var(--color-primary-normal)',
+                  color: selectedCard.published ? '#EF4444' : '#fff',
+                  border: selectedCard.published ? '1px solid rgba(239, 68, 68, 0.2)' : 'none',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  if (publishing) return
+                  if (selectedCard.published) {
+                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'
+                  } else {
+                    e.currentTarget.style.background = 'var(--color-primary-strong)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedCard.published) {
+                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)'
+                  } else {
+                    e.currentTarget.style.background = 'var(--color-primary-normal)'
+                  }
                 }}
               >
                 {publishing ? '처리 중…' : selectedCard.published ? 'Unpublish' : 'Publish'}
