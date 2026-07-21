@@ -164,19 +164,17 @@ export default async function CardPage({ params }: PageProps) {
 
       {/* ── 인사이트 ── */}
       {card.insights !== null && card.insights.length > 0 && (
-        <section className="detail-section flex flex-col gap-3.5">
+        <section className="detail-section flex flex-col gap-3">
           <h2 className="text-label1 font-bold text-label-strong m-0 flex items-center gap-1.5">
             <KeyIcon /> 인사이트
           </h2>
-          <ul className="p-0 m-0 list-none flex flex-col gap-2.5">
+          <ul className="p-0 m-0 list-none flex flex-col gap-1.5">
             {card.insights.map((ins, i) => (
               <li
                 key={i}
-                className="detail-insight-item leading-relaxed text-body2 text-label-neutral py-2.5 px-3.5 rounded-xl bg-background-normal-alternative border border-line-normal-normal flex items-start gap-3"
+                className="detail-insight-item leading-relaxed text-body2 text-label-neutral py-1.5 px-3 rounded-xl bg-background-normal-alternative border border-line-normal-normal flex items-start gap-2.5"
               >
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary-normal text-white text-caption1 font-bold flex items-center justify-center mt-0.5">
-                  {i + 1}
-                </span>
+                <CheckIcon className="flex-shrink-0 text-primary-normal w-4 h-4 mt-1" />
                 <span className="flex-1">{ins}</span>
               </li>
             ))}
