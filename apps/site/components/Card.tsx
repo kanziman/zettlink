@@ -43,7 +43,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
                 <span className="text-caption1 text-label-assistive">{date}</span>
               )}
             </div>
-            <h2 className="text-heading2 font-bold text-label-strong mb-2 line-clamp-2">{title}</h2>
+            <h2 className="text-heading2 font-bold text-label-strong mb-2 line-clamp-2 h-14">{title}</h2>
             {summary != null && (
               <p
                 className="text-body2 text-label-neutral mb-5 leading-relaxed h-[4.5rem]"
@@ -59,7 +59,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
               </p>
             )}
             {tags != null && tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-auto">
+              <div className="flex flex-wrap gap-2 mt-auto h-16 content-start">
                 {tags.slice(0, 4).map((tag) => (
                   <Badge key={tag} variant="subtle" color="neutral">
                     #{tag}
