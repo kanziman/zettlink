@@ -30,3 +30,8 @@ supabase/.temp/
 
 # nested lockfiles (root pnpm-lock.yaml가 정본)
 apps/*/pnpm-lock.yaml
+
+# local tool & cache directories
+.gstack/
+.impeccable/
+

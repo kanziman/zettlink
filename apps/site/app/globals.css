@@ -207,6 +207,25 @@
   html, body {
     @apply font-sans bg-background-normal-alternative text-label-normal transition-colors duration-300;
   }
+
+  /* 전역 포커스 링 스타일 */
+  *:focus-visible {
+    outline: 2px solid var(--semantic-primary-normal);
+    outline-offset: 2px;
+  }
+}
+
+/* Screen Reader Only (접근성용 텍스트 숨김) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 /* ── Detail page prose (Markdown) ── */

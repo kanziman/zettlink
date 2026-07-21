@@ -28,7 +28,8 @@ export function TopNavigation({ searchSlot }: TopNavigationProps) {
           <Button
             variant="outlined"
             color="assistive"
-            size="small"
+            size="medium"
+            className="h-11"
             onClick={() => setTheme(isDark ? 'light' : 'dark')}
             leadingContent={<Icon name={isDark ? 'sun' : 'moon'} size={16} />}
           >

@@ -8,31 +8,21 @@ export default async function TagsIndexPage() {
 
   return (
     <div>
-      <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1.5rem', color: 'var(--color-label-strong)' }}>
+      <h1 className="text-title3 font-bold mb-6 text-label-strong">
         태그
       </h1>
       {tags.length === 0 ? (
-        <p style={{ color: 'var(--color-label-assistive)' }}>태그가 없습니다.</p>
+        <p className="text-label-assistive text-body1">태그가 없습니다.</p>
       ) : (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <div className="flex flex-wrap gap-2">
           {tags.map((tag) => (
             <a
               key={tag.canonical_name}
               href={`/tags/${encodeURIComponent(tag.canonical_name)}`}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.375rem',
-                padding: '0.375rem 0.875rem',
-                borderRadius: '9999px',
-                border: '1px solid var(--color-line-strong)',
-                color: 'var(--color-label-alternative)',
-                textDecoration: 'none',
-                fontSize: '0.875rem',
-              }}
+              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-full border border-line-strong text-label-alternative no-underline text-label1 hover:border-primary-normal hover:bg-fill-normal transition-all duration-200"
             >
               {tag.canonical_name}
-              <span style={{ fontSize: '0.75rem', color: 'var(--color-label-assistive)' }}>
+              <span className="text-caption1 text-label-assistive">
                 {tag.usage_count}
               </span>
             </a>

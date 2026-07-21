@@ -14,10 +14,10 @@ export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
     let colorClasses = ''
     if (variant === 'subtle') {
       if (color === 'neutral') colorClasses = 'bg-fill-normal text-label-normal'
-      else if (color === 'primary') colorClasses = 'bg-[rgba(0,102,255,0.1)] text-primary-normal'
-      else if (color === 'positive') colorClasses = 'bg-[rgba(18,213,137,0.1)] text-status-positive'
-      else if (color === 'cautionary') colorClasses = 'bg-[rgba(255,122,0,0.1)] text-status-cautionary'
-      else if (color === 'negative') colorClasses = 'bg-[rgba(255,66,66,0.1)] text-status-negative'
+      else if (color === 'primary') colorClasses = 'bg-primary-normal/10 text-primary-normal'
+      else if (color === 'positive') colorClasses = 'bg-status-positive/10 text-status-positive'
+      else if (color === 'cautionary') colorClasses = 'bg-status-cautionary/10 text-status-cautionary'
+      else if (color === 'negative') colorClasses = 'bg-status-negative/10 text-status-negative'
     } else if (variant === 'solid') {
       if (color === 'neutral') colorClasses = 'bg-label-normal text-background-normal-normal'
       else if (color === 'primary') colorClasses = 'bg-primary-normal text-white'

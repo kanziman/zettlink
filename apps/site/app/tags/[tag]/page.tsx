@@ -41,24 +41,13 @@ export default async function TagPage({ params }: PageProps) {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-        <h1
-          style={{
-            fontSize: '1.5rem',
-            fontWeight: 700,
-            color: 'var(--color-label-strong)',
-            margin: 0,
-          }}
-        >
+      <div className="flex items-center gap-4 mb-6">
+        <h1 className="text-title3 font-bold text-label-strong m-0">
           #{tag}
         </h1>
         <a
           href="/tags"
-          style={{
-            fontSize: '0.875rem',
-            color: 'var(--color-label-alternative)',
-            textDecoration: 'none',
-          }}
+          className="text-label1 text-label-alternative no-underline hover:text-primary-normal transition-colors"
         >
           ← 전체 태그
         </a>
@@ -66,11 +55,7 @@ export default async function TagPage({ params }: PageProps) {
 
       <div
         data-pagefind-body
-        style={{
-          border: '1px solid var(--color-line-normal)',
-          borderRadius: '12px',
-          overflow: 'hidden',
-        }}
+        className="border border-line-normal-normal rounded-xl overflow-hidden"
       >
         {cards.map((card) => (
           <CardRow

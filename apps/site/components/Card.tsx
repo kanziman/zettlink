@@ -22,7 +22,7 @@ function platformIcon(platform: string): IconName {
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ hoverable = false, platform, title, summary, tags, date, className = '', children, ...props }, ref) => {
     const base =
-      'bg-background-elevated-normal text-label-normal border border-line-normal-normal p-6 rounded-[20px] shadow-normal-small transition-all duration-200 flex flex-col'
+      'bg-background-elevated-normal text-label-normal border border-line-normal-normal p-6 rounded-[20px] shadow-normal-small transition-[transform,box-shadow] duration-200 flex flex-col'
     const hover = hoverable ? 'hover:shadow-normal-medium hover:-translate-y-1 cursor-pointer' : ''
 
     return (
@@ -30,7 +30,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
         {title != null ? (
           <>
             <div className="flex justify-between items-start mb-4">
-              <div className="w-10 h-10 rounded-[10px] bg-[rgba(0,102,255,0.08)] text-primary-normal flex items-center justify-center">
+              <div className="w-10 h-10 rounded-[10px] bg-primary-normal/10 text-primary-normal flex items-center justify-center">
                 <Icon name={platformIcon(platform ?? '')} size={20} />
               </div>
               {date != null && (

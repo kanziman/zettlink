@@ -34,7 +34,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       if (color === 'assistive')
         colorClasses = 'bg-transparent text-label-normal border-line-normal-normal hover:bg-fill-normal disabled:text-label-disable'
       else if (color === 'primary')
-        colorClasses = 'bg-transparent text-primary-normal border-primary-normal hover:bg-[rgba(0,102,255,0.04)] disabled:text-label-disable'
+        colorClasses = 'bg-transparent text-primary-normal border-primary-normal hover:bg-primary-normal/5 disabled:text-label-disable'
     } else {
       if (color === 'assistive')
         colorClasses = 'bg-fill-normal text-label-normal hover:bg-fill-strong disabled:bg-interaction-disable disabled:text-label-disable border-transparent'

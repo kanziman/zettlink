@@ -50,12 +50,13 @@ export function CardList({ cards, tags }: Props) {
 
   // 필터 칩 공통 스타일
   const chipBase =
-    'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-label2 font-medium transition-colors duration-150 cursor-pointer no-underline'
+    'inline-flex items-center gap-1.5 px-3 py-2.5 rounded-md text-label2 font-medium transition-colors duration-150 cursor-pointer no-underline'
   const chipInactive = 'bg-fill-normal text-label-alternative hover:bg-fill-strong'
-  const chipActive = 'bg-[rgba(0,102,255,0.1)] text-primary-normal'
+  const chipActive = 'bg-primary-normal/10 text-primary-normal'
 
   return (
     <div>
+      <h1 className="sr-only">zettlink — 지식 카드 아카이브</h1>
       {/* 태그 필터 칩 */}
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-7">
