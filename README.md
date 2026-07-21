@@ -137,6 +137,15 @@ Semantic token 기반으로 구축된 커스텀 디자인 시스템:
 - **Elevation**: 5단계 그림자 토큰 (xsmall → xlarge)
 - **Theme**: CSS 변수 기반 Light/Dark 자동 전환
 
+## Screenshots
+
+### 🌐 Public Site
+#### Home - Card Grid with Indicator Badges
+![zettlink Public Site Home](docs/screenshots/site_home.png)
+
+#### Detail - Deep Dive Section
+![zettlink Public Site Detail - Deep Dive](docs/screenshots/site_detail.png)
+
 ## Getting Started
 
 ### Prerequisites
