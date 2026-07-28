@@ -16,6 +16,17 @@ describe('db package entrypoints', () => {
     expect(browserSource).toContain('NEXT_PUBLIC_SUPABASE_ANON_KEY')
   })
 
+  test('anon entrypoint is config-free and anon-only', () => {
+    const anonSource = source('src/anon.ts')
+
+    expect(anonSource).not.toContain('@zettlink/shared')
+    expect(anonSource).not.toContain('SUPABASE_SERVICE_ROLE_KEY')
+    expect(anonSource).not.toContain('./server')
+    expect(anonSource).toContain('NEXT_PUBLIC_SUPABASE_URL')
+    expect(anonSource).toContain('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    expect(anonSource).toContain('createAnonClient')
+  })
+
   test('server entrypoint owns service role and route client factories', () => {
     const serverSource = source('src/server.ts')
 

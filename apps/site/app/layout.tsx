@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { ThemeProvider } from 'next-themes'
 import type { ReactNode } from 'react'
 import { TopNavigation } from '../components/TopNavigation'
-import { PagefindSearch } from '../components/PagefindSearch'
+import { LiveSearch } from '../components/LiveSearch'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <TopNavigation searchSlot={<PagefindSearch />} />
+          <TopNavigation searchSlot={<LiveSearch />} />
           <main className="max-w-[1120px] mx-auto px-6 py-8">
             {children}
           </main>

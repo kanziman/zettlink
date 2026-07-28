@@ -1,16 +1,14 @@
-// 홈 페이지 카드 그리드 — ?tag= URL param 필터링, B1 태그 칩 + usage_count 표시
+// 홈 페이지 카드 그리드 — Supabase 실시간 조회(CSR), ?tag= URL param 필터링, 태그 칩 + usage_count
 'use client'
 
 import { useState, useEffect } from 'react'
-import type { CardListItem, TagItem } from '../lib/cards'
+import { usePublishedCards, useAllTags } from '../lib/use-cards'
 import { Card } from './Card'
 
-type Props = {
-  cards: CardListItem[]
-  tags: TagItem[]
-}
+export function CardList() {
+  const { data: cards, loading, error } = usePublishedCards()
+  const { data: tags } = useAllTags()
 
-export function CardList({ cards, tags }: Props) {
   const [activeTag, setActiveTag] = useState<string | undefined>(undefined)
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -108,8 +106,24 @@ export function CardList({ cards, tags }: Props) {
       )}
 
       {/* 카드 그리드 */}
-      <div data-pagefind-body>
-        {filtered.length === 0 ? (
+      <div>
+        {error ? (
+          <p className="text-status-negative text-center py-16">
+            노트를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
+          </p>
+        ) : loading ? (
+          <ul
+            className="list-none p-0 m-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            aria-hidden
+          >
+            {Array.from({ length: 6 }).map((_, i) => (
+              <li
+                key={i}
+                className="h-52 rounded-[20px] border border-line-normal-normal bg-fill-normal animate-pulse"
+              />
+            ))}
+          </ul>
+        ) : filtered.length === 0 ? (
           <p className="text-label-assistive text-center py-16">
             게시된 노트가 없습니다.
           </p>
