@@ -38,5 +38,11 @@ export async function POST(request: Request) {
     .eq('id', body.id)
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
 
+  // 목록/수정분은 사이트가 CSR로 즉시 반영한다. 단 새 카드의 정적 상세 라우트(SSG) 생성/삭제를 위해
+  // Deploy Hook을 백그라운드로 호출한다 (fire-and-forget, 실패는 무시 — 발행 응답을 막지 않음).
+  if (config.vercel.deploySiteHook) {
+    void fetch(config.vercel.deploySiteHook, { method: 'POST' }).catch(() => undefined)
+  }
+
   return NextResponse.json({ ok: true, published: newPublished })
 }

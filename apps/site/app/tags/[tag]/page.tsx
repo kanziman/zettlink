@@ -1,7 +1,7 @@
-// 태그별 카드 목록 정적 페이지
+// 태그별 카드 목록 — SSG(라우트/메타) + 클라이언트 재조회로 최신화
 import { notFound } from 'next/navigation'
-import { CardRow } from '@zettlink/ui'
 import { getAllTags, getCardsByTag } from '../../../lib/cards'
+import { TagCards } from './TagCards'
 
 interface PageProps {
   params: Promise<{ tag: string }>
@@ -53,25 +53,7 @@ export default async function TagPage({ params }: PageProps) {
         </a>
       </div>
 
-      <div
-        data-pagefind-body
-        className="border border-line-normal-normal rounded-xl overflow-hidden"
-      >
-        {cards.map((card) => (
-          <CardRow
-            key={card.id}
-            slug={card.id}
-            title={card.title}
-            url={card.url}
-            platform={card.platform}
-            status={card.status}
-            published={card.published}
-            tags={card.tags}
-            createdAt={card.created_at}
-            href={`/${card.platform}/${card.id}`}
-          />
-        ))}
-      </div>
+      <TagCards tag={tag} initial={cards} />
     </div>
   )
 }

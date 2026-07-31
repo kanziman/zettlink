@@ -1,21 +1,15 @@
-// 공개 사이트 빌드 타임 Supabase 조회 — anon 키 전용, SERVICE_ROLE_KEY 불필요
-// @zettlink/shared/config 를 import하지 않는다 (SERVICE_ROLE_KEY 검증 없어야 함)
-import { createClient } from '@supabase/supabase-js'
+// 공개 사이트 Supabase 조회 — anon 키 전용. 빌드 SSG와 브라우저 CSR 양쪽에서 재사용된다.
+// packages/db의 anon 엔트리포인트 사용 (raw createClient 금지, service_role/서버 config 미의존)
+import { createAnonClient } from '@zettlink/db/anon'
 
 type SupabaseQueryError = {
   message: string
   code?: string
 }
 
-// 빌드 타임 anon 클라이언트 — RLS로 published=true 카드만 노출
-// SUPABASE_URL / SUPABASE_ANON_KEY는 루트 .env를 next.config.ts에서 로드한 폴백
+// anon 클라이언트 — RLS로 published=true 카드만 노출
 function getClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.SUPABASE_ANON_KEY
-  if (!url || !key) {
-    throw new Error('NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY 환경변수 없음')
-  }
-  return createClient(url, key)
+  return createAnonClient()
 }
 
 export type CardListItem = {

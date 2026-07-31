@@ -17,7 +17,8 @@
     "./browser": {
       "types": "./dist/browser.d.ts",
       "default": "./dist/browser.js"
-    }
+    },
+    "./anon": "./src/anon.ts"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

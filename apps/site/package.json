@@ -8,13 +8,14 @@
   },
   "scripts": {
     "dev": "next dev --port 3002",
-    "build": "next build && pagefind --site out",
+    "build": "next build",
     "start": "npx serve out",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2",
+    "@zettlink/db": "workspace:*",
     "@zettlink/shared": "workspace:*",
     "@zettlink/ui": "workspace:*",
     "next": "^15.0.0",
@@ -31,7 +32,6 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv": "^16",
-    "pagefind": "^1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^2"

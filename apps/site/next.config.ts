@@ -10,8 +10,9 @@ dotenvConfig({ path: join(process.cwd(), '../../.env'), override: false })
 const nextConfig: NextConfig = {
   output: 'export',
   trailingSlash: true,
-  // @zettlink/ui와 @zettlink/shared 모두 트랜스파일 (ESM 소스 → 번들)
-  transpilePackages: ['@zettlink/ui', '@zettlink/shared'],
+  // 워크스페이스 패키지를 소스에서 트랜스파일 (dist 미빌드 의존 제거).
+  // @zettlink/db는 ./anon 소스 엔트리(createAnonClient)만 사용한다.
+  transpilePackages: ['@zettlink/ui', '@zettlink/shared', '@zettlink/db'],
   webpack(config) {
     config.resolve.extensionAlias = {
       ...config.resolve.extensionAlias,
